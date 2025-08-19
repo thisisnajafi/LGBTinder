@@ -21,7 +21,7 @@ class LGBTinderApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         primaryColor: AppColors.primaryLight,
         scaffoldBackgroundColor: AppColors.appBackground,
-        bottomAppBarTheme: BottomAppBarTheme(color: AppColors.appBackground),
+        bottomAppBarTheme: BottomAppBarThemeData(color: AppColors.appBackground),
       ),
       initialRoute: '/',
       routes: {
