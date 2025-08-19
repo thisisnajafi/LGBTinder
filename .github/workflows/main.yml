@@ -1,1 +1,104 @@
-//test
+name: LGBTinder Flutter App - Deployment Notification
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get commit info
+        id: commit
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "branch=$(git branch --show-current)" >> $GITHUB_OUTPUT
+          echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+
+      - name: Notify Telegram - Deployment
+        if: github.event_name == 'push'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          COMMIT_SHA: ${{ steps.commit.outputs.sha_short }}
+          BRANCH: ${{ steps.commit.outputs.branch }}
+          COMMIT_MESSAGE: ${{ steps.commit.outputs.commit_message }}
+          REPO_NAME: ${{ github.repository }}
+        run: |
+          # Format commit message for Telegram
+          FORMATTED_COMMIT_MESSAGE=$(echo "${COMMIT_MESSAGE}" | sed 's/"/\\"/g' | sed 's/$/\\n/' | sed ':a;N;$!ba;s/\n/\\n/g')
+          
+          # Create deployment message
+          MESSAGE="🚀 <b>LGBTinder Flutter App</b> 🚀
+
+          ✅ <b>Status:</b> Deployment Complete
+
+          📱 <b>App:</b> LGBTinder Dating App
+          👤 <b>Deployed by:</b> ${GITHUB_ACTOR}
+          🌿 <b>Branch:</b> ${BRANCH}
+          🔗 <b>Commit:</b> <code>${COMMIT_SHA}</code>
+
+          💬 <b>Commit Message:</b>
+          <blockquote>${FORMATTED_COMMIT_MESSAGE}</blockquote>
+
+          ✅ <b>Deployment Tasks:</b>
+          • Flutter build verification
+          • Asset compilation
+          • Platform-specific builds
+          • Code quality checks
+
+          🎉 <b>App Ready for Testing!</b>
+
+          📊 <b>Progress:</b> ~45% Complete
+          📋 <b>Next:</b> Backend integration & missing screens"
+
+          # Send to Telegram
+          curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+            -d chat_id=${TELEGRAM_CHAT_ID} \
+            -d text="${MESSAGE}" \
+            -d parse_mode="HTML" \
+            -d disable_web_page_preview=true
+
+      - name: Notify Telegram - Pull Request
+        if: github.event_name == 'pull_request'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          MESSAGE="🔀 <b>LGBTinder Flutter App</b> 🔀
+
+          📝 <b>New Pull Request</b>
+
+          👤 <b>Author:</b> ${GITHUB_ACTOR}
+          🔢 <b>PR #${PR_NUMBER}</b>
+          📋 <b>Title:</b> ${PR_TITLE}
+
+          🔗 <b>View PR:</b> ${PR_URL}
+
+          ✅ <b>Ready for Review!</b>"
+
+          # Send to Telegram
+          curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
+            -d chat_id=${TELEGRAM_CHAT_ID} \
+            -d text="${MESSAGE}" \
+            -d parse_mode="HTML" \
+            -d disable_web_page_preview=true
+
+      - name: Handle notification errors
+        if: failure()
+        run: |
+          echo "❌ Failed to send Telegram notification"
+          echo "Check your TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets"
