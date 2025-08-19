@@ -1,0 +1,83 @@
+name: lgbtinderfinal
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.7
+  shared_preferences: ^2.2.2
+  smooth_page_indicator: ^1.1.0
+  image_picker: ^1.0.4
+  lottie: ^3.1.2
+  http: ^1.1.0
+  jwt_decoder: ^2.0.1
+  flutter_secure_storage: ^9.0.0
+
+  cupertino_icons: ^1.0.8
+  flutter_plugin_android_lifecycle: ^2.0.28
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/fonts/Nunito/
+    - assets/fonts/Inter/
+    - assets/fonts/Urbanist/
+    - assets/fonts/Poppins/
+    - assets/icons/All/twotone/
+    - assets/icons/All/outline/
+    - assets/icons/All/broken/
+    - assets/icons/All/linear/
+    - assets/icons/All/bold/
+    - assets/onboarding/
+    - assets/avatars/
+    - assets/logo/logo.png
+    - assets/animations/
+
+
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito/Nunito-VariableFont_wght.ttf
+        - asset: assets/fonts/Nunito/Nunito-Italic-VariableFont_wght.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter/Inter-VariableFont_opsz,wght.ttf
+        - asset: assets/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf
+    - family: Urbanist
+      fonts:
+        - asset: assets/fonts/Urbanist/Urbanist-VariableFont_wght.ttf
+        - asset: assets/fonts/Urbanist/Urbanist-Italic-VariableFont_wght.ttf
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins/Poppins-Bold.ttf
+        - asset: assets/fonts/Poppins/Poppins-Italic.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraBold.ttf
+        - asset: assets/fonts/Poppins/Poppins-Thin.ttf
+        - asset: assets/fonts/Poppins/Poppins-LightItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraLight.ttf
+        - asset: assets/fonts/Poppins/Poppins-SemiBold.ttf
+        - asset: assets/fonts/Poppins/Poppins-Medium.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraLightItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-ThinItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Light.ttf
+        - asset: assets/fonts/Poppins/Poppins-SemiBoldItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-MediumItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-BlackItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Black.ttf
+        - asset: assets/fonts/Poppins/Poppins-BoldItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraBoldItalic.ttf
