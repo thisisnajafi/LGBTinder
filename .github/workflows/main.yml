@@ -31,12 +31,10 @@ jobs:
           👤 <b>Updated by:</b> ${GITHUB_ACTOR}
 
           💬 <b>Commit Message:</b>
+          
           <blockquote>${FORMATTED_COMMIT_MESSAGE}</blockquote>
 
-          ✅ <b>Changes Ready for Review!</b>
-
-          📊 <b>Current Progress:</b> ~45% Complete
-          📋 <b>Next Steps:</b> Backend integration & missing screens"
+        
 
           # Send to Telegram
           curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
