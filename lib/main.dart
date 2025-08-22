@@ -22,6 +22,12 @@ class LGBTinderApp extends StatelessWidget {
         primaryColor: AppColors.primaryLight,
         scaffoldBackgroundColor: AppColors.appBackground,
         bottomAppBarTheme: BottomAppBarThemeData(color: AppColors.appBackground),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          },
+        ),
       ),
       initialRoute: '/',
       routes: {
@@ -40,11 +46,51 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
+  late PageController _pageController;
+  late AnimationController _transitionController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _transitionController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _transitionController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _transitionController.dispose();
+    super.dispose();
+  }
 
   void _onNavTap(int index) {
-    setState(() => _currentIndex = index);
+    if (index != _currentIndex) {
+      setState(() => _currentIndex = index);
+      
+      // Animate page transition
+      _transitionController.forward(from: 0);
+      
+      // Navigate to page with animation
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -52,15 +98,24 @@ class _MainScreenState extends State<MainScreen> {
     final pages = [
       const HomePage(),
       const SearchPage(),
-      const Center(child: Text('Discover', style: TextStyle(color: Colors.white))),
-      const Center(child: Text('Chat', style: TextStyle(color: Colors.white))),
-      const Center(child: Text('Profile', style: TextStyle(color: Colors.white))),
+      _buildDiscoverPage(),
+      _buildMessagesPage(),
+      _buildProfilePage(),
     ];
+
     return Scaffold(
       body: Stack(
         children: [
-          // Page content - no bottom padding needed for floating navbar
-          pages[_currentIndex],
+          // Page content with fade transitions only
+          PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(), // Disable swipe navigation
+            onPageChanged: (index) {
+              setState(() => _currentIndex = index);
+            },
+            children: pages.map((page) => _buildPageWithTransition(page)).toList(),
+          ),
+          
           // Floating navbar positioned at bottom
           Positioned(
             bottom: 0,
@@ -72,6 +127,216 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPageWithTransition(Widget page) {
+    return AnimatedBuilder(
+      animation: _transitionController,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: page,
+        );
+      },
+    );
+  }
+
+  Widget _buildDiscoverPage() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.appBackground,
+            Color(0xFF0A0A0F),
+            Color(0xFF050508),
+            AppColors.appBackground,
+          ],
+          stops: [0.0, 0.3, 0.7, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryLight.withOpacity(0.2),
+                      AppColors.secondaryLight.withOpacity(0.2),
+                    ],
+                  ),
+                ),
+                child: Icon(
+                  Icons.explore,
+                  size: 60,
+                  color: AppColors.primaryLight,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Discover',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Find new connections and explore the community',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white.withOpacity(0.7),
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessagesPage() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.appBackground,
+            Color(0xFF0A0A0F),
+            Color(0xFF050508),
+            AppColors.appBackground,
+          ],
+          stops: [0.0, 0.3, 0.7, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryLight.withOpacity(0.2),
+                      AppColors.secondaryLight.withOpacity(0.2),
+                    ],
+                  ),
+                ),
+                child: Icon(
+                  Icons.chat_bubble_outline,
+                  size: 60,
+                  color: AppColors.primaryLight,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Messages',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Chat with your matches and start conversations',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white.withOpacity(0.7),
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfilePage() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.appBackground,
+            Color(0xFF0A0A0F),
+            Color(0xFF050508),
+            AppColors.appBackground,
+          ],
+          stops: [0.0, 0.3, 0.7, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryLight.withOpacity(0.2),
+                      AppColors.secondaryLight.withOpacity(0.2),
+                    ],
+                  ),
+                ),
+                child: Icon(
+                  Icons.person_outline,
+                  size: 60,
+                  color: AppColors.primaryLight,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Profile',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Manage your profile and preferences',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white.withOpacity(0.7),
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

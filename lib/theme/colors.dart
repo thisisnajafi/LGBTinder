@@ -43,6 +43,10 @@ class AppColors {
   static const Color appBackground = Color(0xFF080912); // Main app background
   static const Color navbarBackground = Color(0xFF131725); // Navbar background
 
+  // Theme Background Colors
+  static const Color backgroundLight = Color(0xFFF8F9FA); // Light background
+  static const Color backgroundDark = Color(0xFF121212); // Dark background
+
   // Card Background Colors
   static const Color cardBackgroundLight = Color(0xFFF8FAFC); // Slate-50
   static const Color cardBackgroundDark = Color(0xFF1E293B); // Slate-800
