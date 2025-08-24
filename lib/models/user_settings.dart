@@ -5,6 +5,8 @@ class UserSettings {
   final String profileVisibility; // 'public', 'matches_only', 'friends_only'
   final bool showOnlineStatus;
   final bool showLastSeen;
+  final bool showAge; // Show age in profile
+  final bool showDistance; // Show distance in profile
   final bool newMatchesNotification;
   final bool newMessagesNotification;
   final bool likesNotification;

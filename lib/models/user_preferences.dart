@@ -95,4 +95,17 @@ class UserPreferences {
 
   @override
   int get hashCode => id.hashCode;
+  
+  // Static method to create empty preferences
+  static UserPreferences empty() {
+    return UserPreferences(
+      id: 0,
+      userId: 0,
+      minAge: 18,
+      maxAge: 80,
+      maxDistance: 50.0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
 }

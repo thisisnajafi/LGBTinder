@@ -57,6 +57,21 @@ class AppColors {
   static const Color textPrimaryDark = Color(0xFFF9FAFB); // Gray-100
   static const Color textSecondaryLight = Color(0xFF6B7280); // Gray-500
   static const Color textSecondaryDark = Color(0xFF9CA3AF); // Gray-400
+  
+  // Additional Text Colors
+  static const Color textPrimary = Color(0xFF111827); // Gray-900
+  static const Color textSecondary = Color(0xFF6B7280); // Gray-500
+  
+  // Additional Background Colors
+  static const Color background = Color(0xFFF8F9FA); // Light background
+  
+  // Additional Status Colors
+  static const Color success = Color(0xFF10B981); // Emerald-500
+  static const Color error = Color(0xFFEF4444); // Red-500
+  
+  // Additional UI Colors
+  static const Color greyLight = Color(0xFFF3F4F6); // Gray-100
+  static const Color greyMedium = Color(0xFFD1D5DB); // Gray-300
 
   // Border Colors
   static const Color borderLight = Color(0xFFE5E7EB); // Gray-200

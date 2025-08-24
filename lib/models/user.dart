@@ -12,14 +12,22 @@ class User {
   final String? city;
   final DateTime? birthDate;
   final String? profileBio;
+  final String? bio; // Alias for profileBio
   final String? avatarUrl;
+  final String? name; // Alias for fullName
+  final String? job; // Current job title
+  final String? company; // Current company
+  final String? school; // Current school
+  final String? location; // Current location
   final List<Job> jobs;
   final List<Education> educations;
   final List<MusicGenre> musicGenres;
   final List<Language> languages;
   final List<Interest> interests;
   final List<RelationGoal> relationGoals;
+  final RelationshipGoal? relationshipGoal; // Current relationship goal
   final List<PreferredGender> preferredGenders;
+  final List<Gender>? interestedIn; // Alias for preferredGenders
   final String? gender;
   final double? weight;
   final double? height;
@@ -29,11 +37,14 @@ class User {
   final int? drink; // 0: No, 1: Yes, 2: Sometimes
   final List<UserImage> profileImages;
   final List<UserImage> galleryImages;
+  final List<UserImage>? images; // Combined images
   final UserImage? primaryProfileImage;
   final bool isOnline;
   final bool isVerified;
   final bool isPremium;
   final DateTime? lastSeen;
+  final UserPreferences? preferences; // User preferences
+  final UserSettings? settings; // User settings
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -48,14 +59,22 @@ class User {
     this.city,
     this.birthDate,
     this.profileBio,
+    this.bio,
     this.avatarUrl,
+    this.name,
+    this.job,
+    this.company,
+    this.school,
+    this.location,
     this.jobs = const [],
     this.educations = const [],
     this.musicGenres = const [],
     this.languages = const [],
     this.interests = const [],
     this.relationGoals = const [],
+    this.relationshipGoal,
     this.preferredGenders = const [],
+    this.interestedIn,
     this.gender,
     this.weight,
     this.height,
@@ -65,11 +84,14 @@ class User {
     this.drink,
     this.profileImages = const [],
     this.galleryImages = const [],
+    this.images,
     this.primaryProfileImage,
     this.isOnline = false,
     this.isVerified = false,
     this.isPremium = false,
     this.lastSeen,
+    this.preferences,
+    this.settings,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -317,4 +339,17 @@ class User {
 
   @override
   int get hashCode => id.hashCode;
+  
+  // Static method to create an empty user
+  static User empty() {
+    return User(
+      id: 0,
+      firstName: '',
+      lastName: '',
+      fullName: '',
+      email: '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
 }

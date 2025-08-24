@@ -127,4 +127,40 @@ class AppTypography {
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
   );
+  
+  // Additional Typography Styles
+  static const TextStyle h6 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 20.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.15,
+  );
+  
+  static const TextStyle subtitle2 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 14.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.1,
+  );
+  
+  static const TextStyle body2 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 14.0,
+    fontWeight: FontWeight.normal,
+    letterSpacing: 0.25,
+  );
+  
+  static const TextStyle caption = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 12.0,
+    fontWeight: FontWeight.normal,
+    letterSpacing: 0.4,
+  );
+  
+  static const TextStyle button = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 14.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.1,
+  );
 } 

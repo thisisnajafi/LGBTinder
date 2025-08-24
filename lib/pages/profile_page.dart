@@ -8,6 +8,7 @@ import '../components/profile/safety_verification_section.dart';
 import '../components/profile/profile_action_buttons.dart';
 import '../providers/profile_provider.dart';
 import '../models/models.dart';
+import 'profile_edit_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -208,7 +209,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               IconButton(
                 icon: const Icon(Icons.edit, color: Colors.white),
-                onPressed: () => setState(() => _isEditMode = true),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+                ),
               ),
             ] else ...[
               TextButton(
@@ -240,7 +244,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Profile Header
                 ProfileHeader(
                   user: user,
-                  onEditPressed: _isEditMode ? null : () => setState(() => _isEditMode = true),
+                  onEditPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+                  ),
                 ),
                 const SizedBox(height: 24),
 

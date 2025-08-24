@@ -9,6 +9,9 @@ abstract class ReferenceItem {
     required this.title,
     this.img,
   });
+  
+  // Alias for title to match the expected interface
+  String get name => title;
 
   factory ReferenceItem.fromJson(Map<String, dynamic> json) {
     throw UnimplementedError('Subclasses must implement fromJson');
@@ -27,6 +30,37 @@ abstract class ReferenceItem {
 
   @override
   int get hashCode => id.hashCode;
+}
+
+// Relationship Goal model (alias for RelationGoal)
+class RelationshipGoal extends ReferenceItem {
+  final String? subtitle;
+
+  RelationshipGoal({
+    required super.id,
+    required super.title,
+    super.img,
+    this.subtitle,
+  });
+
+  factory RelationshipGoal.fromJson(Map<String, dynamic> json) {
+    return RelationshipGoal(
+      id: json['id'],
+      title: json['title'] ?? '',
+      img: json['img'],
+      subtitle: json['subtitle'],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'img': img,
+      'subtitle': subtitle,
+    };
+  }
 }
 
 // Job/Profession model
