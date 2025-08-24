@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'components/navbar/bottom_navbar.dart';
 import 'theme/colors.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
+import 'pages/profile_page.dart';
 import 'pages/splash_page.dart';
 import 'pages/onboarding_page.dart';
+import 'providers/profile_provider.dart';
 
 void main() {
   runApp(const LGBTinderApp());
@@ -15,26 +18,31 @@ class LGBTinderApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
-      theme: ThemeData.dark().copyWith(
-        primaryColor: AppColors.primaryLight,
-        scaffoldBackgroundColor: AppColors.appBackground,
-        bottomAppBarTheme: BottomAppBarThemeData(color: AppColors.appBackground),
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: {
-            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        themeMode: ThemeMode.dark,
+        theme: ThemeData.dark().copyWith(
+          primaryColor: AppColors.primaryLight,
+          scaffoldBackgroundColor: AppColors.appBackground,
+          bottomAppBarTheme: BottomAppBarThemeData(color: AppColors.appBackground),
+          pageTransitionsTheme: const PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+              TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            },
+          ),
         ),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const SplashPage(),
+          '/onboarding': (context) => const OnboardingPage(),
+          '/main': (context) => const MainScreen(),
+        },
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashPage(),
-        '/onboarding': (context) => const OnboardingPage(),
-        '/main': (context) => const MainScreen(),
-      },
     );
   }
 }
@@ -279,69 +287,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildProfilePage() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.appBackground,
-            Color(0xFF0A0A0F),
-            Color(0xFF050508),
-            AppColors.appBackground,
-          ],
-          stops: [0.0, 0.3, 0.7, 1.0],
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryLight.withOpacity(0.2),
-                      AppColors.secondaryLight.withOpacity(0.2),
-                    ],
-                  ),
-                ),
-                child: Icon(
-                  Icons.person_outline,
-                  size: 60,
-                  color: AppColors.primaryLight,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Profile',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Manage your profile and preferences',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.7),
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return const ProfilePage();
   }
 }
 

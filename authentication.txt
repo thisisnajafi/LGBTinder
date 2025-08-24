@@ -1,0 +1,654 @@
+# LGBTinder Mobile App Authentication & Registration Flow Specification
+
+## **Overview**
+
+This specification covers the complete authentication flow for the LGBTinder mobile app, including registration, login, email verification, phone verification, and post-registration profile completion.
+
+---
+
+## **Authentication Flow Architecture**
+
+### **1. Initial App Launch**
+```
+- Check for existing authentication token
+- If token exists: Validate token with server
+- If valid: Navigate to main app
+- If invalid/expired: Navigate to login screen
+- If no token: Show welcome screen with login/register options
+```
+
+### **2. Authentication States**
+```
+- Unauthenticated: User not logged in
+- Authenticated: User logged in with valid token
+- Profile Incomplete: User logged in but profile not fully completed
+- Profile Complete: User logged in with complete profile
+- Verification Pending: User logged in but verification in progress
+```
+
+---
+
+## **Welcome Screen**
+
+### **Page Structure:**
+```
+- App Logo (Large, centered)
+- App Tagline: "Connect with the LGBTQ+ community"
+- Welcome Message: "Welcome to LGBTinder"
+- Two Main Buttons:
+  * "Login" (Primary button)
+  * "Create Account" (Secondary button)
+- Footer Links:
+  * "Terms of Service"
+  * "Privacy Policy"
+  * "Help & Support"
+```
+
+### **Design Elements:**
+```
+- Background: LGBTQ+ rainbow gradient or app theme
+- Buttons: Rounded corners, proper contrast
+- Typography: Clean, modern fonts
+- Animations: Subtle entrance animations
+- Accessibility: Screen reader support, keyboard navigation
+```
+
+---
+
+## **Login Flow**
+
+### **1. Login Screen**
+```
+Input Fields:
+- Email Address (text input, required)
+- Password (password input, required)
+- "Remember Me" checkbox (optional)
+- "Forgot Password?" link
+
+Buttons:
+- "Login" button (primary)
+- "Login with Phone" button (secondary)
+- "Back to Welcome" button
+
+Additional Elements:
+- Social login options (if implemented)
+- "Don't have an account? Sign up" link
+```
+
+### **2. Email Login Process**
+```
+Step 1: User enters email and password
+Step 2: Validate input fields
+Step 3: Show loading state
+Step 4: Send login request to API
+Step 5: Handle response:
+  - Success: Navigate to main app or profile completion
+  - Invalid credentials: Show error message
+  - Account not verified: Navigate to verification screen
+  - Account banned: Show ban message
+```
+
+### **3. Phone Login Process**
+```
+Step 1: User enters phone number
+Step 2: Validate phone number format
+Step 3: Send OTP to phone number
+Step 4: User enters OTP code
+Step 5: Verify OTP with server
+Step 6: Success: Navigate to main app or profile completion
+```
+
+### **4. API Endpoints for Login:**
+```
+- POST /api/auth/login (email login)
+- POST /api/auth/send-otp (send phone verification code)
+- POST /api/auth/verify-otp (verify phone code)
+- POST /api/auth/verify-login-code (verify email code)
+```
+
+---
+
+## **Registration Flow**
+
+### **1. Registration Screen**
+```
+Input Fields:
+- First Name (text input, required, 2-50 characters)
+- Last Name (text input, required, 2-50 characters)
+- Email Address (email input, required, unique)
+- Password (password input, required, min 8 characters)
+- Confirm Password (password input, required, must match)
+- Phone Number (phone input, required, unique)
+- Birth Date (date picker, required, 18+ validation)
+- Gender Identity (single selection from API)
+- Looking for (Preferred Genders - multiple selection from API)
+- Terms & Conditions checkbox (required)
+- Privacy Policy checkbox (required)
+
+Buttons:
+- "Create Account" button (primary)
+- "Back to Welcome" button
+
+Additional Elements:
+- Password strength indicator
+- Age verification notice
+- "Already have an account? Login" link
+```
+
+### **2. Registration Validation Rules:**
+```
+Required Fields:
+- First Name: 2-50 characters, letters only
+- Last Name: 2-50 characters, letters only
+- Email: Valid email format, unique in system
+- Password: Minimum 8 characters, at least one uppercase, one lowercase, one number
+- Confirm Password: Must match password
+- Phone Number: Valid international format
+- Birth Date: Must be 18+ years old
+- Gender Identity: Must select one option
+- Looking for: Must select at least one option
+- Terms & Conditions: Must be accepted
+- Privacy Policy: Must be accepted
+
+Validation Messages:
+- "First name must be between 2-50 characters"
+- "Please enter a valid email address"
+- "Email is already registered"
+- "Password must be at least 8 characters with uppercase, lowercase, and number"
+- "Passwords do not match"
+- "Please enter a valid phone number"
+- "You must be at least 18 years old to register"
+- "Please select your gender identity"
+- "Please select at least one gender you're interested in"
+- "You must accept the terms and conditions"
+- "You must accept the privacy policy"
+```
+
+### **3. Registration Process:**
+```
+Step 1: User fills registration form
+Step 2: Real-time validation of all fields
+Step 3: Show loading state on submit
+Step 4: Send registration request to API
+Step 5: Handle response:
+  - Success: Navigate to email verification
+  - Validation errors: Show specific error messages
+  - Email/phone already exists: Show appropriate message
+  - Server error: Show generic error with retry option
+```
+
+### **4. API Endpoints for Registration:**
+```
+- POST /api/auth/register (create new account)
+- POST /api/auth/send-verification (send email verification)
+- POST /api/auth/verify-registration-code (verify email code)
+- POST /api/auth/resend-verification (resend verification email)
+```
+
+---
+
+## **Email Verification Flow**
+
+### **1. Email Verification Screen**
+```
+Content:
+- Email icon or illustration
+- Title: "Verify Your Email"
+- Message: "We've sent a verification code to [email]"
+- Input field for verification code (6-digit)
+- "Resend Code" button (with countdown timer)
+- "Change Email" link
+- "Back to Login" link
+
+Buttons:
+- "Verify Email" button (primary)
+- "Skip for now" button (secondary, if allowed)
+```
+
+### **2. Verification Process:**
+```
+Step 1: User receives email with verification code
+Step 2: User enters 6-digit code
+Step 3: Validate code format
+Step 4: Send verification request to API
+Step 5: Handle response:
+  - Success: Navigate to phone verification or profile completion
+  - Invalid code: Show error message
+  - Expired code: Show "resend" option
+  - Too many attempts: Show cooldown message
+```
+
+### **3. Resend Verification:**
+```
+- Countdown timer (60 seconds)
+- "Resend Code" button (enabled after countdown)
+- Success message when code sent
+- Error handling for failed resend
+```
+
+---
+
+## **Phone Verification Flow**
+
+### **1. Phone Verification Screen**
+```
+Content:
+- Phone icon or illustration
+- Title: "Verify Your Phone"
+- Message: "We've sent a verification code to [phone]"
+- Input field for verification code (6-digit)
+- "Resend Code" button (with countdown timer)
+- "Change Phone" link
+- "Skip for now" button (if allowed)
+
+Buttons:
+- "Verify Phone" button (primary)
+- "Skip for now" button (secondary, if allowed)
+```
+
+### **2. Phone Verification Process:**
+```
+Step 1: User receives SMS with verification code
+Step 2: User enters 6-digit code
+Step 3: Validate code format
+Step 4: Send verification request to API
+Step 5: Handle response:
+  - Success: Navigate to profile completion
+  - Invalid code: Show error message
+  - Expired code: Show "resend" option
+  - Too many attempts: Show cooldown message
+```
+
+---
+
+## **Post-Registration Profile Completion**
+
+### **1. Profile Completion Welcome Screen**
+```
+Content:
+- Welcome message: "Welcome to LGBTinder, [Name]!"
+- Progress indicator: "Step X of Y"
+- Brief explanation of profile completion process
+- "Let's get started!" button
+
+Design:
+- Celebratory design with confetti animation
+- Progress bar showing completion steps
+- Motivational messaging
+```
+
+### **2. Profile Completion Steps (Wizard Flow)**
+
+#### **Step 1: Basic Information**
+```
+Input Fields:
+- Profile Photo (upload, required)
+- Profile Bio (text area, 0-500 characters, optional)
+- City (text input with autocomplete)
+- Country (dropdown/autocomplete)
+
+Validation:
+- Profile photo required
+- Bio max 500 characters
+- City and country required
+
+Navigation:
+- "Skip" button (if optional fields)
+- "Next" button (when required fields complete)
+```
+
+#### **Step 2: Identity & Preferences**
+```
+Input Fields:
+- Gender Identity (single selection from API)
+- Sexual Orientation (single selection from API)
+- Relationship Goals (multiple selection from API)
+- Looking for (Preferred Genders - multiple selection from API)
+
+Validation:
+- All fields required
+- At least one relationship goal
+- At least one preferred gender
+
+Navigation:
+- "Back" button
+- "Next" button (when all required fields complete)
+```
+
+#### **Step 3: Physical & Lifestyle**
+```
+Input Fields:
+- Height (number input with unit selection)
+- Weight (number input with unit selection)
+- Smoking (radio buttons: Yes/No/Sometimes)
+- Gym (radio buttons: Yes/No/Sometimes)
+- Drinking (radio buttons: Yes/No/Sometimes)
+
+Validation:
+- Height and weight optional
+- Lifestyle preferences required
+
+Navigation:
+- "Back" button
+- "Next" button
+```
+
+#### **Step 4: Background Information**
+```
+Input Fields:
+- Education (multiple selection from API)
+- Job/Profession (multiple selection from API)
+- Languages Spoken (multiple selection from API)
+- Music Genres (multiple selection from API)
+- Interests/Hobbies (multiple selection from API)
+
+Validation:
+- All fields optional but recommended
+- Show completion percentage
+
+Navigation:
+- "Back" button
+- "Skip" button (if all optional)
+- "Next" button
+```
+
+#### **Step 5: Matching Preferences**
+```
+Input Fields:
+- Age Range (dual slider: 18-80)
+- Distance Range (slider: 1-100 km/miles)
+- Show My Age (toggle switch)
+- Show My Distance (toggle switch)
+
+Validation:
+- Age range must be valid (min <= max)
+- Distance range required
+
+Navigation:
+- "Back" button
+- "Complete Profile" button
+```
+
+### **3. Profile Completion API Endpoints:**
+```
+- GET /api/profile-wizard/current-step (get current step)
+- GET /api/profile-wizard/step-options/{step} (get options for step)
+- POST /api/profile-wizard/save-step/{step} (save step data)
+- POST /api/complete-registration (complete profile)
+- GET /api/profile/completion (get completion status)
+```
+
+---
+
+## **Password Reset Flow**
+
+### **1. Forgot Password Screen**
+```
+Input Fields:
+- Email Address (email input, required)
+- "Send Reset Link" button
+- "Back to Login" link
+
+Validation:
+- Valid email format required
+- Email must exist in system
+```
+
+### **2. Password Reset Process:**
+```
+Step 1: User enters email
+Step 2: Validate email format and existence
+Step 3: Send password reset email
+Step 4: Show success message
+Step 5: User clicks link in email
+Step 6: Navigate to reset password screen
+```
+
+### **3. Reset Password Screen:**
+```
+Input Fields:
+- New Password (password input, required)
+- Confirm New Password (password input, required)
+- "Reset Password" button
+
+Validation:
+- Password strength requirements
+- Passwords must match
+- Token validation
+```
+
+### **4. API Endpoints for Password Reset:**
+```
+- POST /api/auth/send-otp (send reset code)
+- POST /api/auth/verify-otp (verify reset code)
+- POST /api/auth/reset-password (reset password)
+```
+
+---
+
+## **Security Features**
+
+### **1. Token Management:**
+```
+- JWT tokens for authentication
+- Refresh token mechanism
+- Token expiration handling
+- Secure token storage (encrypted)
+- Automatic token refresh
+```
+
+### **2. Input Validation:**
+```
+- Client-side validation for immediate feedback
+- Server-side validation for security
+- Input sanitization
+- SQL injection prevention
+- XSS protection
+```
+
+### **3. Rate Limiting:**
+```
+- Login attempts: 5 per 15 minutes
+- Registration: 3 per hour
+- OTP requests: 3 per 15 minutes
+- Password reset: 3 per hour
+```
+
+### **4. Privacy & Data Protection:**
+```
+- GDPR compliance
+- Data encryption at rest and in transit
+- Secure password hashing (bcrypt)
+- Privacy policy compliance
+- Data retention policies
+```
+
+---
+
+## **Error Handling**
+
+### **1. Network Errors:**
+```
+- Connection timeout handling
+- Offline mode support
+- Retry mechanisms
+- User-friendly error messages
+```
+
+### **2. Validation Errors:**
+```
+- Field-specific error messages
+- Real-time validation feedback
+- Clear error indicators
+- Helpful suggestions for fixes
+```
+
+### **3. Server Errors:**
+```
+- Generic error messages for security
+- Retry options where appropriate
+- Fallback UI for critical failures
+- Error logging and monitoring
+```
+
+---
+
+## **UI/UX Guidelines**
+
+### **1. Loading States:**
+```
+- Skeleton loaders for content
+- Progress indicators for multi-step processes
+- Loading spinners for API calls
+- Disabled buttons during processing
+```
+
+### **2. Success States:**
+```
+- Success animations
+- Clear success messages
+- Automatic navigation after success
+- Celebration animations for completion
+```
+
+### **3. Error States:**
+```
+- Clear error messages
+- Error icons and colors
+- Retry options
+- Help links for common issues
+```
+
+### **4. Accessibility:**
+```
+- Screen reader support
+- Keyboard navigation
+- High contrast mode
+- Large text support
+- Voice input support
+```
+
+---
+
+## **API Response Formats**
+
+### **Login Response:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "id": 1,
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john@example.com",
+      "phone_number": "+1234567890",
+      "profile_completed": false,
+      "email_verified": true,
+      "phone_verified": false
+    },
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "refresh_token": "refresh_token_here",
+    "expires_in": 3600
+  }
+}
+```
+
+### **Registration Response:**
+```json
+{
+  "success": true,
+  "message": "Account created successfully",
+  "data": {
+    "user": {
+      "id": 1,
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john@example.com",
+      "phone_number": "+1234567890",
+      "profile_completed": false,
+      "email_verified": false,
+      "phone_verified": false
+    },
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "refresh_token": "refresh_token_here",
+    "expires_in": 3600,
+    "next_step": "email_verification"
+  }
+}
+```
+
+### **Verification Response:**
+```json
+{
+  "success": true,
+  "message": "Email verified successfully",
+  "data": {
+    "user": {
+      "id": 1,
+      "email_verified": true,
+      "phone_verified": false
+    },
+    "next_step": "phone_verification"
+  }
+}
+```
+
+### **Profile Completion Response:**
+```json
+{
+  "success": true,
+  "message": "Profile completed successfully",
+  "data": {
+    "user": {
+      "id": 1,
+      "profile_completed": true,
+      "completion_percentage": 100
+    },
+    "next_step": "main_app"
+  }
+}
+```
+
+---
+
+## **Implementation Instructions for Agent IDE**
+
+### **1. Authentication State Management:**
+- Use secure token storage (encrypted)
+- Implement automatic token refresh
+- Handle token expiration gracefully
+- Manage authentication state globally
+
+### **2. Form Management:**
+- Use form validation libraries
+- Implement real-time validation
+- Save form progress locally
+- Handle form submission errors
+
+### **3. Navigation Flow:**
+- Implement proper navigation guards
+- Handle deep linking
+- Manage back button behavior
+- Prevent unauthorized access
+
+### **4. Error Handling:**
+- Implement comprehensive error handling
+- Show user-friendly error messages
+- Provide retry mechanisms
+- Log errors for debugging
+
+### **5. Security Implementation:**
+- Implement proper input validation
+- Use HTTPS for all API calls
+- Secure token storage
+- Implement rate limiting
+
+### **6. Testing Strategy:**
+- Unit tests for validation logic
+- Integration tests for API calls
+- E2E tests for complete flows
+- Security testing for vulnerabilities
+
+This comprehensive authentication system ensures secure, user-friendly registration and login processes while maintaining data protection and privacy standards for the LGBTQ+ community.

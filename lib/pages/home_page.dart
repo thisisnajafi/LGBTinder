@@ -4,6 +4,12 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/colors.dart';
 import '../components/navbar/lgbtinder_logo.dart';
+import '../components/profile/profile_header.dart';
+import '../components/profile/profile_info_sections.dart';
+import '../components/profile/photo_gallery.dart';
+import '../components/profile/safety_verification_section.dart';
+import '../components/profile/profile_action_buttons.dart';
+import '../models/models.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -1899,157 +1905,99 @@ class _ProfileDetailSheetState extends State<_ProfileDetailSheet> with TickerPro
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                                     // Name and age
-                   Row(
-                     children: [
-                       Expanded(
-                         child: Text(
-                           widget.profile['name'] ?? 'Unknown',
-                           style: theme.textTheme.headlineMedium?.copyWith(
-                             fontWeight: FontWeight.bold,
-                             color: Colors.white,
-                           ),
-                         ),
-                       ),
-                       Container(
-                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                         decoration: BoxDecoration(
-                           color: AppColors.primaryLight.withValues(alpha: 0.2),
-                           borderRadius: BorderRadius.circular(20),
-                         ),
-                         child: Text(
-                           '${widget.profile['age'] ?? 25}',
-                           style: theme.textTheme.bodyLarge?.copyWith(
-                             fontWeight: FontWeight.w600,
-                             color: AppColors.primaryLight,
-                           ),
-                         ),
-                       ),
-                     ],
-                   ),
-                  
-                  const SizedBox(height: 8),
-                  
-                                     // Profession
-                   Text(
-                     widget.profile['profession'] ?? 'Professional',
-                     style: theme.textTheme.bodyLarge?.copyWith(
-                       color: Colors.white.withValues(alpha: 0.8),
-                       fontWeight: FontWeight.w500,
-                     ),
-                   ),
-                  
-                  const SizedBox(height: 16),
-                  
-                                     // Location
-                   Row(
-                     children: [
-                       Icon(
-                         Icons.location_on,
-                         size: 20,
-                         color: Colors.white.withValues(alpha: 0.7),
-                       ),
-                       const SizedBox(width: 8),
-                       Text(
-                         widget.profile['location'] ?? 'Chicago, IL',
-                         style: theme.textTheme.bodyMedium?.copyWith(
-                           color: Colors.white.withValues(alpha: 0.7),
-                         ),
-                       ),
-                       const SizedBox(width: 16),
-                       Icon(
-                         Icons.straighten,
-                         size: 20,
-                         color: Colors.white.withValues(alpha: 0.7),
-                       ),
-                       const SizedBox(width: 8),
-                       Text(
-                         widget.profile['distance'] ?? '1 km',
-                         style: theme.textTheme.bodyMedium?.copyWith(
-                           color: Colors.white.withValues(alpha: 0.7),
-                         ),
-                       ),
-                     ],
-                   ),
-                  
+                  // Create a mock User object for the ProfileHeader
+                  ProfileHeader(
+                    user: User(
+                      id: 1,
+                      firstName: widget.profile['name']?.split(' ').first ?? 'Unknown',
+                      lastName: widget.profile['name']?.split(' ').last ?? '',
+                      fullName: widget.profile['name'] ?? 'Unknown',
+                      email: '',
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
+                      avatarUrl: images.isNotEmpty ? images[_currentImageIndex % images.length] : null,
+                      city: widget.profile['location'] ?? 'Chicago, IL',
+                      profileBio: widget.profile['bio'] ?? 'No bio available.',
+                      isVerified: true,
+                      isOnline: true,
+                    ),
+                    onEditPressed: null, // No edit for other users' profiles
+                  ),
                   const SizedBox(height: 24),
-                  
-                                     // Bio
-                   Text(
-                     'About',
-                     style: theme.textTheme.titleLarge?.copyWith(
-                       fontWeight: FontWeight.bold,
-                       color: Colors.white,
-                     ),
-                   ),
-                   
-                   const SizedBox(height: 8),
-                   
-                   Text(
-                     widget.profile['bio'] ?? 'No bio available.',
-                     style: theme.textTheme.bodyMedium?.copyWith(
-                       color: Colors.white.withValues(alpha: 0.8),
-                       height: 1.5,
-                     ),
-                   ),
-                  
+
+                  // Profile Information Sections
+                  ProfileInfoSections(
+                    user: User(
+                      id: 1,
+                      firstName: widget.profile['name']?.split(' ').first ?? 'Unknown',
+                      lastName: widget.profile['name']?.split(' ').last ?? '',
+                      fullName: widget.profile['name'] ?? 'Unknown',
+                      email: '',
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
+                      profileBio: widget.profile['bio'] ?? 'No bio available.',
+                      gender: 'Not specified',
+                      sexualOrientation: 'Not specified',
+                    ),
+                  ),
                   const SizedBox(height: 24),
-                  
-                                     // Tags
-                   if (widget.profile['tags'] != null)
-                     Column(
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
-                         Text(
-                           'Interests',
-                           style: theme.textTheme.titleLarge?.copyWith(
-                             fontWeight: FontWeight.bold,
-                             color: Colors.white,
-                           ),
-                         ),
-                         
-                         const SizedBox(height: 12),
-                         
-                         Wrap(
-                           spacing: 8,
-                           runSpacing: 8,
-                           children: (widget.profile['tags'] as List).asMap().entries.map<Widget>((entry) {
-                             final index = entry.key;
-                             final tag = entry.value;
-                             
-                             // Make the first tag (index 0) a pink gradient to show it's a match
-                             final isMatch = index == 0;
-                             
-                             return Container(
-                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                               decoration: BoxDecoration(
-                                 gradient: isMatch 
-                                   ? const LinearGradient(
-                                       colors: [Color(0xFFE91E63), Color(0xFFFF4081)],
-                                       begin: Alignment.topLeft,
-                                       end: Alignment.bottomRight,
-                                     )
-                                   : null,
-                                 color: isMatch ? null : AppColors.primaryLight.withValues(alpha: 0.2),
-                                 borderRadius: BorderRadius.circular(20),
-                                 border: Border.all(
-                                   color: isMatch 
-                                     ? Colors.transparent
-                                     : AppColors.primaryLight.withValues(alpha: 0.3),
-                                 ),
-                               ),
-                               child: Text(
-                                 tag.toString(),
-                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                   color: isMatch ? Colors.white : AppColors.primaryLight,
-                                   fontWeight: FontWeight.w600,
-                                 ),
-                               ),
-                             );
-                           }).toList(),
-                         ),
-                       ],
-                     ),
+
+                  // Photo Gallery
+                  if (images.isNotEmpty)
+                    PhotoGallery(
+                      images: images.map((image) => UserImage(
+                        id: 1,
+                        url: image.toString(),
+                        type: 'gallery',
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                      )).toList(),
+                    ),
+                  const SizedBox(height: 24),
+
+                  // Safety & Verification Section
+                  SafetyVerificationSection(
+                    verification: UserVerification(
+                      id: 1,
+                      userId: 1,
+                      photoVerified: true,
+                      idVerified: false,
+                      videoVerified: false,
+                      verificationScore: 33,
+                      totalVerifications: 3,
+                      pendingVerifications: 2,
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
+                    ),
+                    onVerifyPressed: null, // No verification for other users
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Action Buttons
+                  ProfileActionButtons(
+                    onLike: widget.onSwipeRight,
+                    onSuperlike: widget.onSuperLike,
+                    onDislike: widget.onSwipeLeft,
+                    onReport: () {
+                      // TODO: Show report dialog
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Report feature coming soon!'),
+                          backgroundColor: AppColors.primary,
+                        ),
+                      );
+                    },
+                    onBlock: () {
+                      // TODO: Show block confirmation
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Block feature coming soon!'),
+                          backgroundColor: AppColors.primary,
+                        ),
+                      );
+                    },
+                    isOwnProfile: false,
+                  ),
                   
                   const SizedBox(height: 100), // Space for action buttons
                 ],
