@@ -1,179 +1,260 @@
 import 'package:flutter/material.dart';
+import '../../models/models.dart';
 import '../../theme/colors.dart';
-import '../../theme/typography.dart';
 
 class PhotoGallery extends StatelessWidget {
-  final List<String> photos;
-  final bool isEditable;
-  final Function(int) onPhotoTap;
-  final VoidCallback onAddPhoto;
-  final Function(int) onDeletePhoto;
+  final List<UserImage> images;
+  final VoidCallback? onImageTap;
+  final bool showPhotoCount;
 
   const PhotoGallery({
     Key? key,
-    required this.photos,
-    required this.onPhotoTap,
-    required this.onAddPhoto,
-    required this.onDeletePhoto,
-    this.isEditable = false,
+    required this.images,
+    this.onImageTap,
+    this.showPhotoCount = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (images.isEmpty) {
+      return _buildEmptyState();
+    }
+
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Section Header
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.photo_library,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
               Text(
                 'Photos',
-                style: AppTypography.titleMediumStyle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
-              if (isEditable)
-                TextButton.icon(
-                  onPressed: onAddPhoto,
-                  icon: Icon(
-                    Icons.add_photo_alternate,
-                    color: AppColors.primaryLight,
-                    size: 20,
-                  ),
-                  label: Text(
-                    'Add Photo',
-                    style: AppTypography.bodyMediumStyle.copyWith(
-                      color: AppColors.primaryLight,
-                    ),
+              const Spacer(),
+              if (showPhotoCount)
+                Text(
+                  '${images.length} photo${images.length != 1 ? 's' : ''}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+          // Photo Gallery
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: images.length,
+              itemBuilder: (context, index) {
+                return _buildPhotoItem(images[index], index);
+              },
             ),
-            itemCount: photos.length + (isEditable ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == photos.length) {
-                return _AddPhotoButton(onTap: onAddPhoto);
-              }
-              return _PhotoItem(
-                photoUrl: photos[index],
-                onTap: () => onPhotoTap(index),
-                onDelete: isEditable ? () => onDeletePhoto(index) : null,
-              );
-            },
           ),
         ],
       ),
     );
   }
-}
 
-class _PhotoItem extends StatelessWidget {
-  final String photoUrl;
-  final VoidCallback onTap;
-  final VoidCallback? onDelete;
-
-  const _PhotoItem({
-    required this.photoUrl,
-    required this.onTap,
-    this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+  Widget _buildPhotoItem(UserImage image, int index) {
+    return Container(
+      margin: EdgeInsets.only(right: index < images.length - 1 ? 12 : 0),
       child: Stack(
-        fit: StackFit.expand,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              photoUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: AppColors.cardBackgroundLight,
-                  child: Icon(
-                    Icons.image,
-                    color: AppColors.textSecondaryLight,
+          // Photo
+          GestureDetector(
+            onTap: () => onImageTap?.call(),
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: image.isPrimary ? AppColors.primary : Colors.grey[300]!,
+                  width: image.isPrimary ? 3 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                );
-              },
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(11),
+                child: image.url.isNotEmpty
+                    ? Image.network(
+                        image.url,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildPlaceholderImage();
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return _buildLoadingPlaceholder();
+                        },
+                      )
+                    : _buildPlaceholderImage(),
+              ),
             ),
           ),
-          if (onDelete != null)
+          // Primary Photo Badge
+          if (image.isPrimary)
             Positioned(
-              top: 4,
-              right: 4,
-              child: GestureDetector(
-                onTap: onDelete,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.close,
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Primary',
+                  style: TextStyle(
                     color: Colors.white,
-                    size: 16,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
+          // Photo Type Badge
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                image.type == 'profile' ? 'Profile' : 'Gallery',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-class _AddPhotoButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _AddPhotoButton({
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.cardBackgroundLight,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: AppColors.primaryLight.withOpacity(0.3),
-            width: 2,
-            style: BorderStyle.solid,
+  Widget _buildPlaceholderImage() {
+    return Container(
+      color: Colors.grey[200],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.photo,
+            size: 40,
+            color: Colors.grey[400],
           ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add_photo_alternate,
-              color: AppColors.primaryLight,
-              size: 32,
+          const SizedBox(height: 4),
+          Text(
+            'No Photo',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Add Photo',
-              style: AppTypography.bodySmallStyle.copyWith(
-                color: AppColors.primaryLight,
-              ),
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingPlaceholder() {
+    return Container(
+      color: Colors.grey[200],
+      child: const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.photo_library_outlined,
+            size: 48,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No Photos Yet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Add some photos to your profile',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
       ),
     );
   }

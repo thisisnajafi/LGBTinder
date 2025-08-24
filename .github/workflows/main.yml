@@ -20,25 +20,9 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          # Format commit message for Telegram
-          FORMATTED_COMMIT_MESSAGE=$(echo "${COMMIT_MESSAGE}" | sed 's/"/\\"/g' | sed 's/$/\\n/' | sed ':a;N;$!ba;s/\n/\\n/g')
-          
-          # Create notification message
-          MESSAGE="🚀 <b>LGBTinder Flutter App</b> 🚀
-
-          📝 <b>New Changes Pushed</b>
-
-          👤 <b>Updated by:</b> ${GITHUB_ACTOR}
-
-          💬 <b>Commit Message:</b>
-          
-          <blockquote>${FORMATTED_COMMIT_MESSAGE}</blockquote>
-
-        
-
-          # Send to Telegram
+          FORMATTED_COMMIT_MESSAGE=$(echo "${COMMIT_MESSAGE}" | sed 's/$/\\n/' | sed ':a;N;$!ba;s/\n/\\n/g')
+          MESSAGE=$(echo -e "🚀 <b>LGBTinder Flutter App</b> 🚀 \n\n📝 <b>New Changes Pushed</b>\n\n👤 <b>Updated by:</b> ${GITHUB_ACTOR}\n💬 <b>Commit Message:</b>\n <blockquote>${FORMATTED_COMMIT_MESSAGE}</blockquote>")
           curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage \
             -d chat_id=${TELEGRAM_CHAT_ID} \
             -d text="${MESSAGE}" \
-            -d parse_mode="HTML" \
-            -d disable_web_page_preview=true
+            -d parse_mode="HTML"
