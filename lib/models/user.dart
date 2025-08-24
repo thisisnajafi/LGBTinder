@@ -1,3 +1,6 @@
+import 'user_image.dart';
+import 'reference_data.dart';
+
 class User {
   final int id;
   final String firstName;

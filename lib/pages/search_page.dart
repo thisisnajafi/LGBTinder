@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../components/profile/profile_header.dart';
-import '../components/profile/profile_bio.dart';
+import '../components/profile/profile_info_sections.dart';
 import '../components/profile/photo_gallery.dart';
+import '../models/models.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -152,36 +153,49 @@ class _SearchPageState extends State<SearchPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Create a mock User object for the ProfileHeader
                     ProfileHeader(
-                      name: user['name'],
-                      age: user['age'],
-                      imageUrl: user['image'],
-                      location: user['location'],
-                      isVerified: true,
-                      isOnline: true,
-                      stats: ProfileStats(matches: 0, likes: 0, views: 0, superLikes: 0),
-                      onEdit: () {},
-                      onSettings: () {},
-                      onShare: () {},
+                      user: User(
+                        id: user['id'] ?? 1,
+                        firstName: user['name']?.split(' ').first ?? '',
+                        lastName: user['name']?.split(' ').last ?? '',
+                        fullName: user['name'] ?? '',
+                        email: '',
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                        avatarUrl: user['image'],
+                        city: user['location'],
+                        isVerified: true,
+                        isOnline: true,
+                      ),
+                      onEditPressed: () {},
                     ),
                     const SizedBox(height: 24),
-                    ProfileBio(
-                      bio: user['bio'],
-                      interests: ['Music', 'Art', 'Travel'],
-                      personalInfo: {
-                        'gender': user['gender'],
-                        'orientation': user['orientation'],
-                        'relationship': user['relationship'],
-                      },
-                      onEdit: () {},
+                    // Create a mock User object for ProfileInfoSections
+                    ProfileInfoSections(
+                      user: User(
+                        id: user['id'] ?? 1,
+                        firstName: user['name']?.split(' ').first ?? '',
+                        lastName: user['name']?.split(' ').last ?? '',
+                        fullName: user['name'] ?? '',
+                        email: '',
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                        profileBio: user['bio'],
+                        gender: user['gender'],
+                        sexualOrientation: user['orientation'],
+                      ),
                     ),
                     const SizedBox(height: 24),
+                    // Create a mock list of UserImage objects for PhotoGallery
                     PhotoGallery(
-                      photos: List<String>.from(user['images']),
-                      isEditable: false,
-                      onPhotoTap: (i) {},
-                      onAddPhoto: () {},
-                      onDeletePhoto: (i) {},
+                      images: (user['images'] as List<dynamic>? ?? []).map((image) => UserImage(
+                        id: 1,
+                        url: image.toString(),
+                        type: 'gallery',
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                      )).toList(),
                     ),
                   ],
                 ),

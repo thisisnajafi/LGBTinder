@@ -47,7 +47,7 @@ class ChatService {
     String? messageType = 'text',
     Map<String, dynamic>? metadata,
   }) async {
-    final data = {
+    final data = <String, dynamic>{
       'message': message,
       'type': messageType,
     };
