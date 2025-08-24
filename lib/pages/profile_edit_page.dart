@@ -355,8 +355,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       ProfileRangeSlider(
                         label: 'Age Range',
                         value: RangeValues(
-                          _editingUser.preferences?.minAge?.toDouble() ?? 18,
-                          _editingUser.preferences?.maxAge?.toDouble() ?? 50,
+                          (_editingUser.preferences?.minAge ?? 18).toDouble(),
+                          (_editingUser.preferences?.maxAge ?? 50).toDouble(),
                         ),
                         min: 18,
                         max: 100,

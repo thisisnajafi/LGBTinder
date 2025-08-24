@@ -19,7 +19,6 @@ class AvatarUpload extends StatefulWidget {
 
 class _AvatarUploadState extends State<AvatarUpload> {
   String? _imagePath;
-  bool _isLoading = false;
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
