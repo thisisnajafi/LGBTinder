@@ -1,0 +1,798 @@
+# LGBTinder Mobile App Plans, Subplans & Superlike Packs Specification
+
+## **Overview**
+
+This specification covers the complete subscription system for the LGBTinder mobile app, including main plans, subplans, superlike packs, purchase flows, and premium features management.
+
+---
+
+## **Subscription System Architecture**
+
+### **1. Plan Hierarchy**
+```
+Main Plans (Bronze, Silver, Gold)
+├── Subplans (Monthly, 3-Month, 6-Month, Yearly)
+    ├── Pricing Tiers
+    ├── Feature Sets
+    └── Discounts
+└── Superlike Packs (Separate Purchases)
+    ├── Small Pack (5 superlikes)
+    ├── Medium Pack (15 superlikes)
+    ├── Large Pack (30 superlikes)
+    └── Mega Pack (50 superlikes)
+```
+
+### **2. User Subscription States**
+```
+- Free User: No active subscription
+- Bronze User: Basic premium features
+- Silver User: Enhanced premium features
+- Gold User: Full premium features
+- Superlike Pack Owner: Additional superlikes available
+```
+
+---
+
+## **Main Plans Structure**
+
+### **1. Bronze Plan**
+```
+Features:
+- Daily Profile Views: 50 (vs 20 for free)
+- Basic Matching Algorithm
+- Standard Chat Features
+- Basic Profile Filters
+- 1 Superlike per day
+- Standard Support
+
+Limitations:
+- No advanced filters
+- No priority matching
+- No read receipts
+- No unlimited rewinds
+- No profile boost
+```
+
+### **2. Silver Plan**
+```
+Features:
+- Daily Profile Views: 100
+- Enhanced Matching Algorithm
+- Advanced Chat Features
+- Advanced Profile Filters
+- 3 Superlikes per day
+- Read Receipts
+- Unlimited Rewinds (5 per day)
+- Profile Boost (1 per month)
+- Priority Support
+
+Additional Features:
+- See who liked you
+- Advanced location filters
+- Age range filters
+- Education/Job filters
+- Interest-based matching
+```
+
+### **3. Gold Plan**
+```
+Features:
+- Daily Profile Views: 200
+- Premium Matching Algorithm
+- All Chat Features
+- All Profile Filters
+- 5 Superlikes per day
+- All Premium Features
+- Unlimited Rewinds (10 per day)
+- Profile Boost (3 per month)
+- Priority Customer Support
+- Exclusive Events Access
+
+Premium Features:
+- See all likes (not just mutual)
+- Advanced compatibility scoring
+- AI-powered match suggestions
+- Travel mode
+- Incognito mode
+- Profile insights and analytics
+- VIP customer support
+```
+
+---
+
+## **Subplans Structure**
+
+### **1. Monthly Subplans**
+```
+Bronze Monthly:
+- Price: $9.99/month
+- Duration: 30 days
+- Features: All Bronze features
+- Auto-renewal: Yes
+
+Silver Monthly:
+- Price: $19.99/month
+- Duration: 30 days
+- Features: All Silver features
+- Auto-renewal: Yes
+
+Gold Monthly:
+- Price: $29.99/month
+- Duration: 30 days
+- Features: All Gold features
+- Auto-renewal: Yes
+```
+
+### **2. 3-Month Subplans**
+```
+Bronze 3-Month:
+- Price: $24.99 (Save $4.98)
+- Duration: 90 days
+- Features: All Bronze features
+- Auto-renewal: Yes
+
+Silver 3-Month:
+- Price: $49.99 (Save $9.98)
+- Duration: 90 days
+- Features: All Silver features
+- Auto-renewal: Yes
+
+Gold 3-Month:
+- Price: $74.99 (Save $14.98)
+- Duration: 90 days
+- Features: All Gold features
+- Auto-renewal: Yes
+```
+
+### **3. 6-Month Subplans**
+```
+Bronze 6-Month:
+- Price: $44.99 (Save $14.95)
+- Duration: 180 days
+- Features: All Bronze features
+- Auto-renewal: Yes
+
+Silver 6-Month:
+- Price: $89.99 (Save $29.95)
+- Duration: 180 days
+- Features: All Silver features
+- Auto-renewal: Yes
+
+Gold 6-Month:
+- Price: $134.99 (Save $44.95)
+- Duration: 180 days
+- Features: All Gold features
+- Auto-renewal: Yes
+```
+
+### **4. Yearly Subplans**
+```
+Bronze Yearly:
+- Price: $79.99 (Save $39.89)
+- Duration: 365 days
+- Features: All Bronze features
+- Auto-renewal: Yes
+
+Silver Yearly:
+- Price: $159.99 (Save $79.89)
+- Duration: 365 days
+- Features: All Silver features
+- Auto-renewal: Yes
+
+Gold Yearly:
+- Price: $239.99 (Save $119.89)
+- Duration: 365 days
+- Features: All Gold features
+- Auto-renewal: Yes
+```
+
+---
+
+## **Superlike Packs Structure**
+
+### **1. Small Superlike Pack**
+```
+Features:
+- 5 Superlikes
+- Price: $4.99
+- Duration: Never expires
+- Usage: Can be used anytime
+- Priority: Used after daily limit
+
+Benefits:
+- Stand out to potential matches
+- Get noticed faster
+- Increase match probability
+- No expiration date
+```
+
+### **2. Medium Superlike Pack**
+```
+Features:
+- 15 Superlikes
+- Price: $12.99 (Save $1.96)
+- Duration: Never expires
+- Usage: Can be used anytime
+- Priority: Used after daily limit
+
+Benefits:
+- Better value than small pack
+- More opportunities to connect
+- Bulk discount
+- No expiration date
+```
+
+### **3. Large Superlike Pack**
+```
+Features:
+- 30 Superlikes
+- Price: $19.99 (Save $4.96)
+- Duration: Never expires
+- Usage: Can be used anytime
+- Priority: Used after daily limit
+
+Benefits:
+- Best value for regular users
+- Significant savings
+- Extended matching opportunities
+- No expiration date
+```
+
+### **4. Mega Superlike Pack**
+```
+Features:
+- 50 Superlikes
+- Price: $29.99 (Save $9.96)
+- Duration: Never expires
+- Usage: Can be used anytime
+- Priority: Used after daily limit
+
+Benefits:
+- Maximum value
+- Long-term superlike supply
+- Best bulk discount
+- No expiration date
+```
+
+---
+
+## **Plans & Pricing Screen**
+
+### **1. Plans Overview Screen**
+```
+Header:
+- "Choose Your Plan" title
+- "Unlock Premium Features" subtitle
+- Current plan indicator (if any)
+
+Plan Cards:
+- Free Plan (always visible)
+- Bronze Plan card
+- Silver Plan card
+- Gold Plan card
+
+Each Plan Card Shows:
+- Plan name and icon
+- Monthly price (strikethrough if discounted)
+- Discounted price (if applicable)
+- "Most Popular" badge (for Silver)
+- "Best Value" badge (for Gold)
+- Key features list (3-4 bullet points)
+- "Choose Plan" button
+
+Footer:
+- "Restore Purchases" button
+- Terms and conditions link
+- Privacy policy link
+```
+
+### **2. Plan Details Screen**
+```
+Header:
+- Plan name and icon
+- Back button
+- "Upgrade" or "Subscribe" button
+
+Content:
+- Plan description
+- Full feature list with checkmarks
+- Comparison with current plan
+- Pricing options (monthly, 3-month, 6-month, yearly)
+- Savings calculator
+- FAQ section
+
+Features List:
+- Daily profile views limit
+- Superlike allowance
+- Chat features
+- Filter options
+- Support level
+- Additional perks
+
+Pricing Section:
+- Duration options with prices
+- Savings highlighted
+- Recommended option marked
+- Auto-renewal notice
+```
+
+### **3. Subplan Selection Screen**
+```
+Header:
+- "Choose Duration" title
+- Selected plan name
+- Back button
+
+Duration Options:
+- Monthly (full price)
+- 3-Month (small discount)
+- 6-Month (medium discount)
+- Yearly (best discount)
+
+Each Option Shows:
+- Duration period
+- Original price (strikethrough)
+- Discounted price
+- Savings amount
+- "Best Value" badge (if applicable)
+- "Most Popular" badge (if applicable)
+
+Footer:
+- "Continue to Payment" button
+- Terms and conditions
+- Auto-renewal information
+```
+
+---
+
+## **Superlike Packs Screen**
+
+### **1. Superlike Packs Overview**
+```
+Header:
+- "Superlike Packs" title
+- "Get Noticed Faster" subtitle
+- Current superlike count display
+
+Pack Options:
+- Small Pack (5 superlikes)
+- Medium Pack (15 superlikes)
+- Large Pack (30 superlikes)
+- Mega Pack (50 superlikes)
+
+Each Pack Shows:
+- Pack name and icon
+- Number of superlikes
+- Price
+- Savings (if applicable)
+- "Best Value" badge (if applicable)
+- "Purchase" button
+
+Information Section:
+- "Superlikes never expire"
+- "Use after daily limit"
+- "Increase match probability"
+- "Stand out to potential matches"
+
+Footer:
+- "Restore Purchases" button
+- Terms and conditions
+```
+
+### **2. Superlike Usage Screen**
+```
+Header:
+- "Your Superlikes" title
+- Total superlike count
+- Daily limit indicator
+
+Usage Breakdown:
+- Daily superlikes remaining
+- Pack superlikes available
+- Total superlikes available
+
+Usage History:
+- Recent superlike usage
+- Match results from superlikes
+- Success rate statistics
+
+Purchase Section:
+- "Buy More Superlikes" button
+- Quick pack options
+- "View All Packs" link
+```
+
+---
+
+## **Purchase Flow**
+
+### **1. Plan Purchase Flow**
+```
+Step 1: User selects plan
+Step 2: User selects subplan duration
+Step 3: User reviews plan details
+Step 4: User enters payment information
+Step 5: Payment processing
+Step 6: Purchase confirmation
+Step 7: Plan activation
+Step 8: Feature unlock
+```
+
+### **2. Superlike Pack Purchase Flow**
+```
+Step 1: User selects superlike pack
+Step 2: User reviews pack details
+Step 3: User enters payment information
+Step 4: Payment processing
+Step 5: Purchase confirmation
+Step 6: Superlikes added to account
+Step 7: Usage instructions
+```
+
+### **3. Payment Integration**
+```
+Payment Methods:
+- Credit/Debit Cards
+- PayPal
+- Apple Pay (iOS)
+- Google Pay (Android)
+- Local payment methods (region-specific)
+
+Security:
+- PCI DSS compliance
+- Encrypted payment data
+- Secure payment gateway
+- Fraud protection
+```
+
+---
+
+## **Feature Management**
+
+### **1. Feature Access Control**
+```
+Feature Gates:
+- Check user's active plan
+- Verify feature permissions
+- Handle plan expiration
+- Graceful degradation
+
+Feature Unlocking:
+- Immediate activation for new purchases
+- Progressive feature rollout
+- Feature tutorials for new users
+- Usage tracking and analytics
+```
+
+### **2. Plan Upgrade/Downgrade**
+```
+Upgrade Flow:
+- Show upgrade benefits
+- Calculate proration
+- Process payment difference
+- Immediate feature access
+
+Downgrade Flow:
+- Show downgrade consequences
+- Confirm user intent
+- Schedule plan change
+- Maintain features until end of period
+```
+
+### **3. Plan Cancellation**
+```
+Cancellation Process:
+- Show cancellation consequences
+- Offer retention incentives
+- Process cancellation
+- Maintain access until period end
+- Send confirmation email
+```
+
+---
+
+## **API Endpoints**
+
+### **1. Plans & Subplans**
+```
+- GET /api/plans (get all plans)
+- GET /api/sub-plans (get all subplans)
+- GET /api/sub-plans/duration (get subplans by duration)
+- GET /api/sub-plans/plan/{planId} (get subplans for specific plan)
+- POST /api/sub-plans/compare (compare subplans)
+- GET /api/sub-plans/upgrade-options (get upgrade options)
+- POST /api/sub-plans/upgrade (upgrade plan)
+```
+
+### **2. Superlike Packs**
+```
+- GET /api/superlike-packs/available (get available packs)
+- POST /api/superlike-packs/purchase (purchase pack)
+- GET /api/superlike-packs/user-packs (get user's packs)
+- GET /api/superlike-packs/purchase-history (get purchase history)
+- POST /api/superlike-packs/activate-pending (activate pending pack)
+```
+
+### **3. Payment Processing**
+```
+- POST /api/stripe/payment-intent (create payment intent)
+- POST /api/stripe/checkout (create checkout session)
+- POST /api/stripe/subscription (create subscription)
+- DELETE /api/stripe/subscription/{subscriptionId} (cancel subscription)
+- POST /api/stripe/refund (create refund)
+- GET /api/stripe/analytics (get payment analytics)
+- POST /api/stripe/webhook (handle webhooks)
+```
+
+### **4. User Subscription Management**
+```
+- GET /api/user/subscription (get user's subscription)
+- GET /api/user/subscription/status (get subscription status)
+- POST /api/user/subscription/cancel (cancel subscription)
+- POST /api/user/subscription/reactivate (reactivate subscription)
+- GET /api/user/subscription/history (get subscription history)
+```
+
+---
+
+## **Data Models**
+
+### **1. Plan Model**
+```json
+{
+  "id": 1,
+  "title": "Gold",
+  "description": "Premium dating experience with all features",
+  "features": {
+    "daily_profile_views": 200,
+    "superlike_limit": 5,
+    "unlimited_rewinds": 10,
+    "profile_boost": 3,
+    "read_receipts": true,
+    "see_all_likes": true,
+    "travel_mode": true,
+    "incognito_mode": true
+  },
+  "status": "active",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### **2. SubPlan Model**
+```json
+{
+  "id": 1,
+  "plan_id": 3,
+  "sub_plan_title": "Gold Monthly",
+  "sub_plan_description": "Gold plan billed monthly",
+  "duration_days": 30,
+  "price": 29.99,
+  "discounted_price": null,
+  "discount_type": null,
+  "discount_value": null,
+  "status": "active",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### **3. SuperlikePack Model**
+```json
+{
+  "id": 1,
+  "name": "Large Superlike Pack",
+  "description": "30 superlikes to get noticed faster",
+  "quantity": 30,
+  "price": 19.99,
+  "discounted_price": null,
+  "discount_type": null,
+  "discount_value": null,
+  "status": "active",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### **4. UserSubscription Model**
+```json
+{
+  "id": 1,
+  "user_id": 1,
+  "plan_id": 3,
+  "sub_plan_id": 1,
+  "status": "active",
+  "start_date": "2024-01-01T00:00:00Z",
+  "end_date": "2024-02-01T00:00:00Z",
+  "auto_renew": true,
+  "stripe_subscription_id": "sub_1234567890",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+---
+
+## **UI/UX Guidelines**
+
+### **1. Visual Design**
+```
+Color Scheme:
+- Free: Gray/neutral colors
+- Bronze: Bronze/gold accents
+- Silver: Silver/metallic accents
+- Gold: Gold/premium accents
+- Superlike Packs: Purple/vibrant colors
+
+Typography:
+- Plan names: Bold, larger font
+- Prices: Prominent, attention-grabbing
+- Features: Clear, readable list
+- Descriptions: Informative but concise
+
+Icons:
+- Plan-specific icons
+- Feature icons for each benefit
+- Payment method icons
+- Status indicators
+```
+
+### **2. Interactive Elements**
+```
+Buttons:
+- Primary: "Subscribe" or "Purchase"
+- Secondary: "Learn More" or "Compare"
+- Tertiary: "Restore Purchases"
+
+Animations:
+- Smooth transitions between screens
+- Loading states for payment processing
+- Success animations for purchases
+- Hover effects for interactive elements
+
+Feedback:
+- Clear success messages
+- Error handling with helpful guidance
+- Progress indicators for multi-step processes
+- Confirmation dialogs for important actions
+```
+
+### **3. Accessibility**
+```
+Screen Reader Support:
+- Proper ARIA labels
+- Descriptive alt text for images
+- Clear navigation structure
+- Announcement of important changes
+
+Keyboard Navigation:
+- Tab order for all interactive elements
+- Keyboard shortcuts for common actions
+- Focus indicators for all elements
+- Escape key functionality
+
+High Contrast Mode:
+- Sufficient color contrast
+- Clear text readability
+- Distinguishable interactive elements
+- Consistent visual hierarchy
+```
+
+---
+
+## **Error Handling**
+
+### **1. Payment Errors**
+```
+Common Errors:
+- Insufficient funds
+- Expired card
+- Invalid payment method
+- Network connectivity issues
+- Server processing errors
+
+User Experience:
+- Clear error messages
+- Suggested solutions
+- Alternative payment options
+- Retry mechanisms
+- Support contact information
+```
+
+### **2. Subscription Errors**
+```
+Common Issues:
+- Plan not activating
+- Features not unlocking
+- Billing problems
+- Auto-renewal failures
+- Plan expiration issues
+
+Resolution:
+- Automatic retry mechanisms
+- Manual activation options
+- Customer support escalation
+- Plan restoration tools
+- Refund processing
+```
+
+---
+
+## **Analytics & Tracking**
+
+### **1. Purchase Analytics**
+```
+Metrics to Track:
+- Conversion rates by plan
+- Revenue per user
+- Plan upgrade/downgrade rates
+- Churn rates
+- Superlike pack usage
+- Payment method preferences
+
+User Behavior:
+- Time to first purchase
+- Plan comparison behavior
+- Feature usage patterns
+- Cancellation reasons
+- Retention rates by plan
+```
+
+### **2. A/B Testing**
+```
+Test Variables:
+- Pricing strategies
+- Feature combinations
+- UI/UX variations
+- Payment flows
+- Marketing messaging
+
+Success Metrics:
+- Conversion rates
+- Revenue impact
+- User satisfaction
+- Feature adoption
+- Retention rates
+```
+
+---
+
+## **Implementation Instructions for Agent IDE**
+
+### **1. Payment Integration:**
+- Implement Stripe SDK integration
+- Handle payment processing securely
+- Manage subscription lifecycle
+- Implement webhook handling
+- Add payment error handling
+
+### **2. Feature Management:**
+- Implement feature gates
+- Manage plan-based access control
+- Handle plan upgrades/downgrades
+- Track feature usage
+- Implement graceful degradation
+
+### **3. User Experience:**
+- Create intuitive plan comparison
+- Implement smooth purchase flow
+- Add purchase confirmation
+- Handle subscription management
+- Provide clear feature explanations
+
+### **4. Security:**
+- Secure payment processing
+- Validate purchase receipts
+- Protect against fraud
+- Implement proper authentication
+- Secure data transmission
+
+### **5. Testing:**
+- Unit tests for pricing logic
+- Integration tests for payment flow
+- E2E tests for purchase process
+- Security testing for payment handling
+- Performance testing for subscription management
+
+This comprehensive subscription system ensures a smooth, secure, and profitable monetization strategy while providing clear value to users through tiered premium features and superlike packs.
+
