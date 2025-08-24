@@ -1,5 +1,7 @@
 import 'user_image.dart';
 import 'reference_data.dart';
+import 'user_preferences.dart';
+import 'user_settings.dart';
 
 class User {
   final int id;
@@ -162,7 +164,13 @@ class User {
           ? DateTime.parse(json['birth_date']) 
           : null,
       profileBio: json['profile_bio'],
+      bio: json['bio'] ?? json['profile_bio'],
       avatarUrl: json['avatar_url'],
+      name: json['name'] ?? json['full_name'],
+      job: json['job'],
+      company: json['company'],
+      school: json['school'],
+      location: json['location'],
       jobs: (json['jobs'] as List<dynamic>?)
           ?.map((job) => Job.fromJson(job))
           .toList() ?? [],
@@ -181,8 +189,14 @@ class User {
       relationGoals: (json['relation_goals'] as List<dynamic>?)
           ?.map((goal) => RelationGoal.fromJson(goal))
           .toList() ?? [],
+      relationshipGoal: json['relationship_goal'] != null
+          ? RelationshipGoal.fromJson(json['relationship_goal'])
+          : null,
       preferredGenders: (json['preferred_genders'] as List<dynamic>?)
           ?.map((gender) => PreferredGender.fromJson(gender))
+          .toList() ?? [],
+      interestedIn: (json['interested_in'] as List<dynamic>?)
+          ?.map((gender) => Gender.fromJson(gender))
           .toList() ?? [],
       gender: json['gender'],
       weight: json['weight']?.toDouble(),
@@ -197,6 +211,9 @@ class User {
       galleryImages: (json['gallery_images'] as List<dynamic>?)
           ?.map((image) => UserImage.fromJson(image))
           .toList() ?? [],
+      images: (json['images'] as List<dynamic>?)
+          ?.map((image) => UserImage.fromJson(image))
+          .toList() ?? [],
       primaryProfileImage: json['primary_profile_image'] != null
           ? UserImage.fromJson(json['primary_profile_image'])
           : null,
@@ -205,6 +222,12 @@ class User {
       isPremium: json['is_premium'] ?? false,
       lastSeen: json['last_seen'] != null 
           ? DateTime.parse(json['last_seen']) 
+          : null,
+      preferences: json['preferences'] != null
+          ? UserPreferences.fromJson(json['preferences'])
+          : null,
+      settings: json['settings'] != null
+          ? UserSettings.fromJson(json['settings'])
           : null,
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
@@ -263,14 +286,22 @@ class User {
     String? city,
     DateTime? birthDate,
     String? profileBio,
+    String? bio,
     String? avatarUrl,
+    String? name,
+    String? job,
+    String? company,
+    String? school,
+    String? location,
     List<Job>? jobs,
     List<Education>? educations,
     List<MusicGenre>? musicGenres,
     List<Language>? languages,
     List<Interest>? interests,
     List<RelationGoal>? relationGoals,
+    RelationshipGoal? relationshipGoal,
     List<PreferredGender>? preferredGenders,
+    List<Gender>? interestedIn,
     String? gender,
     double? weight,
     double? height,
@@ -280,11 +311,14 @@ class User {
     int? drink,
     List<UserImage>? profileImages,
     List<UserImage>? galleryImages,
+    List<UserImage>? images,
     UserImage? primaryProfileImage,
     bool? isOnline,
     bool? isVerified,
     bool? isPremium,
     DateTime? lastSeen,
+    UserPreferences? preferences,
+    UserSettings? settings,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -299,14 +333,22 @@ class User {
       city: city ?? this.city,
       birthDate: birthDate ?? this.birthDate,
       profileBio: profileBio ?? this.profileBio,
+      bio: bio ?? this.bio,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      name: name ?? this.name,
+      job: job ?? this.job,
+      company: company ?? this.company,
+      school: school ?? this.school,
+      location: location ?? this.location,
       jobs: jobs ?? this.jobs,
       educations: educations ?? this.educations,
       musicGenres: musicGenres ?? this.musicGenres,
       languages: languages ?? this.languages,
       interests: interests ?? this.interests,
       relationGoals: relationGoals ?? this.relationGoals,
+      relationshipGoal: relationshipGoal ?? this.relationshipGoal,
       preferredGenders: preferredGenders ?? this.preferredGenders,
+      interestedIn: interestedIn ?? this.interestedIn,
       gender: gender ?? this.gender,
       weight: weight ?? this.weight,
       height: height ?? this.height,
@@ -316,11 +358,14 @@ class User {
       drink: drink ?? this.drink,
       profileImages: profileImages ?? this.profileImages,
       galleryImages: galleryImages ?? this.galleryImages,
+      images: images ?? this.images,
       primaryProfileImage: primaryProfileImage ?? this.primaryProfileImage,
       isOnline: isOnline ?? this.isOnline,
       isVerified: isVerified ?? this.isVerified,
       isPremium: isPremium ?? this.isPremium,
       lastSeen: lastSeen ?? this.lastSeen,
+      preferences: preferences ?? this.preferences,
+      settings: settings ?? this.settings,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

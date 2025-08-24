@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
+import 'dart:io';
 import '../../theme/colors.dart';
 
 class AvatarUpload extends StatefulWidget {
@@ -25,30 +25,7 @@ class _AvatarUploadState extends State<AvatarUpload> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90);
     if (picked != null) {
-      _cropImage(picked.path);
-    }
-  }
-
-  Future<void> _cropImage(String path) async {
-    final cropped = await ImageCropper().cropImage(
-      sourcePath: path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-      cropStyle: CropStyle.circle,
-      compressQuality: 90,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Avatar',
-          toolbarColor: AppColors.primaryLight,
-          toolbarWidgetColor: Colors.white,
-          hideBottomControls: true,
-        ),
-        IOSUiSettings(
-          title: 'Crop Avatar',
-        ),
-      ],
-    );
-    if (cropped != null) {
-      setState(() => _imagePath = cropped.path);
+      setState(() => _imagePath = picked.path);
     }
   }
 
@@ -70,9 +47,9 @@ class _AvatarUploadState extends State<AvatarUpload> {
             CircleAvatar(
               radius: 60,
               backgroundColor: AppColors.primaryLight.withOpacity(0.1),
-              backgroundImage: image != null ? FileImage(
-                image.startsWith('http') ? NetworkImage(image) as ImageProvider : FileImage(File(image)),
-              ) : null,
+              backgroundImage: image != null ? (image.startsWith('http') 
+                ? NetworkImage(image) as ImageProvider 
+                : FileImage(File(image))) : null,
               child: image == null
                   ? Icon(Icons.person, size: 60, color: AppColors.primaryLight)
                   : null,

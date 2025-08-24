@@ -163,4 +163,19 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
   );
+  
+  // Additional typography styles
+  static const TextStyle headline6 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 20.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.15,
+  );
+  
+  static const TextStyle buttonStyle = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 14.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.1,
+  );
 } 

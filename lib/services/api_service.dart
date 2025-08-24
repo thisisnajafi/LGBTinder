@@ -346,4 +346,17 @@ class ApiService {
       };
     }
   }
+  
+  // Alias methods for compatibility with existing services
+  Future<Map<String, dynamic>> get(String endpoint, {Map<String, String>? queryParameters}) {
+    return getData(endpoint, queryParameters: queryParameters);
+  }
+  
+  Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) {
+    return postData(endpoint, data);
+  }
+  
+  Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> data) {
+    return updateData(endpoint, data);
+  }
 } 

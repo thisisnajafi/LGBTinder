@@ -24,6 +24,8 @@ class UserSettings {
     this.profileVisibility = 'public',
     this.showOnlineStatus = true,
     this.showLastSeen = true,
+    this.showAge = true,
+    this.showDistance = true,
     this.newMatchesNotification = true,
     this.newMessagesNotification = true,
     this.likesNotification = true,
@@ -44,6 +46,8 @@ class UserSettings {
       profileVisibility: json['profile_visibility'] ?? 'public',
       showOnlineStatus: json['show_online_status'] ?? true,
       showLastSeen: json['show_last_seen'] ?? true,
+      showAge: json['show_age'] ?? true,
+      showDistance: json['show_distance'] ?? true,
       newMatchesNotification: json['new_matches_notification'] ?? true,
       newMessagesNotification: json['new_messages_notification'] ?? true,
       likesNotification: json['likes_notification'] ?? true,
@@ -85,6 +89,8 @@ class UserSettings {
     String? profileVisibility,
     bool? showOnlineStatus,
     bool? showLastSeen,
+    bool? showAge,
+    bool? showDistance,
     bool? newMatchesNotification,
     bool? newMessagesNotification,
     bool? likesNotification,
@@ -102,6 +108,8 @@ class UserSettings {
       profileVisibility: profileVisibility ?? this.profileVisibility,
       showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
       showLastSeen: showLastSeen ?? this.showLastSeen,
+      showAge: showAge ?? this.showAge,
+      showDistance: showDistance ?? this.showDistance,
       newMatchesNotification: newMatchesNotification ?? this.newMatchesNotification,
       newMessagesNotification: newMessagesNotification ?? this.newMessagesNotification,
       likesNotification: likesNotification ?? this.likesNotification,
@@ -143,4 +151,14 @@ class UserSettings {
 
   @override
   int get hashCode => id.hashCode;
+  
+  // Static method to create empty settings
+  static UserSettings empty() {
+    return UserSettings(
+      id: 0,
+      userId: 0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+  }
 }

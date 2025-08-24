@@ -94,7 +94,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       );
 
       final profileProvider = context.read<ProfileProvider>();
-      await profileProvider.updateProfile(_editingUser);
+      await profileProvider.updateProfile(_editingUser.toJson());
 
       setState(() {
         _hasChanges = false;
@@ -203,12 +203,17 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       
                       ProfileDropdownInput<Gender>(
                         label: 'Gender',
-                        selectedValue: _editingUser.gender,
+                        selectedValue: _editingUser.gender != null 
+                            ? _getMockGenders().firstWhere(
+                                (g) => g.title == _editingUser.gender,
+                                orElse: () => _getMockGenders().first,
+                              )
+                            : null,
                         options: _getMockGenders(),
                         isRequired: true,
                         onChanged: (gender) {
                           setState(() {
-                            _editingUser = _editingUser.copyWith(gender: gender);
+                            _editingUser = _editingUser.copyWith(gender: gender?.title);
                             _onFieldChanged();
                           });
                         },
@@ -322,8 +327,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       ProfileRangeSlider(
                         label: 'Distance Range (km)',
                         value: RangeValues(
-                          _editingUser.preferences?.maxDistance ?? 50,
-                          _editingUser.preferences?.maxDistance ?? 100,
+                          (_editingUser.preferences?.maxDistance ?? 50).toDouble(),
+                          (_editingUser.preferences?.maxDistance ?? 100).toDouble(),
                         ),
                         min: 1,
                         max: 500,
@@ -333,7 +338,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                           setState(() {
                             _editingUser = _editingUser.copyWith(
                               preferences: (_editingUser.preferences ?? UserPreferences.empty()).copyWith(
-                                maxDistance: range.end.round(),
+                                maxDistance: range.end.round().toDouble(),
                               ),
                             );
                             _onFieldChanged();
@@ -457,23 +462,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   // Mock data methods - these would be replaced with actual API calls
   List<Gender> _getMockGenders() {
     return [
-      Gender(id: 1, name: 'Man', code: 'man'),
-      Gender(id: 2, name: 'Woman', code: 'woman'),
-      Gender(id: 3, name: 'Non-binary', code: 'non_binary'),
-      Gender(id: 4, name: 'Gender fluid', code: 'gender_fluid'),
-      Gender(id: 5, name: 'Trans man', code: 'trans_man'),
-      Gender(id: 6, name: 'Trans woman', code: 'trans_woman'),
-      Gender(id: 7, name: 'Other', code: 'other'),
+      Gender(id: 1, title: 'Man'),
+      Gender(id: 2, title: 'Woman'),
+      Gender(id: 3, title: 'Non-binary'),
+      Gender(id: 4, title: 'Gender fluid'),
+      Gender(id: 5, title: 'Trans man'),
+      Gender(id: 6, title: 'Trans woman'),
+      Gender(id: 7, title: 'Other'),
     ];
   }
 
   List<RelationshipGoal> _getMockRelationshipGoals() {
     return [
-      RelationshipGoal(id: 1, name: 'Long-term relationship', code: 'long_term'),
-      RelationshipGoal(id: 2, name: 'Short-term relationship', code: 'short_term'),
-      RelationshipGoal(id: 3, name: 'Casual dating', code: 'casual'),
-      RelationshipGoal(id: 4, name: 'Friendship', code: 'friendship'),
-      RelationshipGoal(id: 5, name: 'Marriage', code: 'marriage'),
+      RelationshipGoal(id: 1, title: 'Long-term relationship'),
+      RelationshipGoal(id: 2, title: 'Short-term relationship'),
+      RelationshipGoal(id: 3, title: 'Casual dating'),
+      RelationshipGoal(id: 4, title: 'Friendship'),
+      RelationshipGoal(id: 5, title: 'Marriage'),
     ];
   }
 }
