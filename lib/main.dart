@@ -68,6 +68,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       parent: _transitionController,
       curve: Curves.easeInOut,
     ));
+    
+    // Start with the first page visible
+    _transitionController.value = 1.0;
   }
 
   @override

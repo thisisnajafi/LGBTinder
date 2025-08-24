@@ -56,7 +56,7 @@ class BottomNavbar extends StatelessWidget {
                     offset: const Offset(0, 8),
                   ),
                 ],
-                            ),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(_iconPaths.length, (index) {

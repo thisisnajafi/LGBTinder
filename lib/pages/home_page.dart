@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/colors.dart';
@@ -14,8 +15,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _particleController;
   late AnimationController _cardAnimationController;
+  late AnimationController _lineAnimationController;
+  late AnimationController _superLikeBorderController;
   Timer? _imageTimer;
   int _currentImageIndex = 0;
+  bool _isInitialized = false;
+  double _imageProgress = 0.0; // For square fill animation
+  bool _isProfileSheetOpen = false;
 
   // Sample profiles for the stack
   final List<Map<String, dynamic>> _sampleProfiles = [
@@ -94,9 +100,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _swipeRight = false;
   bool _swipeLeft = false;
   bool _isStackEmpty = false;
-  Set<int> _loadedCardIndices = {0, 1, 2}; // Initially load first 3 cards
+  final Set<int> _loadedCardIndices = {0, 1, 2}; // Initially load first 3 cards
+  bool _showMatchCelebration = false;
+  Map<String, dynamic>? _matchedProfile;
+  bool _showSuperLikeSheet = false;
+  Map<String, dynamic>? _superLikedProfile;
 
-  @override
+    @override
   void initState() {
     super.initState();
     
@@ -110,46 +120,86 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    // Start first card animation after a short delay
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _cardAnimationController.forward();
-    });
+    _lineAnimationController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat();
 
-    // Auto-switch images every 3 seconds
+    _superLikeBorderController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+
+    // Initialize immediately
+    _isInitialized = true;
+    
+    // Start animations and timer immediately
+    _cardAnimationController.forward();
     _startImageTimer();
   }
 
-  void _onCardSwiped(bool isRight) {
-    setState(() {
-      if (_topCardIndex < _sampleProfiles.length - 1) {
-        _topCardIndex++;
-        
-        // Lazy load next card image if not already loaded
-        int nextCardToLoad = _topCardIndex + 2; // Load 2 cards ahead
-        if (nextCardToLoad < _sampleProfiles.length && !_loadedCardIndices.contains(nextCardToLoad)) {
-          _loadedCardIndices.add(nextCardToLoad);
-        }
-        
-        // Start smooth animation for next card
-        _cardAnimationController.forward(from: 0);
-      } else {
-        // Stack is finished
-        _isStackEmpty = true;
-      }
-      _swipeRight = false;
-      _swipeLeft = false;
-    });
-  }
 
-  void _swipeCardRight() {
+
+               void _onCardSwiped(bool isRight) {
+     setState(() {
+       // Store the current profile before incrementing the index
+       final currentProfile = _sampleProfiles[_topCardIndex];
+       
+       if (isRight) {
+         // Check for match when swiping right
+         // Simulate 30% chance of match for demo purposes
+         if (currentProfile['name'] == 'Jessica Parker' || currentProfile['name'] == 'Alex Johnson') {
+           _showMatchCelebration = true;
+           _matchedProfile = currentProfile;
+         }
+       }
+       
+       if (_topCardIndex < _sampleProfiles.length - 1) {
+         _topCardIndex++;
+         
+         // Reset image progress for new card
+         _imageProgress = 0.0;
+         _currentImageIndex = 0;
+         
+         // Lazy load next card image if not already loaded
+         int nextCardToLoad = _topCardIndex + 2; // Load 2 cards ahead
+         if (nextCardToLoad < _sampleProfiles.length && !_loadedCardIndices.contains(nextCardToLoad)) {
+           _loadedCardIndices.add(nextCardToLoad);
+         }
+         
+         // Start smooth animation for next card
+         _cardAnimationController.forward(from: 0);
+       } else {
+         // Stack is finished
+         _isStackEmpty = true;
+       }
+       _swipeRight = false;
+       _swipeLeft = false;
+     });
+   }
+
+  void _handleLike() {
     setState(() {
       _swipeRight = true;
     });
+    
+    // Process the card swipe
+    _onCardSwiped(true);
   }
 
-  void _swipeCardLeft() {
+  void _handleSkip() {
     setState(() {
       _swipeLeft = true;
+    });
+    _showSnackBar('Skipped', const Color(0xFF6B7280));
+    // Process the card swipe
+    _onCardSwiped(false);
+  }
+
+  void _handleSuperLike() {
+    setState(() {
+      _showSuperLikeSheet = true;
+      _superLikedProfile = _sampleProfiles[_topCardIndex];
     });
   }
 
@@ -158,214 +208,269 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Here you would typically navigate to upgrade screen
   }
 
-  void _startImageTimer() {
-    _imageTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (mounted && !_isStackEmpty && _topCardIndex < _sampleProfiles.length) {
-        setState(() {
-          _currentImageIndex = (_currentImageIndex + 1) % (_sampleProfiles[_topCardIndex]['images'] as List).length;
-        });
-      }
-    });
-  }
+     void _startImageTimer() {
+     _imageTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+       if (mounted && !_isStackEmpty && _topCardIndex < _sampleProfiles.length) {
+         setState(() {
+           _imageProgress += 0.033; // Increment for 3 seconds total
+           if (_imageProgress >= 1.0) {
+             _imageProgress = 0.0;
+             _currentImageIndex = (_currentImageIndex + 1) % (_sampleProfiles[_topCardIndex]['images'] as List).length;
+           }
+         });
+       }
+     });
+   }
 
-  @override
-  void dispose() {
-    _particleController.dispose();
-    _cardAnimationController.dispose();
-    _imageTimer?.cancel();
-    super.dispose();
-  }
+   void _onCardTap() {
+     if (!_isStackEmpty && _topCardIndex < _sampleProfiles.length) {
+       setState(() {
+         _imageProgress = 0.0;
+         _currentImageIndex = (_currentImageIndex + 1) % (_sampleProfiles[_topCardIndex]['images'] as List).length;
+       });
+     }
+   }
+
+     @override
+   void dispose() {
+     _particleController.dispose();
+     _cardAnimationController.dispose();
+     _lineAnimationController.dispose();
+     _superLikeBorderController.dispose();
+     _imageTimer?.cancel();
+     super.dispose();
+   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
     final double logoHeight = 40 + 20 + 30; // logo + top/bottom padding
     final double actionButtonsHeight = 70 + 40; // button size + vertical padding
     final double navbarHeight = 62 + 18; // navbar height + bottom padding
 
     return Scaffold(
-      backgroundColor: colorScheme.background, // Use theme background
+      backgroundColor: AppColors.navbarBackground, // Dark navy background
       body: Stack(
         children: [
-          // Theme-aware gradient background
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  colorScheme.background,
-                  colorScheme.surface.withValues(alpha: 0.3),
-                  colorScheme.surface.withValues(alpha: 0.1),
-                  colorScheme.background,
-                ],
-                stops: [0.0, 0.3, 0.7, 1.0],
-              ),
-            ),
-          ),
+          // Animated background lines
+          _buildAnimatedBackgroundLines(),
           
-          // Main content
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final availableHeight = constraints.maxHeight;
-                final cardHeight = availableHeight - (logoHeight + actionButtonsHeight + navbarHeight);
+                     // Main content
+           SafeArea(
+             child: LayoutBuilder(
+               builder: (context, constraints) {
+                 final availableHeight = constraints.maxHeight;
+                 final cardHeight = availableHeight - (logoHeight + actionButtonsHeight + navbarHeight);
 
-                return Column(
-                  children: [
-                    // App title with theme-aware styling
-                    _buildAppTitle(context),
-                    
-                    // Profile card area
-                    SizedBox(
-                      height: cardHeight > 0 ? cardHeight : 0,
-                      child: Center(
-                        child: _isStackEmpty 
-                          ? _buildEmptyStackMessage(context)
-                          : AnimatedBuilder(
-                              animation: _cardAnimationController,
-                              builder: (context, child) {
-                                return Stack(
-                                  alignment: Alignment.center,
-                                  children: List.generate(3, (i) { // Only show 3 cards max
-                                    int reverseI = 2 - i;
-                                    int cardIndex = _topCardIndex + reverseI;
-                                    if (cardIndex >= _sampleProfiles.length) return const SizedBox.shrink();
-                                    
-                                    // Calculate animation offset for smooth transition
-                                    double animationOffset = 0;
-                                    if (reverseI == 0) {
-                                      animationOffset = (1 - _cardAnimationController.value) * 20;
-                                    }
-                                    
-                                    // Only show card if it's loaded
-                                    if (!_loadedCardIndices.contains(cardIndex)) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    
-                                    // Top card is swipeable
-                                    if (reverseI == 0) {
-                                      return Transform.translate(
-                                        offset: Offset(0, animationOffset),
-                                        child: _ModernSwipeableCard(
-                                          key: ValueKey(_topCardIndex),
-                                          profile: _sampleProfiles[cardIndex],
-                                          width: screenWidth * 0.9,
-                                          height: cardHeight,
-                                          onSwiped: _onCardSwiped,
-                                          swipeRight: _swipeRight,
-                                          swipeLeft: _swipeLeft,
-                                          currentImageIndex: _currentImageIndex,
-                                        ),
-                                      );
-                                    } else {
-                                      // Background cards - completely hidden behind top card
-                                      return const SizedBox.shrink(); // Don't show background cards at all
-                                    }
-                                  }),
-                                );
-                              },
-                            ),
-                      ),
-                    ),
-                    
-                    // Action buttons (only show if stack is not empty)
-                    if (!_isStackEmpty)
+                 return Column(
+                   children: [
+                     // App title
+                     _buildAppTitle(context),
+                     
+                     // Profile card area
+                     SizedBox(
+                       height: cardHeight > 0 ? cardHeight : 0,
+                       child: Center(
+                         child: _isStackEmpty 
+                           ? _buildEmptyStackMessage(context)
+                           : AnimatedBuilder(
+                               animation: _cardAnimationController,
+                               builder: (context, child) {
+                                 return Stack(
+                                   alignment: Alignment.center,
+                                   children: List.generate(3, (i) { // Only show 3 cards max
+                                     int reverseI = 2 - i;
+                                     int cardIndex = _topCardIndex + reverseI;
+                                     if (cardIndex >= _sampleProfiles.length) return const SizedBox.shrink();
+                                     
+                                     // Calculate animation offset for smooth transition
+                                     double animationOffset = 0;
+                                     if (reverseI == 0) {
+                                       animationOffset = (1 - _cardAnimationController.value) * 20;
+                                     }
+                                     
+                                     // Only show card if it's loaded
+                                     if (!_loadedCardIndices.contains(cardIndex)) {
+                                       return const SizedBox.shrink();
+                                     }
+                                     
+                                     // Top card is swipeable
+                                     if (reverseI == 0) {
+                                       return Transform.translate(
+                                         offset: Offset(0, animationOffset),
+                                         child: _ModernSwipeableCard(
+                                           key: ValueKey(_topCardIndex),
+                                           profile: _sampleProfiles[cardIndex],
+                                           width: screenWidth * 0.9,
+                                           height: cardHeight,
+                                           onSwiped: _onCardSwiped,
+                                           onTap: _onCardTap,
+                                           onShowProfile: (profile) => _showProfileSheet(context, profile),
+                                           swipeRight: _swipeRight,
+                                           swipeLeft: _swipeLeft,
+                                           currentImageIndex: _currentImageIndex,
+                                           imageProgress: _imageProgress,
+                                         ),
+                                       );
+                                     } else {
+                                       // Background cards - completely hidden behind top card
+                                       return const SizedBox.shrink(); // Don't show background cards at all
+                                     }
+                                   }),
+                                 );
+                               },
+                             ),
+                       ),
+                     ),
+                     
+                     // Action buttons (only show if stack is not empty and sheet is not open)
+                     if (!_isStackEmpty && !_isProfileSheetOpen)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                         child: _buildModernActionButtons(context),
                       ),
-                  ],
-                );
-              },
-            ),
-          ),
+                   ],
+                 );
+               },
+             ),
+           ),
+           
+                                   // Match celebration overlay
+             if (_showMatchCelebration)
+               _buildMatchCelebration(context),
+             
+             // Super like sheet overlay
+             if (_showSuperLikeSheet)
+               _buildSuperLikeSheet(context),
         ],
       ),
     );
   }
 
+  Widget _buildAnimatedBackgroundLines() {
+    return AnimatedBuilder(
+      animation: _lineAnimationController,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: AnimatedLinesPainter(_lineAnimationController.value),
+          size: Size.infinite,
+        );
+      },
+    );
+  }
+
   Widget _buildModernActionButtons(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // Pass button
-        _buildActionButton(
+        // Pass button with gradient
+        _buildGradientActionButton(
           context: context,
           icon: Icons.close,
-          color: colorScheme.outline,
-          onTap: () {
-            _showSnackBar('Passed!', colorScheme.outline);
-            _swipeCardLeft();
-          },
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)], // Gray gradient
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+                     onTap: _handleSkip,
         ),
         
-        // Super like button
-        _buildActionButton(
-          context: context,
-          icon: Icons.star,
-          color: AppColors.gradientInfo[0],
-          onTap: () {
-            _showSnackBar('Super Liked! ⭐', AppColors.gradientInfo[0]);
-          },
-        ),
+                 // Super like button with gradient and animation
+         _buildSuperLikeButton(context),
         
-        // Like button
-        _buildActionButton(
+        // Like button with gradient
+        _buildGradientActionButton(
           context: context,
           icon: Icons.favorite,
-          color: AppColors.errorLight,
-          onTap: () {
-            _showSnackBar('Liked! ❤️', AppColors.errorLight);
-            _swipeCardRight();
-          },
+          gradient: const LinearGradient(
+            colors: [Color(0xFFEF4444), Color(0xFFF87171)], // Red gradient
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+                     onTap: _handleLike,
         ),
       ],
     );
   }
 
-  Widget _buildActionButton({
-    required BuildContext context,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: color,
-          size: 28,
-        ),
-      ),
-    );
-  }
+     Widget _buildGradientActionButton({
+     required BuildContext context,
+     required IconData icon,
+     required Gradient gradient,
+     required VoidCallback onTap,
+   }) {
+     return GestureDetector(
+       onTap: onTap,
+       child: Container(
+         width: 60,
+         height: 60,
+         decoration: BoxDecoration(
+           shape: BoxShape.circle,
+           gradient: gradient,
+           boxShadow: [
+             BoxShadow(
+               color: Colors.black.withValues(alpha: 0.3),
+               blurRadius: 15,
+               offset: const Offset(0, 6),
+             ),
+           ],
+         ),
+         child: Icon(
+           icon,
+           color: Colors.white,
+           size: 28,
+         ),
+       ),
+     );
+   }
+
+   Widget _buildSuperLikeButton(BuildContext context) {
+     return AnimatedBuilder(
+       animation: _superLikeBorderController,
+       builder: (context, child) {
+         return GestureDetector(
+                       onTap: _handleSuperLike,
+           child: Container(
+             width: 75, // Bigger than other buttons
+             height: 75,
+             decoration: BoxDecoration(
+               shape: BoxShape.circle,
+               gradient: const LinearGradient(
+                 colors: [Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFF8C00)], // Yellow gradient
+                 begin: Alignment.topLeft,
+                 end: Alignment.bottomRight,
+               ),
+               boxShadow: [
+                 BoxShadow(
+                   color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                   blurRadius: 20,
+                   offset: const Offset(0, 8),
+                 ),
+               ],
+             ),
+             child: Container(
+               margin: const EdgeInsets.all(3),
+               decoration: BoxDecoration(
+                 shape: BoxShape.circle,
+                 border: Border.all(
+                   color: Colors.white.withValues(alpha: 0.8),
+                   width: 2,
+                 ),
+               ),
+               child: Icon(
+                 Icons.star,
+                 color: Colors.white,
+                 size: 32, // Bigger icon
+               ),
+             ),
+           ),
+         );
+       },
+     );
+   }
 
   Widget _buildEmptyStackMessage(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     
     return Container(
       padding: const EdgeInsets.all(32),
@@ -376,7 +481,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Text(
             'Your Daily Matches are Finished',
             style: theme.textTheme.headlineMedium?.copyWith(
-              color: colorScheme.onBackground,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
             ),
@@ -388,7 +493,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Text(
             'You\'ve seen all your matches for today.\nUpgrade your plan to see more profiles!',
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onBackground.withValues(alpha: 0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               height: 1.5,
             ),
             textAlign: TextAlign.center,
@@ -449,20 +554,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildAppTitle(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
     return Container(
       padding: const EdgeInsets.only(top: 20, bottom: 30, left: 16, right: 16),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: AppColors.navbarBackground,
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
         ),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -478,7 +580,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               Icon(
                 Icons.notifications_none_rounded,
-                color: colorScheme.onSurface,
+                color: Colors.white,
                 size: 32,
               ),
               Positioned(
@@ -504,17 +606,571 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+     void _showSnackBar(String message, Color color) {
+     ScaffoldMessenger.of(context).showSnackBar(
+       SnackBar(
+         content: Text(message),
+         backgroundColor: color,
+         duration: const Duration(seconds: 1),
+         behavior: SnackBarBehavior.floating,
+         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+       ),
+     );
+   }
+
+               void _showProfileSheet(BuildContext context, Map<String, dynamic> profile) {
+       setState(() {
+         _isProfileSheetOpen = true;
+       });
+       
+       showModalBottomSheet(
+         context: context,
+         isScrollControlled: true,
+         backgroundColor: Colors.transparent,
+         isDismissible: true,
+         enableDrag: true,
+         builder: (context) => _ProfileDetailSheet(
+           profile: profile,
+           currentImageIndex: _currentImageIndex,
+           imageProgress: _imageProgress,
+           onTap: _onCardTap,
+                       onSwipeRight: () {
+              _handleLike();
+              Navigator.of(context).pop();
+            },
+            onSwipeLeft: () {
+              _handleSkip();
+              Navigator.of(context).pop();
+            },
+            onSuperLike: () {
+              _handleSuperLike();
+              Navigator.of(context).pop();
+            },
+           onClose: () {
+             Navigator.of(context).pop();
+           },
+         ),
+       ).then((_) {
+         setState(() {
+           _isProfileSheetOpen = false;
+         });
+       });
+     }
+     
+           Widget _buildMatchCelebration(BuildContext context) {
+        final theme = Theme.of(context);
+        final screenSize = MediaQuery.of(context).size;
+        
+        return Stack(
+          children: [
+            // Semi-transparent background that allows card interactions to pass through
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  color: Colors.black.withValues(alpha: 0.8),
+                ),
+              ),
+            ),
+            // Modal content that captures its own interactions
+            Center(
+              child: Container(
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(40),
+              decoration: BoxDecoration(
+                color: AppColors.navbarBackground,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Match images with overlap - bigger and rectangular
+                  SizedBox(
+                    height: 200,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Logged in user image (right side, rotated clockwise)
+                        Positioned(
+                          right: 20,
+                          child: Transform.rotate(
+                            angle: 0.1, // Small clockwise rotation
+                            child: Container(
+                              width: 140,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 4,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                                                 child: Container(
+                                   decoration: BoxDecoration(
+                                     gradient: LinearGradient(
+                                       colors: [Colors.blue[400]!, Colors.purple[400]!],
+                                       begin: Alignment.topLeft,
+                                       end: Alignment.bottomRight,
+                                     ),
+                                   ),
+                                   child: Icon(
+                                     Icons.person,
+                                     size: 60,
+                                     color: Colors.white,
+                                   ),
+                                 ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        // Matched user image (left side, overlapping 20%, rotated counter-clockwise)
+                        Positioned(
+                          left: 20,
+                          child: Transform.rotate(
+                            angle: -0.1, // Small counter-clockwise rotation
+                            child: Container(
+                              width: 140,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 4,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                                                 child: Container(
+                                   decoration: BoxDecoration(
+                                     gradient: LinearGradient(
+                                       colors: [Colors.pink[400]!, Colors.red[400]!],
+                                       begin: Alignment.topLeft,
+                                       end: Alignment.bottomRight,
+                                     ),
+                                   ),
+                                   child: Icon(
+                                     Icons.person,
+                                     size: 60,
+                                     color: Colors.white,
+                                   ),
+                                 ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                 
+                 const SizedBox(height: 24),
+                 
+                 // Congratulations text
+                 Text(
+                   'Congratulations!',
+                   style: theme.textTheme.headlineMedium?.copyWith(
+                     fontWeight: FontWeight.bold,
+                     color: Colors.white,
+                     fontSize: 24,
+                   ),
+                   textAlign: TextAlign.center,
+                 ),
+                 
+                 const SizedBox(height: 8),
+                 
+                 Text(
+                   'It\'s a new match!',
+                   style: theme.textTheme.bodyLarge?.copyWith(
+                     color: Colors.white.withValues(alpha: 0.8),
+                     fontSize: 16,
+                   ),
+                   textAlign: TextAlign.center,
+                 ),
+                 
+                 const SizedBox(height: 32),
+                 
+                 // Start Chat button
+                 Container(
+                   width: double.infinity,
+                   height: 56,
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.circular(28),
+                     gradient: LinearGradient(
+                       colors: AppColors.lgbtGradient,
+                       begin: Alignment.centerLeft,
+                       end: Alignment.centerRight,
+                     ),
+                     boxShadow: [
+                       BoxShadow(
+                         color: AppColors.primaryLight.withValues(alpha: 0.3),
+                         blurRadius: 15,
+                         offset: const Offset(0, 8),
+                       ),
+                     ],
+                   ),
+                   child: Material(
+                     color: Colors.transparent,
+                     child: InkWell(
+                       borderRadius: BorderRadius.circular(28),
+                       onTap: () {
+                         setState(() {
+                           _showMatchCelebration = false;
+                           _matchedProfile = null;
+                         });
+                         _showSnackBar('Chat feature coming soon! 💬', AppColors.primaryLight);
+                       },
+                       child: Center(
+                         child: Row(
+                           mainAxisAlignment: MainAxisAlignment.center,
+                           children: [
+                             Icon(
+                               Icons.chat_bubble,
+                               color: Colors.white,
+                               size: 24,
+                             ),
+                             const SizedBox(width: 12),
+                             Text(
+                               'Start Chat',
+                               style: theme.textTheme.titleLarge?.copyWith(
+                                 fontWeight: FontWeight.bold,
+                                 color: Colors.white,
+                               ),
+                             ),
+                           ],
+                         ),
+                       ),
+                     ),
+                   ),
+                 ),
+                 
+                 const SizedBox(height: 16),
+                 
+                 // Continue button
+                 TextButton(
+                   onPressed: () {
+                     setState(() {
+                       _showMatchCelebration = false;
+                       _matchedProfile = null;
+                     });
+                   },
+                   child: Text(
+                     'Continue Swiping',
+                     style: theme.textTheme.bodyLarge?.copyWith(
+                       color: Colors.white.withValues(alpha: 0.7),
+                       fontWeight: FontWeight.w500,
+                     ),
+                   ),
+                 ),
+                                ],
+                                                  ),
+                ),
+              ),
+            ],
+          );
+        }
+        
+        Widget _buildSuperLikeSheet(BuildContext context) {
+          final theme = Theme.of(context);
+          final screenSize = MediaQuery.of(context).size;
+          
+          return Stack(
+            children: [
+              // Semi-transparent background that allows card interactions to pass through
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.8),
+                  ),
+                ),
+              ),
+              // Modal content that captures its own interactions
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: AppColors.navbarBackground,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Super like icon and title
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFF8C00)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.star,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      Text(
+                        'Super Like!',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 24,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      Text(
+                        'Send a message to ${_superLikedProfile?['name'] ?? 'them'}',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Emoji options
+                      Text(
+                        'Quick Messages',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                                             Wrap(
+                         spacing: 12,
+                         runSpacing: 12,
+                         children: [
+                           _buildEmojiButton('😍'),
+                           _buildEmojiButton('🔥'),
+                           _buildEmojiButton('💫'),
+                           _buildEmojiButton('🎉'),
+                           _buildEmojiButton('💖'),
+                           _buildEmojiButton('✨'),
+                           _buildEmojiButton('🌟'),
+                           _buildEmojiButton('💕'),
+                         ],
+                       ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Custom message input
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: TextField(
+                          style: TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Or type your own message...',
+                            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.all(16),
+                          ),
+                          maxLines: 3,
+                          maxLength: 100,
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Send button
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(28),
+                            onTap: () {
+                              setState(() {
+                                _showSuperLikeSheet = false;
+                                _superLikedProfile = null;
+                              });
+                              _showSnackBar('Super like sent! ⭐', const Color(0xFFFFD700));
+                            },
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.send,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Send Super Like',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Cancel button
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _showSuperLikeSheet = false;
+                            _superLikedProfile = null;
+                          });
+                        },
+                        child: Text(
+                          'Cancel',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+        
+                 Widget _buildEmojiButton(String emoji) {
+           return GestureDetector(
+             onTap: () {
+               // Close modal and show snackbar
+               setState(() {
+                 _showSuperLikeSheet = false;
+                 _superLikedProfile = null;
+               });
+               _showSnackBar('Super like sent! ⭐', const Color(0xFFFFD700));
+             },
+             child: Container(
+               padding: const EdgeInsets.all(16),
+               decoration: BoxDecoration(
+                 color: Colors.white.withValues(alpha: 0.1),
+                 borderRadius: BorderRadius.circular(20),
+                 border: Border.all(
+                   color: Colors.white.withValues(alpha: 0.2),
+                 ),
+               ),
+               child: Text(
+                 emoji,
+                 style: TextStyle(fontSize: 24),
+               ),
+             ),
+           );
+         }
+}
+
+// Animated background lines painter
+class AnimatedLinesPainter extends CustomPainter {
+  final double animationValue;
+
+  AnimatedLinesPainter(this.animationValue);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.03)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+         // Draw animated lines
+     for (int i = 0; i < 8; i++) {
+       final startX = (size.width * 0.1 * i + animationValue * 100) % size.width;
+       final startY = (size.height * 0.1 * i + animationValue * 50) % size.height;
+       final endX = startX + 100.0;
+       final endY = startY + 50.0;
+       
+       canvas.drawLine(
+         Offset(startX, startY),
+         Offset(endX, endY),
+         paint,
+       );
+     }
+
+         // Draw diagonal lines
+     for (int i = 0; i < 5; i++) {
+       final startX = (size.width * 0.2 * i - animationValue * 80) % size.width;
+       final startY = size.height;
+       final endX = startX + 150.0;
+       final endY = 0.0;
+       
+       canvas.drawLine(
+         Offset(startX, startY),
+         Offset(endX, endY),
+         paint,
+       );
+     }
   }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
 
 class ParticlePainter extends CustomPainter {
@@ -532,7 +1188,7 @@ class ParticlePainter extends CustomPainter {
     for (int i = 0; i < 20; i++) {
       final x = (size.width * 0.1 * i + animationValue * 100) % size.width;
       final y = (size.height * 0.1 * i + animationValue * 50) % size.height;
-      final radius = (2 + (i % 3)).toDouble();
+      final radius = 2.0 + (i % 3);
       
       canvas.drawCircle(Offset(x, y), radius, paint);
     }
@@ -543,25 +1199,31 @@ class ParticlePainter extends CustomPainter {
 }
 
 // Modern swipeable card wrapper
-class _ModernSwipeableCard extends StatefulWidget {
-  final Map<String, dynamic> profile;
-  final double width;
-  final double height;
-  final void Function(bool isRight) onSwiped;
-  final bool swipeRight;
-  final bool swipeLeft;
-  final int currentImageIndex;
+ class _ModernSwipeableCard extends StatefulWidget {
+   final Map<String, dynamic> profile;
+   final double width;
+   final double height;
+   final void Function(bool isRight) onSwiped;
+   final VoidCallback? onTap;
+   final void Function(Map<String, dynamic> profile)? onShowProfile;
+   final bool swipeRight;
+   final bool swipeLeft;
+   final int currentImageIndex;
+   final double imageProgress;
 
-  const _ModernSwipeableCard({
-    Key? key,
-    required this.profile,
-    required this.width,
-    required this.height,
-    required this.onSwiped,
-    this.swipeRight = false,
-    this.swipeLeft = false,
-    required this.currentImageIndex,
-  }) : super(key: key);
+   const _ModernSwipeableCard({
+     Key? key,
+     required this.profile,
+     required this.width,
+     required this.height,
+     required this.onSwiped,
+     this.onTap,
+     this.onShowProfile,
+     this.swipeRight = false,
+     this.swipeLeft = false,
+     required this.currentImageIndex,
+     required this.imageProgress,
+   }) : super(key: key);
 
   @override
   State<_ModernSwipeableCard> createState() => _ModernSwipeableCardState();
@@ -571,7 +1233,7 @@ class _ModernSwipeableCardState extends State<_ModernSwipeableCard> with SingleT
   late Offset _offset;
   late AnimationController _controller;
   late Animation<Offset> _animation;
-  bool _isDragging = false;
+
 
   @override
   void initState() {
@@ -635,38 +1297,45 @@ class _ModernSwipeableCardState extends State<_ModernSwipeableCard> with SingleT
     _controller.forward(from: 0);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: _offset,
-      child: GestureDetector(
-        onPanUpdate: _onPanUpdate,
-        onPanEnd: _onPanEnd,
-        child: _ModernCard(
-          profile: widget.profile,
-          width: widget.width,
-          height: widget.height,
-          currentImageIndex: widget.currentImageIndex,
+           @override
+    Widget build(BuildContext context) {
+      return Transform.translate(
+        offset: _offset,
+        child: GestureDetector(
+          onPanUpdate: _onPanUpdate,
+          onPanEnd: _onPanEnd,
+          onTap: widget.onTap,
+          child: _ModernCard(
+            profile: widget.profile,
+            width: widget.width,
+            height: widget.height,
+            currentImageIndex: widget.currentImageIndex,
+            imageProgress: widget.imageProgress,
+            onShowProfile: widget.onShowProfile,
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 }
 
 // Modern card design with cached images and theme support
-class _ModernCard extends StatelessWidget {
-  final Map<String, dynamic> profile;
-  final double width;
-  final double height;
-  final int currentImageIndex;
+ class _ModernCard extends StatelessWidget {
+   final Map<String, dynamic> profile;
+   final double width;
+   final double height;
+   final int currentImageIndex;
+   final double imageProgress;
+   final void Function(Map<String, dynamic> profile)? onShowProfile;
 
-  const _ModernCard({
-    Key? key,
-    required this.profile,
-    required this.width,
-    required this.height,
-    required this.currentImageIndex,
-  }) : super(key: key);
+   const _ModernCard({
+     Key? key,
+     required this.profile,
+     required this.width,
+     required this.height,
+     required this.currentImageIndex,
+     required this.imageProgress,
+     this.onShowProfile,
+   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -692,130 +1361,815 @@ class _ModernCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            // Profile image with caching
-            Positioned.fill(
-              child: CachedNetworkImage(
-                imageUrl: images[currentImageIndex % images.length],
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: colorScheme.surface,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: colorScheme.surface,
-                  child: Icon(
-                    Icons.person,
-                    size: 100,
-                    color: colorScheme.outline,
-                  ),
-                ),
-                memCacheWidth: 800, // Optimize memory usage
-                memCacheHeight: 1200,
-                maxWidthDiskCache: 800,
-                maxHeightDiskCache: 1200,
-              ),
-            ),
+                         // Profile image with caching and fade animation - fills entire card
+             Positioned.fill(
+               child: AnimatedSwitcher(
+                 duration: const Duration(milliseconds: 300),
+                 transitionBuilder: (Widget child, Animation<double> animation) {
+                   return FadeTransition(
+                     opacity: animation,
+                     child: child,
+                   );
+                 },
+                 child: CachedNetworkImage(
+                   key: ValueKey('${images[currentImageIndex % images.length]}_$currentImageIndex'),
+                   imageUrl: images[currentImageIndex % images.length],
+                   fit: BoxFit.cover,
+                   width: double.infinity,
+                   height: double.infinity,
+                   placeholder: (context, url) => Container(
+                     color: colorScheme.surface,
+                     width: double.infinity,
+                     height: double.infinity,
+                     child: Center(
+                       child: CircularProgressIndicator(
+                         color: colorScheme.primary,
+                       ),
+                     ),
+                   ),
+                   errorWidget: (context, url, error) => Container(
+                     color: colorScheme.surface,
+                     width: double.infinity,
+                     height: double.infinity,
+                     child: Icon(
+                       Icons.person,
+                       size: 100,
+                       color: colorScheme.outline,
+                     ),
+                   ),
+                   memCacheWidth: 800, // Optimize memory usage
+                   memCacheHeight: 1200,
+                   maxWidthDiskCache: 800,
+                   maxHeightDiskCache: 1200,
+                 ),
+               ),
+             ),
             
-            // Distance badge
-            Positioned(
-              top: 16,
-              left: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: colorScheme.onSurface,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      profile['distance'] ?? '1 km',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Profile info overlay
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
+                                                   // Progress bars at top
+              if (images.length > 1)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  right: 16,
+                  child: Row(
+                    children: List.generate(images.length, (index) {
+                      // Calculate fill progress for each bar
+                      double fillProgress = 0.0;
+                      
+                      if (index < (currentImageIndex % images.length)) {
+                        // Previous images: fully filled
+                        fillProgress = 1.0;
+                      } else if (index == (currentImageIndex % images.length)) {
+                        // Current image: partial fill based on progress
+                        fillProgress = imageProgress;
+                      } else {
+                        // Future images: empty
+                        fillProgress = 0.0;
+                      }
+                      
+                      return Expanded(
+                        child: Container(
+                          height: 4,
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: Colors.white.withValues(alpha: 0.3), // Light gray background
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: Stack(
+                              children: [
+                                // Background (empty progress bar)
+                                Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  color: Colors.transparent,
+                                ),
+                                // Fill animation with app colors
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 100),
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  child: FractionallySizedBox(
+                                    widthFactor: fillProgress,
+                                    alignment: Alignment.centerLeft, // Fill from left to right
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.white, // Single white color
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                   ),
                 ),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Name
-                    Text(
-                      profile['name'] ?? 'Unknown',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Profession
-                    Text(
-                      profile['profession'] ?? 'Professional',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Image pagination dots
-                    if (images.length > 1)
-                      Row(
-                        children: List.generate(images.length, (index) {
-                          return Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: index == (currentImageIndex % images.length)
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.5),
+            
+                                                   // User information and profile button at bottom
+                                            Positioned(
+                 bottom: 0,
+                 left: 0,
+                 right: 0,
+                 child: Container(
+                   padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
+                   decoration: BoxDecoration(
+                     gradient: LinearGradient(
+                       begin: Alignment.topCenter,
+                       end: Alignment.bottomCenter,
+                       colors: [
+                         Colors.transparent,
+                         Colors.black.withValues(alpha: 0.7),
+                         Colors.black.withValues(alpha: 0.9),
+                       ],
+                     ),
+                     borderRadius: const BorderRadius.only(
+                       bottomLeft: Radius.circular(20),
+                       bottomRight: Radius.circular(20),
+                     ),
+                   ),
+                   child: Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     mainAxisSize: MainAxisSize.min,
+                     children: [
+                       // User info and profile button row
+                       Row(
+                         children: [
+                           // User info
+                           Expanded(
+                             child: Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               mainAxisSize: MainAxisSize.min,
+                               children: [
+                                 // Name and age
+                                 Row(
+                                   children: [
+                                     Text(
+                                       profile['name'] ?? 'Unknown',
+                                       style: theme.textTheme.titleLarge?.copyWith(
+                                         fontWeight: FontWeight.bold,
+                                         color: Colors.white,
+                                         fontSize: 20,
+                                       ),
+                                     ),
+                                     const SizedBox(width: 8),
+                                     Text(
+                                       '${profile['age'] ?? 25}',
+                                       style: theme.textTheme.titleMedium?.copyWith(
+                                         fontWeight: FontWeight.w600,
+                                         color: Colors.white,
+                                       ),
+                                     ),
+                                   ],
+                                 ),
+                                 const SizedBox(height: 4),
+                                 // Profession
+                                 Text(
+                                   profile['profession'] ?? 'Professional',
+                                   style: theme.textTheme.bodyMedium?.copyWith(
+                                     color: Colors.white.withValues(alpha: 0.9),
+                                     fontWeight: FontWeight.w500,
+                                   ),
+                                 ),
+                                 const SizedBox(height: 4),
+                                 // Location and distance
+                                 Row(
+                                   children: [
+                                     Icon(
+                                       Icons.location_on,
+                                       size: 16,
+                                       color: Colors.white.withValues(alpha: 0.8),
+                                     ),
+                                     const SizedBox(width: 4),
+                                     Text(
+                                       profile['location'] ?? 'Chicago, IL',
+                                       style: theme.textTheme.bodySmall?.copyWith(
+                                         color: Colors.white.withValues(alpha: 0.8),
+                                       ),
+                                     ),
+                                     const SizedBox(width: 12),
+                                     Icon(
+                                       Icons.straighten,
+                                       size: 16,
+                                       color: Colors.white.withValues(alpha: 0.8),
+                                     ),
+                                     const SizedBox(width: 4),
+                                     Text(
+                                       profile['distance'] ?? '1 km',
+                                       style: theme.textTheme.bodySmall?.copyWith(
+                                         color: Colors.white.withValues(alpha: 0.8),
+                                       ),
+                                     ),
+                                   ],
+                                 ),
+                               ],
+                             ),
+                           ),
+                           // Profile button (bigger and at bottom)
+                           GestureDetector(
+                             onTap: () {
+                               onShowProfile?.call(profile);
+                             },
+                             child: Container(
+                               padding: const EdgeInsets.all(12),
+                               decoration: BoxDecoration(
+                                 color: Colors.white.withValues(alpha: 0.9),
+                                 shape: BoxShape.circle,
+                                 boxShadow: [
+                                   BoxShadow(
+                                     color: Colors.black.withValues(alpha: 0.3),
+                                     blurRadius: 8,
+                                     offset: const Offset(0, 2),
+                                   ),
+                                 ],
+                               ),
+                               child: Icon(
+                                 Icons.person,
+                                 size: 28, // Bigger icon
+                                 color: Colors.black87,
+                               ),
+                             ),
+                           ),
+                         ],
+                       ),
+                       const SizedBox(height: 8),
+                       // Matching badge
+                       Container(
+                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                         decoration: BoxDecoration(
+                           color: AppColors.primaryLight.withValues(alpha: 0.9),
+                           borderRadius: BorderRadius.circular(16),
+                           border: Border.all(
+                             color: Colors.white.withValues(alpha: 0.3),
+                             width: 1,
+                           ),
+                         ),
+                         child: Row(
+                           mainAxisSize: MainAxisSize.min,
+                           children: [
+                             Icon(
+                               Icons.favorite,
+                               size: 14,
+                               color: Colors.white,
+                             ),
+                             const SizedBox(width: 4),
+                             Text(
+                               'Travel',
+                               style: theme.textTheme.bodySmall?.copyWith(
+                                 color: Colors.white,
+                                 fontWeight: FontWeight.w600,
+                                 fontSize: 12,
+                               ),
+                             ),
+                           ],
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
+               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Profile Detail Sheet Widget
+class _ProfileDetailSheet extends StatefulWidget {
+  final Map<String, dynamic> profile;
+  final int currentImageIndex;
+  final double imageProgress;
+  final VoidCallback onTap;
+  final VoidCallback onSwipeRight;
+  final VoidCallback onSwipeLeft;
+  final VoidCallback onSuperLike;
+  final VoidCallback onClose;
+
+  const _ProfileDetailSheet({
+    Key? key,
+    required this.profile,
+    required this.currentImageIndex,
+    required this.imageProgress,
+    required this.onTap,
+    required this.onSwipeRight,
+    required this.onSwipeLeft,
+    required this.onSuperLike,
+    required this.onClose,
+  }) : super(key: key);
+
+  @override
+  State<_ProfileDetailSheet> createState() => _ProfileDetailSheetState();
+}
+
+class _ProfileDetailSheetState extends State<_ProfileDetailSheet> with TickerProviderStateMixin {
+  late AnimationController _imageTimer;
+  int _currentImageIndex = 0;
+  double _imageProgress = 0.0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentImageIndex = widget.currentImageIndex;
+    _imageProgress = widget.imageProgress;
+    _imageTimer = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+    _startImageTimer();
+  }
+
+  @override
+  void dispose() {
+    _imageTimer.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startImageTimer() {
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (mounted) {
+        setState(() {
+          _imageProgress += 0.033; // Increment for 3 seconds total
+          if (_imageProgress >= 1.0) {
+            _imageProgress = 0.0;
+            final images = widget.profile['images'] as List;
+            _currentImageIndex = (_currentImageIndex + 1) % images.length;
+          }
+        });
+      }
+    });
+  }
+
+  void _onImageTap() {
+    setState(() {
+      _imageProgress = 0.0;
+      final images = widget.profile['images'] as List;
+      _currentImageIndex = (_currentImageIndex + 1) % images.length;
+    });
+    // Restart the timer after manual tap
+    _timer?.cancel();
+    _startImageTimer();
+  }
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final images = widget.profile['images'] as List;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+         return Container(
+       height: screenHeight * 0.9,
+       decoration: BoxDecoration(
+         color: AppColors.navbarBackground,
+         borderRadius: const BorderRadius.only(
+           topLeft: Radius.circular(24),
+           topRight: Radius.circular(24),
+         ),
+       ),
+      child: Column(
+        children: [
+                     // Drag handle
+           Container(
+             margin: const EdgeInsets.only(top: 12, bottom: 8),
+             width: 40,
+             height: 4,
+             decoration: BoxDecoration(
+               color: Colors.white.withValues(alpha: 0.3),
+               borderRadius: BorderRadius.circular(2),
+             ),
+           ),
+          
+                     // Close button
+           Align(
+             alignment: Alignment.topRight,
+             child: GestureDetector(
+               onTap: widget.onClose,
+               child: Container(
+                 margin: const EdgeInsets.only(right: 16, top: 8),
+                 padding: const EdgeInsets.all(8),
+                 decoration: BoxDecoration(
+                   color: Colors.white.withValues(alpha: 0.1),
+                   shape: BoxShape.circle,
+                 ),
+                 child: Icon(
+                   Icons.close,
+                   size: 20,
+                   color: Colors.white,
+                 ),
+               ),
+             ),
+           ),
+          
+          // Image section with progress bars
+          Container(
+            height: screenHeight * 0.4,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                children: [
+                                     // Image with fade animation and click effects
+                   Positioned.fill(
+                     child: Material(
+                       color: Colors.transparent,
+                                                child: InkWell(
+                           borderRadius: BorderRadius.circular(16),
+                           onTap: _onImageTap,
+                           splashColor: Colors.white.withValues(alpha: 0.2),
+                           highlightColor: Colors.white.withValues(alpha: 0.1),
+                           child: AnimatedSwitcher(
+                             duration: const Duration(milliseconds: 300),
+                             transitionBuilder: (Widget child, Animation<double> animation) {
+                               return FadeTransition(
+                                 opacity: animation,
+                                 child: child,
+                               );
+                             },
+                             child: CachedNetworkImage(
+                               key: ValueKey('${images[_currentImageIndex % images.length]}_$_currentImageIndex'),
+                               imageUrl: images[_currentImageIndex % images.length],
+                             fit: BoxFit.cover,
+                             placeholder: (context, url) => Container(
+                               color: colorScheme.surface,
+                               child: Center(
+                                 child: CircularProgressIndicator(
+                                   color: colorScheme.primary,
+                                 ),
+                               ),
+                             ),
+                             errorWidget: (context, url, error) => Container(
+                               color: colorScheme.surface,
+                               child: Icon(
+                                 Icons.person,
+                                 size: 100,
+                                 color: colorScheme.outline,
+                               ),
+                             ),
+                           ),
+                         ),
+                       ),
+                     ),
+                   ),
+                  
+                  // Progress bars
+                  if (images.length > 1)
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                                                 children: List.generate(images.length, (index) {
+                           double fillProgress = 0.0;
+                           
+                           if (index < (_currentImageIndex % images.length)) {
+                             fillProgress = 1.0;
+                           } else if (index == (_currentImageIndex % images.length)) {
+                             fillProgress = _imageProgress;
+                           } else {
+                             fillProgress = 0.0;
+                           }
+                          
+                          return Expanded(
+                            child: Container(
+                              height: 4,
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(2),
+                                color: Colors.white.withValues(alpha: 0.3),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(2),
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      color: Colors.transparent,
+                                    ),
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 100),
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      child: FractionallySizedBox(
+                                        widthFactor: fillProgress,
+                                        alignment: Alignment.centerLeft,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(2),
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           );
                         }),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Profile information
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                                     // Name and age
+                   Row(
+                     children: [
+                       Expanded(
+                         child: Text(
+                           widget.profile['name'] ?? 'Unknown',
+                           style: theme.textTheme.headlineMedium?.copyWith(
+                             fontWeight: FontWeight.bold,
+                             color: Colors.white,
+                           ),
+                         ),
+                       ),
+                       Container(
+                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                         decoration: BoxDecoration(
+                           color: AppColors.primaryLight.withValues(alpha: 0.2),
+                           borderRadius: BorderRadius.circular(20),
+                         ),
+                         child: Text(
+                           '${widget.profile['age'] ?? 25}',
+                           style: theme.textTheme.bodyLarge?.copyWith(
+                             fontWeight: FontWeight.w600,
+                             color: AppColors.primaryLight,
+                           ),
+                         ),
+                       ),
+                     ],
+                   ),
+                  
+                  const SizedBox(height: 8),
+                  
+                                     // Profession
+                   Text(
+                     widget.profile['profession'] ?? 'Professional',
+                     style: theme.textTheme.bodyLarge?.copyWith(
+                       color: Colors.white.withValues(alpha: 0.8),
+                       fontWeight: FontWeight.w500,
+                     ),
+                   ),
+                  
+                  const SizedBox(height: 16),
+                  
+                                     // Location
+                   Row(
+                     children: [
+                       Icon(
+                         Icons.location_on,
+                         size: 20,
+                         color: Colors.white.withValues(alpha: 0.7),
+                       ),
+                       const SizedBox(width: 8),
+                       Text(
+                         widget.profile['location'] ?? 'Chicago, IL',
+                         style: theme.textTheme.bodyMedium?.copyWith(
+                           color: Colors.white.withValues(alpha: 0.7),
+                         ),
+                       ),
+                       const SizedBox(width: 16),
+                       Icon(
+                         Icons.straighten,
+                         size: 20,
+                         color: Colors.white.withValues(alpha: 0.7),
+                       ),
+                       const SizedBox(width: 8),
+                       Text(
+                         widget.profile['distance'] ?? '1 km',
+                         style: theme.textTheme.bodyMedium?.copyWith(
+                           color: Colors.white.withValues(alpha: 0.7),
+                         ),
+                       ),
+                     ],
+                   ),
+                  
+                  const SizedBox(height: 24),
+                  
+                                     // Bio
+                   Text(
+                     'About',
+                     style: theme.textTheme.titleLarge?.copyWith(
+                       fontWeight: FontWeight.bold,
+                       color: Colors.white,
+                     ),
+                   ),
+                   
+                   const SizedBox(height: 8),
+                   
+                   Text(
+                     widget.profile['bio'] ?? 'No bio available.',
+                     style: theme.textTheme.bodyMedium?.copyWith(
+                       color: Colors.white.withValues(alpha: 0.8),
+                       height: 1.5,
+                     ),
+                   ),
+                  
+                  const SizedBox(height: 24),
+                  
+                                     // Tags
+                   if (widget.profile['tags'] != null)
+                     Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                         Text(
+                           'Interests',
+                           style: theme.textTheme.titleLarge?.copyWith(
+                             fontWeight: FontWeight.bold,
+                             color: Colors.white,
+                           ),
+                         ),
+                         
+                         const SizedBox(height: 12),
+                         
+                         Wrap(
+                           spacing: 8,
+                           runSpacing: 8,
+                           children: (widget.profile['tags'] as List).asMap().entries.map<Widget>((entry) {
+                             final index = entry.key;
+                             final tag = entry.value;
+                             
+                             // Make the first tag (index 0) a pink gradient to show it's a match
+                             final isMatch = index == 0;
+                             
+                             return Container(
+                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                               decoration: BoxDecoration(
+                                 gradient: isMatch 
+                                   ? const LinearGradient(
+                                       colors: [Color(0xFFE91E63), Color(0xFFFF4081)],
+                                       begin: Alignment.topLeft,
+                                       end: Alignment.bottomRight,
+                                     )
+                                   : null,
+                                 color: isMatch ? null : AppColors.primaryLight.withValues(alpha: 0.2),
+                                 borderRadius: BorderRadius.circular(20),
+                                 border: Border.all(
+                                   color: isMatch 
+                                     ? Colors.transparent
+                                     : AppColors.primaryLight.withValues(alpha: 0.3),
+                                 ),
+                               ),
+                               child: Text(
+                                 tag.toString(),
+                                 style: theme.textTheme.bodyMedium?.copyWith(
+                                   color: isMatch ? Colors.white : AppColors.primaryLight,
+                                   fontWeight: FontWeight.w600,
+                                 ),
+                               ),
+                             );
+                           }).toList(),
+                         ),
+                       ],
+                     ),
+                  
+                  const SizedBox(height: 100), // Space for action buttons
+                ],
+              ),
+            ),
+          ),
+          
+                     // Action buttons
+           Container(
+             padding: const EdgeInsets.all(24),
+             decoration: BoxDecoration(
+               color: AppColors.navbarBackground,
+               boxShadow: [
+                 BoxShadow(
+                   color: Colors.black.withValues(alpha: 0.3),
+                   blurRadius: 10,
+                   offset: const Offset(0, -2),
+                 ),
+               ],
+             ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                                 // Pass button
+                 _buildSheetActionButton(
+                   icon: Icons.close,
+                   gradient: const LinearGradient(
+                     colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)],
+                     begin: Alignment.topLeft,
+                     end: Alignment.bottomRight,
+                   ),
+                   onTap: widget.onSwipeLeft,
+                 ),
+                 
+                 // Super like button
+                 _buildSheetSuperLikeButton(),
+                 
+                 // Like button
+                 _buildSheetActionButton(
+                   icon: Icons.favorite,
+                   gradient: const LinearGradient(
+                     colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+                     begin: Alignment.topLeft,
+                     end: Alignment.bottomRight,
+                   ),
+                   onTap: widget.onSwipeRight,
+                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSheetActionButton({
+    required IconData icon,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: gradient,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 28,
+        ),
+      ),
+    );
+  }
+
+     Widget _buildSheetSuperLikeButton() {
+     return GestureDetector(
+       onTap: widget.onSuperLike,
+       child: Container(
+        width: 75,
+        height: 75,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFF8C00)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Container(
+          margin: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.8),
+              width: 2,
+            ),
+          ),
+          child: Icon(
+            Icons.star,
+            color: Colors.white,
+            size: 32,
+          ),
         ),
       ),
     );

@@ -1,0 +1,525 @@
+# LGBTinder Mobile App Profile Pages Design Specification
+
+## **Application Profile Page (View Mode)**
+
+### **Page Structure & Content**
+
+#### **1. Header Section**
+```
+- Profile Photo (Large, circular, primary image)
+- User's Full Name (Large, bold text)
+- Age (calculated from birth date)
+- Location (City, Country)
+- Online Status Indicator (Green dot if online)
+- Verification Badge (if verified)
+- Premium Plan Badge (if applicable)
+- Edit Profile Button (top right corner)
+```
+
+#### **2. Basic Information Section**
+```
+- Profile Bio (multiline text, max 500 characters)
+- Gender Identity (display only)
+- Sexual Orientation (display only)
+- Relationship Goals (display only)
+- Looking for (Preferred Genders - display only)
+```
+
+#### **3. Personal Details Section**
+```
+- Height (display in cm/ft)
+- Weight (display in kg/lbs)
+- Lifestyle Preferences:
+  * Smoking: Yes/No/Sometimes
+  * Gym: Yes/No/Sometimes  
+  * Drinking: Yes/No/Sometimes
+```
+
+#### **4. Background Information Section**
+```
+- Education (display institution names)
+- Job/Profession (display job titles)
+- Languages Spoken (display language names)
+- Music Genres (display genre names)
+- Interests/Hobbies (display interest names)
+```
+
+#### **5. Photo Gallery Section**
+```
+- Horizontal scrollable gallery
+- Profile photos (primary marked)
+- Gallery photos
+- Photo count indicator
+- Tap to view full screen
+```
+
+#### **6. Matching Preferences Section (Collapsible)**
+```
+- Age Range: "Looking for ages X-Y"
+- Distance Range: "Within X km/miles"
+- Show/Hide toggle for this section
+```
+
+#### **7. Safety & Verification Section**
+```
+- Verification Status:
+  * Photo Verified ✓
+  * ID Verified ✓  
+  * Video Verified ✓
+- Verification Score (0-100%)
+- "Verified Profile" badge if score > 70%
+```
+
+#### **8. Action Buttons Section**
+```
+- Like Button (heart icon)
+- Superlike Button (star icon, with remaining count)
+- Dislike Button (X icon)
+- Report Button (flag icon, small)
+- Block Button (shield icon, small)
+```
+
+---
+
+## **Profile Edit Page (Edit Mode)**
+
+### **Page Structure & Input Sections**
+
+#### **1. Header Section**
+```
+- Back Button (left)
+- "Edit Profile" Title (center)
+- Save Button (right, disabled until changes made)
+- Profile Completion Progress Bar (below title)
+```
+
+#### **2. Profile Photos Section**
+```
+- Primary Profile Photo (large, circular)
+- Photo Gallery Grid (3x3 or scrollable)
+- "Add Photo" Button (+ icon)
+- Photo Management:
+  * Set as Primary
+  * Delete Photo
+  * Reorder Photos
+- Photo Upload Options:
+  * Camera
+  * Gallery
+  * Remove Photo
+```
+
+#### **3. Basic Information Section**
+```
+Input Fields:
+- First Name (text input, required)
+- Last Name (text input, required)
+- Profile Bio (multiline text area, max 500 chars, placeholder: "Tell others about yourself...")
+- Birth Date (date picker, required, 18+ validation)
+- City (text input with autocomplete)
+- Country (dropdown/autocomplete)
+```
+
+#### **4. Identity & Preferences Section**
+```
+Input Fields:
+- Gender Identity (single selection from API):
+  * Fetch from: GET /api/genders
+  * Response: Array of gender objects with {id, title, img}
+  * Include "Other" option with text input field
+
+- Sexual Orientation (single selection from API):
+  * Fetch from: GET /api/sexual-orientations
+  * Response: Array of orientation objects with {id, label, description}
+  * Include "Custom" option with text input field
+
+- Relationship Goals (multiple selection from API):
+  * Fetch from: GET /api/relation-goals
+  * Response: Array of goal objects with {id, title, subtitle, img}
+
+- Looking for (Preferred Genders - multiple selection from API):
+  * Fetch from: GET /api/preferred-genders
+  * Response: Array of preferred gender objects with {id, title, img}
+```
+
+#### **5. Physical & Lifestyle Section**
+```
+Input Fields:
+- Height (number input with unit selection: cm/ft)
+- Weight (number input with unit selection: kg/lbs)
+- Lifestyle Preferences:
+  * Smoking (radio buttons: Yes/No/Sometimes)
+  * Gym (radio buttons: Yes/No/Sometimes)
+  * Drinking (radio buttons: Yes/No/Sometimes)
+```
+
+#### **6. Background Information Section**
+```
+Input Fields:
+- Education (multiple selection from API):
+  * Fetch from: GET /api/education
+  * Response: Array of education objects with {id, title, img}
+
+- Job/Profession (multiple selection from API):
+  * Fetch from: GET /api/jobs
+  * Response: Array of job objects with {id, title, img}
+
+- Languages Spoken (multiple selection from API):
+  * Fetch from: GET /api/languages
+  * Response: Array of language objects with {id, title, img}
+
+- Music Genres (multiple selection from API):
+  * Fetch from: GET /api/music-genres
+  * Response: Array of music genre objects with {id, title, img}
+
+- Interests/Hobbies (multiple selection from API):
+  * Fetch from: GET /api/interests
+  * Response: Array of interest objects with {id, title, img}
+```
+
+#### **7. Matching Preferences Section**
+```
+Input Fields:
+- Age Range (dual slider):
+  * Minimum Age (18-80)
+  * Maximum Age (18-80)
+  * Display: "Looking for ages X-Y"
+
+- Distance Range (slider):
+  * Range: 1-100 km/miles
+  * Display: "Within X km/miles"
+
+- Show My Age (toggle switch)
+- Show My Distance (toggle switch)
+```
+
+#### **8. Privacy & Safety Section**
+```
+Input Fields:
+- Show Adult Content (toggle switch)
+- Profile Visibility (radio buttons):
+  * Public (everyone can see)
+  * Matches Only
+  * Friends Only
+- Online Status (radio buttons):
+  * Show when online
+  * Hide online status
+- Last Seen (radio buttons):
+  * Show last seen
+  * Hide last seen
+```
+
+#### **9. Notification Preferences Section**
+```
+Input Fields:
+- New Matches (toggle switch)
+- New Messages (toggle switch)
+- Likes (toggle switch)
+- Superlikes (toggle switch)
+- Stories from Matches (toggle switch)
+- Feed Updates (toggle switch)
+- Safety Alerts (toggle switch, always on)
+```
+
+#### **10. Account Settings Section**
+```
+Input Fields:
+- Email (display only, with "Change Email" button)
+- Phone Number (display only, with "Change Phone" button)
+- Password (with "Change Password" button)
+- Delete Account (red button with confirmation)
+```
+
+#### **11. Verification Section**
+```
+Display Only:
+- Photo Verification Status (with "Verify Now" button if not verified)
+- ID Verification Status (with "Verify Now" button if not verified)
+- Video Verification Status (with "Verify Now" button if not verified)
+- Overall Verification Score (0-100%)
+- Verification Badge Preview
+```
+
+---
+
+## **Input Validation Rules**
+
+### **Required Fields:**
+- First Name (2-50 characters)
+- Last Name (2-50 characters)
+- Birth Date (must be 18+)
+- Gender Identity
+- Sexual Orientation
+- At least one photo
+- At least one relationship goal
+- At least one preferred gender
+
+### **Optional Fields:**
+- Profile Bio (0-500 characters)
+- City/Country
+- Height/Weight
+- Lifestyle preferences
+- Education/Job/Languages/Music/Interests
+- Matching preferences
+
+### **Validation Messages:**
+```
+- "Please complete your profile to start matching"
+- "Profile photo is required"
+- "You must be at least 18 years old"
+- "Please select at least one relationship goal"
+- "Please select at least one gender you're interested in"
+```
+
+---
+
+## **UI/UX Guidelines**
+
+### **Color Scheme:**
+- Primary: LGBTQ+ rainbow gradient or app theme colors
+- Secondary: Neutral grays and whites
+- Accent: Highlight colors for important actions
+- Error: Red for validation errors
+- Success: Green for completed sections
+
+### **Typography:**
+- Headers: Bold, larger font
+- Body text: Regular weight, readable size
+- Labels: Medium weight, smaller size
+- Placeholders: Light gray, italic
+
+### **Spacing:**
+- Consistent padding (16px)
+- Section spacing (24px)
+- Input field spacing (12px)
+- Button spacing (8px)
+
+### **Interactive Elements:**
+- Smooth animations for transitions
+- Haptic feedback for selections
+- Loading states for save operations
+- Success/error toast messages
+- Confirmation dialogs for destructive actions
+
+### **Accessibility:**
+- Screen reader support
+- High contrast mode
+- Large text support
+- Voice input support
+- Keyboard navigation
+
+---
+
+## **Technical Implementation Notes**
+
+### **Data Models Required:**
+- User (core profile data)
+- UserImage (profile photos)
+- UserPreferences (matching preferences)
+- UserVerification (verification status)
+- UserSettings (privacy and notification settings)
+
+### **API Endpoints Needed:**
+
+#### **Profile Management:**
+- GET /api/profile (fetch user profile)
+- PUT /api/profile (update profile)
+- GET /api/profile/completion (get completion status)
+
+#### **Photo Management:**
+- POST /api/images/upload (upload profile/gallery photos)
+- DELETE /api/images/{id} (delete photo)
+- POST /api/images/reorder (reorder photos)
+- POST /api/images/{id}/set-primary (set primary photo)
+- GET /api/images/list (get user's photos)
+
+#### **Profile Pictures (Separate from gallery):**
+- POST /api/profile-pictures/upload (upload profile picture)
+- DELETE /api/profile-pictures/{id} (delete profile picture)
+- POST /api/profile-pictures/{id}/set-primary (set primary profile picture)
+- GET /api/profile-pictures/list (get user's profile pictures)
+
+#### **Verification:**
+- POST /api/verification/submit-photo (submit photo verification)
+- POST /api/verification/submit-id (submit ID verification)
+- POST /api/verification/submit-video (submit video verification)
+- GET /api/verification/status (get verification status)
+- GET /api/verification/guidelines (get verification guidelines)
+- GET /api/verification/history (get verification history)
+
+#### **Reference Data (Dropdown Options):**
+- GET /api/genders (get gender options)
+- GET /api/sexual-orientations (get sexual orientation options)
+- GET /api/relation-goals (get relationship goal options)
+- GET /api/preferred-genders (get preferred gender options)
+- GET /api/education (get education options)
+- GET /api/jobs (get job/profession options)
+- GET /api/languages (get language options)
+- GET /api/music-genres (get music genre options)
+- GET /api/interests (get interest/hobby options)
+
+#### **User Preferences:**
+- PUT /api/preferences/age (update age preferences)
+- GET /api/preferences/age (get age preferences)
+- DELETE /api/preferences/age (reset age preferences)
+
+#### **User Settings:**
+- POST /api/user/show-adult-content (set adult content preference)
+- POST /api/user/onesignal-player (save push notification token)
+- POST /api/user/notification-preferences (update notification preferences)
+- GET /api/user/notification-history (get notification history)
+
+#### **Profile Wizard (Step-by-step completion):**
+- GET /api/profile-wizard/current-step (get current completion step)
+- GET /api/profile-wizard/step-options/{step} (get options for specific step)
+- POST /api/profile-wizard/save-step/{step} (save specific step data)
+
+### **State Management:**
+- Profile data state (user information, photos, preferences)
+- Form validation state (field validation, completion status)
+- Photo upload state (upload progress, success/error)
+- Save operation state (saving, success, error)
+- Error handling state (API errors, validation errors)
+- Reference data state (dropdown options from API)
+- Loading states (API calls, image loading)
+- User preferences state (age range, privacy settings)
+- Verification state (verification status, submission progress)
+
+### **Performance Considerations:**
+- Lazy loading for photo gallery
+- Image compression before upload
+- Caching profile data and reference data (dropdown options)
+- Optimistic updates for better UX
+- Debounced save operations
+- Preload reference data on app startup
+- Cache API responses for dropdown options
+- Implement retry logic for failed API calls
+- Use pagination for large photo galleries
+- Optimize image loading with placeholders and progressive loading
+
+### **Security Considerations:**
+- Input sanitization
+- File upload validation
+- Age verification
+- Content moderation
+- Privacy protection
+
+---
+
+## **API Response Formats**
+
+### **Profile Data Response (GET /api/profile):**
+```json
+{
+  "id": 1,
+  "first_name": "John",
+  "last_name": "Doe",
+  "full_name": "John Doe",
+  "email": "john@example.com",
+  "phone_number": "+1234567890",
+  "country": "United States",
+  "city": "New York",
+  "birth_date": "1990-01-01",
+  "profile_bio": "Love music and travel",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "jobs": [{"id": 1, "title": "Software Engineer"}],
+  "educations": [{"id": 2, "title": "Bachelor's Degree"}],
+  "music_genres": [{"id": 3, "title": "Rock"}],
+  "languages": [{"id": 1, "title": "English"}],
+  "interests": [{"id": 4, "title": "Travel"}],
+  "relation_goals": [{"id": 1, "title": "Long-term relationship"}],
+  "preferred_genders": [{"id": 2, "title": "Female"}],
+  "gender": "Male",
+  "weight": 70,
+  "height": 175,
+  "sexual_orientation": "Heterosexual",
+  "smoke": 0,
+  "gym": 1,
+  "drink": 1,
+  "profile_images": [...],
+  "gallery_images": [...],
+  "primary_profile_image": {...}
+}
+```
+
+### **Reference Data Response (e.g., GET /api/genders):**
+```json
+[
+  {"id": 1, "title": "Male", "img": "male-icon.png"},
+  {"id": 2, "title": "Female", "img": "female-icon.png"},
+  {"id": 3, "title": "Trans Male", "img": "trans-male-icon.png"},
+  {"id": 4, "title": "Trans Female", "img": "trans-female-icon.png"},
+  {"id": 5, "title": "Non-binary", "img": "non-binary-icon.png"}
+]
+```
+
+### **Profile Completion Response (GET /api/profile/completion):**
+```json
+{
+  "is_complete": false,
+  "profile_completed": true,
+  "needs_profile_completion": true,
+  "missing_fields": ["height", "weight", "interests"],
+  "completion_percentage": 85
+}
+```
+
+### **Verification Status Response (GET /api/verification/status):**
+```json
+{
+  "photo_verified": true,
+  "id_verified": false,
+  "video_verified": false,
+  "verification_score": 30,
+  "total_verifications": 1,
+  "pending_verifications": 0,
+  "verification_badge": "Photo Verified"
+}
+```
+
+---
+
+## **Implementation Instructions for Agent IDE**
+
+### **1. Data Fetching Strategy:**
+- Fetch all reference data (dropdown options) on app startup and cache them
+- Implement offline support for cached reference data
+- Use loading states for all API calls
+- Implement error handling with retry mechanisms
+
+### **2. Form Management:**
+- Use a form management library (React Hook Form, Formik, etc.)
+- Implement real-time validation
+- Save form data locally to prevent data loss
+- Auto-save functionality for better UX
+
+### **3. Photo Management:**
+- Implement drag-and-drop for photo reordering
+- Show upload progress indicators
+- Validate image dimensions and file types
+- Implement image cropping for profile photos
+
+### **4. User Experience:**
+- Show profile completion progress
+- Implement step-by-step profile wizard
+- Use skeleton loaders for content loading
+- Implement pull-to-refresh for profile data
+
+### **5. Error Handling:**
+- Show user-friendly error messages
+- Implement offline mode with sync when online
+- Handle network timeouts gracefully
+- Provide fallback UI for failed API calls
+
+### **6. Accessibility:**
+- Add proper ARIA labels for all form elements
+- Implement keyboard navigation
+- Support screen readers
+- Add high contrast mode support
+
+### **7. Testing:**
+- Unit tests for form validation
+- Integration tests for API calls
+- E2E tests for profile creation flow
+- Performance testing for image uploads
+
+This comprehensive profile system ensures users can create detailed, authentic profiles while maintaining ease of use and inclusivity for the LGBTQ+ community. All dropdown options and reference data are dynamically loaded from the API, ensuring the app stays up-to-date with the latest options and maintains consistency across the platform.
