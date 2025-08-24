@@ -490,4 +490,56 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> refresh() async {
     await initialize();
   }
+
+  // Calculate profile completion percentage
+  int get completionPercentage {
+    if (_user == null) return 0;
+    
+    int completedFields = 0;
+    int totalFields = 0;
+    
+    // Basic info (5 fields)
+    totalFields += 5;
+    if (_user!.firstName.isNotEmpty) completedFields++;
+    if (_user!.lastName.isNotEmpty) completedFields++;
+    if (_user!.profileBio != null && _user!.profileBio!.isNotEmpty) completedFields++;
+    if (_user!.birthDate != null) completedFields++;
+    if (_user!.avatarUrl != null && _user!.avatarUrl!.isNotEmpty) completedFields++;
+    
+    // Personal details (3 fields)
+    totalFields += 3;
+    if (_user!.gender != null) completedFields++;
+    if (_user!.sexualOrientation != null) completedFields++;
+    if (_user!.city != null) completedFields++;
+    
+    // Photos (1 field)
+    totalFields += 1;
+    if (_user!.allImages.isNotEmpty) completedFields++;
+    
+    // Interests (1 field)
+    totalFields += 1;
+    if (_user!.interests.isNotEmpty) completedFields++;
+    
+    return ((completedFields / totalFields) * 100).round();
+  }
+
+  // Get missing fields for profile completion
+  List<String> get missingFields {
+    if (_user == null) return ['Create your profile'];
+    
+    List<String> missing = [];
+    
+    if (_user!.firstName.isEmpty) missing.add('First Name');
+    if (_user!.lastName.isEmpty) missing.add('Last Name');
+    if (_user!.profileBio == null || _user!.profileBio!.isEmpty) missing.add('Bio');
+    if (_user!.birthDate == null) missing.add('Birth Date');
+    if (_user!.avatarUrl == null || _user!.avatarUrl!.isEmpty) missing.add('Profile Photo');
+    if (_user!.gender == null) missing.add('Gender');
+    if (_user!.sexualOrientation == null) missing.add('Sexual Orientation');
+    if (_user!.city == null) missing.add('Location');
+    if (_user!.allImages.isEmpty) missing.add('Photos');
+    if (_user!.interests.isEmpty) missing.add('Interests');
+    
+    return missing;
+  }
 }
