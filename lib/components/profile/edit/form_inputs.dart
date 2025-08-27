@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../models/models.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/typography.dart';
+import '../../../utils/validation.dart';
 
 // Basic text input field
 class ProfileTextInput extends StatelessWidget {
@@ -10,11 +11,13 @@ class ProfileTextInput extends StatelessWidget {
   final String? value;
   final TextInputType? keyboardType;
   final int? maxLength;
+  final int? minLength;
   final int? maxLines;
   final bool isRequired;
   final String? errorText;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
+  final String? Function(String?)? validator;
 
   const ProfileTextInput({
     Key? key,
@@ -23,11 +26,13 @@ class ProfileTextInput extends StatelessWidget {
     this.value,
     this.keyboardType,
     this.maxLength,
+    this.minLength,
     this.maxLines = 1,
     this.isRequired = false,
     this.errorText,
     this.onChanged,
     this.onTap,
+    this.validator,
   }) : super(key: key);
 
   @override
@@ -62,6 +67,15 @@ class ProfileTextInput extends StatelessWidget {
           maxLines: maxLines,
           onChanged: onChanged,
           onTap: onTap,
+          validator: validator ?? (value) {
+            return ValidationUtils.validateField(
+              value: value,
+              fieldName: label,
+              isRequired: isRequired,
+              maxLength: maxLength,
+              minLength: minLength,
+            );
+          },
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTypography.body2.copyWith(

@@ -5,10 +5,13 @@ import '../components/profile/profile_header.dart';
 import '../components/profile/profile_info_sections.dart';
 import '../components/profile/photo_gallery.dart';
 import '../components/profile/safety_verification_section.dart';
-import '../components/profile/profile_action_buttons.dart';
+
 import '../providers/profile_provider.dart';
 import '../models/models.dart';
+import '../utils/error_handler.dart';
+import '../utils/success_feedback.dart';
 import 'profile_edit_page.dart';
+import 'profile_wizard_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -96,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 8),
           Text(
-            error,
+            ErrorHandler.getErrorMessage(error),
             style: TextStyle(
               color: Colors.grey[400],
               fontSize: 14,
@@ -105,8 +108,21 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () {
-              context.read<ProfileProvider>().loadProfile();
+            onPressed: () async {
+              try {
+                await ErrorHandler.retryOperation(
+                  operation: () => context.read<ProfileProvider>().loadProfile(),
+                  maxRetries: 3,
+                  shouldRetry: ErrorHandler.isRetryableError,
+                );
+              } catch (e) {
+                if (mounted) {
+                  ErrorHandler.showErrorSnackBar(
+                    context,
+                    message: ErrorHandler.getErrorMessage(e),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -164,8 +180,10 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: () {
-              // Navigate to profile creation wizard
-              _showProfileWizard();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileWizardPage()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -480,15 +498,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // Action Methods
-  void _showProfileWizard() {
-    // TODO: Navigate to profile wizard
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile wizard coming soon!'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
-  }
 
   void _showSettings() {
     // TODO: Navigate to settings page

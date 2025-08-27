@@ -7,6 +7,9 @@ import '../theme/typography.dart';
 import '../components/profile/edit/edit_header.dart';
 import '../components/profile/edit/form_inputs.dart';
 import '../components/profile/edit/photo_management.dart';
+import '../utils/validation.dart';
+import '../utils/error_handler.dart';
+import '../utils/success_feedback.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({Key? key}) : super(key: key);
@@ -74,7 +77,40 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   Future<void> _saveProfile() async {
+    // Validate form
     if (!_formKey.currentState!.validate()) {
+      ErrorHandler.showErrorSnackBar(
+        context,
+        message: 'Please fix the errors in the form before saving.',
+      );
+      return;
+    }
+
+    // Validate profile data
+    final validationErrors = ValidationUtils.validateProfile(
+      name: _nameController.text.trim(),
+      birthDate: _editingUser.birthDate,
+      gender: _editingUser.gender,
+      location: _locationController.text.trim(),
+      bio: _bioController.text.trim(),
+      jobTitle: _jobController.text.trim(),
+      company: _companyController.text.trim(),
+      school: _schoolController.text.trim(),
+      photos: _editingUser.images,
+      interestedIn: _editingUser.interestedIn,
+      minAge: _editingUser.preferences?.minAge,
+      maxAge: _editingUser.preferences?.maxAge,
+      maxDistance: _editingUser.preferences?.maxDistance,
+    );
+
+    if (validationErrors.isNotEmpty) {
+      final firstError = validationErrors.values.first;
+      if (firstError != null) {
+        ErrorHandler.showErrorSnackBar(
+          context,
+          message: firstError,
+        );
+      }
       return;
     }
 
@@ -83,30 +119,44 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     });
 
     try {
+      // Show loading indicator
+      SuccessFeedback.showLoadingIndicator(
+        context,
+        message: 'Saving profile...',
+      );
+
       // Update user data from form controllers
       _editingUser = _editingUser.copyWith(
-        name: _nameController.text.trim(),
-        bio: _bioController.text.trim(),
-        job: _jobController.text.trim(),
-        company: _companyController.text.trim(),
-        school: _schoolController.text.trim(),
-        location: _locationController.text.trim(),
+        name: ValidationUtils.sanitizeText(_nameController.text),
+        bio: ValidationUtils.sanitizeText(_bioController.text),
+        job: ValidationUtils.sanitizeText(_jobController.text),
+        company: ValidationUtils.sanitizeText(_companyController.text),
+        school: ValidationUtils.sanitizeText(_schoolController.text),
+        location: ValidationUtils.sanitizeText(_locationController.text),
       );
 
       final profileProvider = context.read<ProfileProvider>();
-      await profileProvider.updateProfile(_editingUser.toJson());
+      
+      // Use retry mechanism for API call
+      await ErrorHandler.retryOperation(
+        operation: () => profileProvider.updateProfile(_editingUser.toJson()),
+        maxRetries: 3,
+        shouldRetry: ErrorHandler.isRetryableError,
+      );
 
       setState(() {
         _hasChanges = false;
         _isSaving = false;
       });
 
+      // Hide loading indicator
+      Navigator.of(context).pop();
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: AppColors.success,
-          ),
+        // Show success feedback with haptic
+        SuccessFeedback.showSuccessWithHaptic(
+          context,
+          message: 'Profile updated successfully!',
         );
         Navigator.pop(context);
       }
@@ -115,13 +165,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         _isSaving = false;
       });
 
+      // Hide loading indicator if still showing
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update profile: ${e.toString()}'),
-            backgroundColor: AppColors.error,
-          ),
+        // Show error with retry option
+        final errorMessage = ErrorHandler.getErrorMessage(e);
+        final shouldRetry = await ErrorHandler.showRetryDialog(
+          context,
+          message: errorMessage,
+          title: 'Save Failed',
         );
+
+        if (shouldRetry) {
+          _saveProfile();
+        }
       }
     }
   }

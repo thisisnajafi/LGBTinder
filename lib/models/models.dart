@@ -15,3 +15,10 @@ export 'superlike_pack.dart';
 export 'user_subscription.dart';
 export 'purchase_history.dart';
 export 'feature.dart';
+
+// Chat and Messaging Models
+export 'message.dart';
+export 'message_attachment.dart';
+export 'chat.dart';
+export 'chat_participant.dart';
+export 'call.dart';

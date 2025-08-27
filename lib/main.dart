@@ -5,9 +5,11 @@ import 'theme/colors.dart';
 import 'pages/home_page.dart';
 import 'pages/search_page.dart';
 import 'pages/profile_page.dart';
+import 'pages/chat_list_page.dart';
 import 'pages/splash_page.dart';
 import 'pages/onboarding_page.dart';
 import 'providers/profile_provider.dart';
+import 'providers/chat_provider.dart';
 
 void main() {
   runApp(const LGBTinderApp());
@@ -21,6 +23,7 @@ class LGBTinderApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -221,69 +224,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildMessagesPage() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.appBackground,
-            Color(0xFF0A0A0F),
-            Color(0xFF050508),
-            AppColors.appBackground,
-          ],
-          stops: [0.0, 0.3, 0.7, 1.0],
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryLight.withOpacity(0.2),
-                      AppColors.secondaryLight.withOpacity(0.2),
-                    ],
-                  ),
-                ),
-                child: Icon(
-                  Icons.chat_bubble_outline,
-                  size: 60,
-                  color: AppColors.primaryLight,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Messages',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Chat with your matches and start conversations',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.7),
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return const ChatListPage();
   }
 
   Widget _buildProfilePage() {

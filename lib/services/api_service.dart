@@ -348,8 +348,8 @@ class ApiService {
   }
   
   // Alias methods for compatibility with existing services
-  Future<Map<String, dynamic>> get(String endpoint, {Map<String, String>? queryParameters}) {
-    return getData(endpoint, queryParameters: queryParameters);
+  Future<Map<String, dynamic>> get(String endpoint, {Map<String, String>? queryParameters, Map<String, String>? queryParams}) {
+    return getData(endpoint, queryParameters: queryParameters ?? queryParams);
   }
   
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) {
@@ -358,5 +358,9 @@ class ApiService {
   
   Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> data) {
     return updateData(endpoint, data);
+  }
+  
+  Future<Map<String, dynamic>> delete(String endpoint) {
+    return deleteData(endpoint);
   }
 } 

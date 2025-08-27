@@ -1,220 +1,278 @@
+import 'package:flutter/foundation.dart';
+import '../models/models.dart';
 import 'api_service.dart';
 
 class ChatService {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
 
-  // Get all conversations
-  Future<Map<String, dynamic>> getConversations({
-    int? page,
-    int? limit,
+  ChatService({ApiService? apiService}) : _apiService = apiService ?? ApiService();
+
+  /// Get all chats for the current user
+  Future<List<Chat>> getChats({
+    int page = 1,
+    int limit = 20,
+    String? searchQuery,
+    bool? isArchived,
+    bool? isPinned,
   }) async {
-    final queryParams = <String, String>{};
-    
-    if (page != null) queryParams['page'] = page.toString();
-    if (limit != null) queryParams['limit'] = limit.toString();
+    try {
+      final queryParams = <String, String>{
+        'page': page.toString(),
+        'limit': limit.toString(),
+      };
 
-    return await _apiService.getData('/conversations', queryParameters: queryParams);
-  }
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        queryParams['search'] = searchQuery;
+      }
+      if (isArchived != null) {
+        queryParams['archived'] = isArchived.toString();
+      }
+      if (isPinned != null) {
+        queryParams['pinned'] = isPinned.toString();
+      }
 
-  // Get conversation by ID
-  Future<Map<String, dynamic>> getConversation(String conversationId) async {
-    return await _apiService.getData('/conversations/$conversationId');
-  }
-
-  // Get messages for a conversation
-  Future<Map<String, dynamic>> getMessages(
-    String conversationId, {
-    int? page,
-    int? limit,
-    String? beforeMessageId,
-  }) async {
-    final queryParams = <String, String>{};
-    
-    if (page != null) queryParams['page'] = page.toString();
-    if (limit != null) queryParams['limit'] = limit.toString();
-    if (beforeMessageId != null) queryParams['before'] = beforeMessageId;
-
-    return await _apiService.getData(
-      '/conversations/$conversationId/messages',
-      queryParameters: queryParams,
-    );
-  }
-
-  // Send a message
-  Future<Map<String, dynamic>> sendMessage(
-    String conversationId,
-    String message, {
-    String? messageType = 'text',
-    Map<String, dynamic>? metadata,
-  }) async {
-    final data = <String, dynamic>{
-      'message': message,
-      'type': messageType,
-    };
-
-    if (metadata != null) {
-      data['metadata'] = metadata;
+      final response = await _apiService.get('/chats', queryParameters: queryParams);
+      
+      final List<dynamic> chatsData = response['chats'] ?? [];
+      return chatsData.map((json) => Chat.fromJson(json)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching chats: $e');
+      }
+      rethrow;
     }
-
-    return await _apiService.postData(
-      '/conversations/$conversationId/messages',
-      data,
-    );
   }
 
-  // Send image message
-  Future<Map<String, dynamic>> sendImageMessage(
-    String conversationId,
-    String imageUrl, {
-    String? caption,
-  }) async {
-    final data = {
-      'message': imageUrl,
-      'type': 'image',
-    };
-
-    if (caption != null) {
-      data['caption'] = caption;
+  /// Get a specific chat by ID
+  Future<Chat> getChat(String chatId) async {
+    try {
+      final response = await _apiService.get('/chats/$chatId');
+      return Chat.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching chat $chatId: $e');
+      }
+      rethrow;
     }
-
-    return await _apiService.postData(
-      '/conversations/$conversationId/messages',
-      data,
-    );
   }
 
-  // Delete a message
-  Future<Map<String, dynamic>> deleteMessage(
-    String conversationId,
-    String messageId,
-  ) async {
-    return await _apiService.deleteData(
-      '/conversations/$conversationId/messages/$messageId',
-    );
+  /// Create a new chat with a user
+  Future<Chat> createChat(String userId) async {
+    try {
+      final response = await _apiService.post('/chats', {
+        'userId': userId,
+      });
+      return Chat.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating chat with user $userId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Mark conversation as read
-  Future<Map<String, dynamic>> markConversationAsRead(String conversationId) async {
-    return await _apiService.updateData(
-      '/conversations/$conversationId/read',
-      {},
-    );
+  /// Create a group chat
+  Future<Chat> createGroupChat({
+    required String name,
+    required List<String> userIds,
+    String? avatar,
+  }) async {
+    try {
+      final response = await _apiService.post('/chats/group', {
+        'name': name,
+        'userIds': userIds,
+        if (avatar != null) 'avatar': avatar,
+      });
+      return Chat.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating group chat: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Mark message as read
-  Future<Map<String, dynamic>> markMessageAsRead(
-    String conversationId,
-    String messageId,
-  ) async {
-    return await _apiService.updateData(
-      '/conversations/$conversationId/messages/$messageId/read',
-      {},
-    );
+  /// Update chat metadata
+  Future<Chat> updateChat(String chatId, Map<String, dynamic> updates) async {
+    try {
+      final response = await _apiService.put('/chats/$chatId', updates);
+      return Chat.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Get unread message count
-  Future<Map<String, dynamic>> getUnreadCount() async {
-    return await _apiService.getData('/conversations/unread-count');
+  /// Archive a chat
+  Future<void> archiveChat(String chatId) async {
+    try {
+      await _apiService.put('/chats/$chatId/archive', {});
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error archiving chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Delete conversation
-  Future<Map<String, dynamic>> deleteConversation(String conversationId) async {
-    return await _apiService.deleteData('/conversations/$conversationId');
+  /// Unarchive a chat
+  Future<void> unarchiveChat(String chatId) async {
+    try {
+      await _apiService.put('/chats/$chatId/unarchive', {});
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error unarchiving chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Block user in conversation
-  Future<Map<String, dynamic>> blockUserInConversation(String conversationId) async {
-    return await _apiService.postData(
-      '/conversations/$conversationId/block',
-      {},
-    );
+  /// Pin a chat
+  Future<void> pinChat(String chatId) async {
+    try {
+      await _apiService.put('/chats/$chatId/pin', {});
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error pinning chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Unblock user in conversation
-  Future<Map<String, dynamic>> unblockUserInConversation(String conversationId) async {
-    return await _apiService.deleteData('/conversations/$conversationId/block');
+  /// Unpin a chat
+  Future<void> unpinChat(String chatId) async {
+    try {
+      await _apiService.put('/chats/$chatId/unpin', {});
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error unpinning chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Report conversation
-  Future<Map<String, dynamic>> reportConversation(
-    String conversationId,
-    String reason,
-  ) async {
-    return await _apiService.postData(
-      '/conversations/$conversationId/report',
-      {'reason': reason},
-    );
+  /// Delete a chat
+  Future<void> deleteChat(String chatId) async {
+    try {
+      await _apiService.delete('/chats/$chatId');
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Get conversation with user
-  Future<Map<String, dynamic>> getConversationWithUser(String userId) async {
-    return await _apiService.getData('/conversations/with/$userId');
+  /// Mark chat as read
+  Future<void> markChatAsRead(String chatId) async {
+    try {
+      await _apiService.put('/chats/$chatId/read', {});
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error marking chat $chatId as read: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Create conversation with user
-  Future<Map<String, dynamic>> createConversation(String userId) async {
-    return await _apiService.postData('/conversations', {
-      'user_id': userId,
-    });
+  /// Get chat participants
+  Future<List<ChatParticipant>> getChatParticipants(String chatId) async {
+    try {
+      final response = await _apiService.get('/chats/$chatId/participants');
+      
+      final List<dynamic> participantsData = response['participants'] ?? [];
+      return participantsData.map((json) => ChatParticipant.fromJson(json)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching chat participants for $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Get typing status
-  Future<Map<String, dynamic>> getTypingStatus(String conversationId) async {
-    return await _apiService.getData('/conversations/$conversationId/typing');
+  /// Add participants to group chat
+  Future<void> addParticipants(String chatId, List<String> userIds) async {
+    try {
+      await _apiService.post('/chats/$chatId/participants', {
+        'userIds': userIds,
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding participants to chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Send typing indicator
-  Future<Map<String, dynamic>> sendTypingIndicator(
-    String conversationId,
-    bool isTyping,
-  ) async {
-    return await _apiService.postData(
-      '/conversations/$conversationId/typing',
-      {'is_typing': isTyping},
-    );
+  /// Remove participants from group chat
+  Future<void> removeParticipants(String chatId, List<String> userIds) async {
+    try {
+      await _apiService.post('/chats/$chatId/participants/remove', {
+        'userIds': userIds,
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error removing participants from chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Get message by ID
-  Future<Map<String, dynamic>> getMessage(
-    String conversationId,
-    String messageId,
-  ) async {
-    return await _apiService.getData(
-      '/conversations/$conversationId/messages/$messageId',
-    );
+  /// Update participant role in group chat
+  Future<void> updateParticipantRole(String chatId, String userId, String role) async {
+    try {
+      await _apiService.put('/chats/$chatId/participants/$userId', {
+        'role': role,
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating participant role in chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Edit message
-  Future<Map<String, dynamic>> editMessage(
-    String conversationId,
-    String messageId,
-    String newMessage,
-  ) async {
-    return await _apiService.updateData(
-      '/conversations/$conversationId/messages/$messageId',
-      {'message': newMessage},
-    );
+  /// Leave group chat
+  Future<void> leaveGroupChat(String chatId) async {
+    try {
+      await _apiService.post('/chats/$chatId/leave', {});
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error leaving group chat $chatId: $e');
+      }
+      rethrow;
+    }
   }
 
-  // React to message
-  Future<Map<String, dynamic>> reactToMessage(
-    String conversationId,
-    String messageId,
-    String reaction,
-  ) async {
-    return await _apiService.postData(
-      '/conversations/$conversationId/messages/$messageId/reactions',
-      {'reaction': reaction},
-    );
+  /// Get unread count for all chats
+  Future<int> getTotalUnreadCount() async {
+    try {
+      final response = await _apiService.get('/chats/unread-count');
+      return response['unreadCount'] ?? 0;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching total unread count: $e');
+      }
+      rethrow;
+    }
   }
 
-  // Remove reaction from message
-  Future<Map<String, dynamic>> removeReaction(
-    String conversationId,
-    String messageId,
-  ) async {
-    return await _apiService.deleteData(
-      '/conversations/$conversationId/messages/$messageId/reactions',
-    );
+  /// Search chats
+  Future<List<Chat>> searchChats(String query) async {
+    try {
+      final response = await _apiService.get('/chats/search', queryParameters: {
+        'q': query,
+      });
+      
+      final List<dynamic> chatsData = response['chats'] ?? [];
+      return chatsData.map((json) => Chat.fromJson(json)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error searching chats: $e');
+      }
+      rethrow;
+    }
   }
 } 
