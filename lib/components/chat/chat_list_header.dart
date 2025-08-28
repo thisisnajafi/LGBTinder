@@ -30,7 +30,7 @@ class _ChatListHeaderState extends State<ChatListHeader> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.background,
+      color: AppColors.navbarBackground,
       child: Column(
         children: [
           // Main header

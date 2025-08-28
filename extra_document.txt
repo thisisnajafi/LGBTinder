@@ -1,0 +1,856 @@
+# LGBTinder Mobile App - Complete UI Specification for Flutter Frontend
+
+## **Overview**
+
+This document provides comprehensive specifications for all UI sections of the LGBTinder mobile app that are not covered in our previous authentication, profile, plans, and chat documentation. This specification covers the discovery/matching interface, stories, social feed, calls, safety features, and other core app functionality.
+
+---
+
+## **1. Discovery & Matching Interface**
+
+### **1.1 Main Discovery Screen (Swipe Interface)**
+
+#### **Page Structure:**
+```
+- Full-screen profile card display
+- Profile photo (primary image, full screen)
+- Profile information overlay (bottom 40% of screen)
+- Action buttons (bottom center)
+- Navigation indicators (top right)
+- Premium features indicator (top left)
+```
+
+#### **Profile Card Content:**
+```
+Profile Photo:
+- Full-screen display
+- Multiple photos support (swipe left/right on photo)
+- Photo counter indicator (e.g., "1/5")
+- Tap to view full-screen photo
+
+Profile Information Overlay:
+- User's name and age (large, bold)
+- Location (city, country)
+- Profile bio (truncated, max 2 lines)
+- Compatibility score (if premium)
+- Common interests (3-5 tags)
+- Verification badges
+- Online status indicator
+```
+
+#### **Action Buttons:**
+```
+Bottom Center (Horizontal Row):
+- Dislike Button (X icon, red)
+- Superlike Button (star icon, blue, with count)
+- Like Button (heart icon, green)
+- Info Button (i icon, gray)
+
+Button Specifications:
+- Size: 60x60dp
+- Spacing: 20dp between buttons
+- Colors: Use app theme colors
+- Icons: Material Design icons
+- Superlike count: Display remaining count
+```
+
+#### **Navigation Elements:**
+```
+Top Right:
+- Settings icon (gear)
+- Filter icon (funnel)
+- Premium upgrade button (if free user)
+
+Top Left:
+- Back button (if navigated from elsewhere)
+- Profile completion indicator (progress bar)
+```
+
+#### **Swipe Gestures:**
+```
+- Swipe Right: Like profile
+- Swipe Left: Dislike profile
+- Swipe Up: Superlike profile
+- Swipe Down: View profile details
+- Double Tap: Like profile
+- Long Press: Quick view profile info
+```
+
+### **1.2 Profile Detail View (Modal/Full Screen)**
+
+#### **Triggered By:**
+- Swipe down on profile card
+- Tap info button
+- Long press on profile card
+
+#### **Content Sections:**
+```
+1. Photo Gallery:
+   - Horizontal scrollable gallery
+   - Full-screen photo viewer
+   - Photo counter
+   - Tap to expand
+
+2. Basic Information:
+   - Full name and age
+   - Location (with map preview)
+   - Profile bio (full text)
+   - Gender identity
+   - Sexual orientation
+
+3. Personal Details:
+   - Height and weight
+   - Lifestyle preferences (smoking, gym, drinking)
+   - Education and job
+   - Languages spoken
+   - Music genres
+   - Interests and hobbies
+
+4. Matching Preferences:
+   - Age range preference
+   - Distance preference
+   - Preferred genders
+   - Relationship goals
+
+5. Safety & Verification:
+   - Verification status
+   - Verification score
+   - Safety badges
+```
+
+#### **Action Buttons:**
+```
+Bottom Action Bar:
+- Like Button (large, primary)
+- Superlike Button (with count)
+- Dislike Button
+- Report Button (small, secondary)
+- Block Button (small, secondary)
+```
+
+### **1.3 Match Notification Screen**
+
+#### **Triggered When:**
+- Mutual like occurs
+- Superlike is received
+
+#### **Screen Content:**
+```
+- "It's a Match!" celebration animation
+- Both users' profile photos (side by side)
+- Match details (names, compatibility score)
+- Action buttons:
+  * "Send Message" (primary)
+  * "Keep Swiping" (secondary)
+  * "View Profile" (secondary)
+- Match celebration effects (confetti, etc.)
+```
+
+---
+
+## **2. Stories System**
+
+### **2.1 Stories Header (Top of Main Screen)**
+
+#### **Layout:**
+```
+Horizontal scrollable row at top of screen
+- User's own story creation button (+ icon)
+- Friends/matches stories (circular avatars)
+- Story status indicators
+```
+
+#### **Story Creation Button:**
+```
+- Large + icon in circle
+- "Add Story" text below
+- Primary color background
+- Tap to open story creation
+```
+
+#### **Story Avatars:**
+```
+- Circular profile photos
+- Border colors:
+  * Blue: Unviewed stories
+  * Gray: Viewed stories
+  * Rainbow: Premium user stories
+- Tap to view story
+- Story count indicator (if multiple)
+```
+
+### **2.2 Story Creation Screen**
+
+#### **Content Types:**
+```
+1. Text Story:
+   - Text input field
+   - Font selection
+   - Color picker
+   - Background options
+   - Text positioning
+
+2. Photo Story:
+   - Camera integration
+   - Gallery selection
+   - Photo editing tools
+   - Filters and effects
+   - Text overlay option
+
+3. Video Story:
+   - Video recording
+   - Video selection
+   - Video trimming
+   - Music overlay
+   - Text overlay option
+```
+
+#### **Story Settings:**
+```
+- Privacy settings (public, friends only, matches only)
+- Duration (24 hours default)
+- Location tagging (optional)
+- Music selection (optional)
+- Stickers and emojis
+```
+
+### **2.3 Story Viewer Screen**
+
+#### **Full-Screen Story Display:**
+```
+- Full-screen story content
+- User info at top (name, time, privacy)
+- Story navigation (previous/next)
+- Story progress bar
+- Interactive elements (reactions, replies)
+```
+
+#### **Story Interactions:**
+```
+- Tap to pause/play
+- Swipe left/right to navigate
+- Swipe up to reply
+- Swipe down to close
+- Double tap to like
+- Long press for options
+```
+
+#### **Story Actions:**
+```
+- Like story
+- Reply to story
+- Share story
+- Report story
+- Block user
+```
+
+---
+
+## **3. Social Feed System**
+
+### **3.1 Feed Main Screen**
+
+#### **Layout Structure:**
+```
+- Stories header (top)
+- Feed posts (scrollable list)
+- Create post button (floating action button)
+- Pull to refresh
+- Infinite scroll loading
+```
+
+#### **Feed Post Structure:**
+```
+1. Post Header:
+   - User profile photo
+   - User name and verification status
+   - Post timestamp
+   - Post privacy indicator
+   - More options menu (⋮)
+
+2. Post Content:
+   - Text content
+   - Media content (photos/videos)
+   - Location tag (if applicable)
+   - Hashtags
+   - Age restriction warning (if 18+)
+
+3. Post Actions:
+   - Like button (with count)
+   - Comment button (with count)
+   - Share button
+   - Save button
+   - Report button
+
+4. Post Interactions:
+   - Like count
+   - Comment preview (first 2 comments)
+   - "View all comments" link
+   - Post timestamp
+```
+
+### **3.2 Create Post Screen**
+
+#### **Post Creation Flow:**
+```
+1. Content Input:
+   - Text input field (multiline)
+   - Media selection (photos/videos)
+   - Location tagging
+   - Hashtag suggestions
+   - Privacy settings
+
+2. Post Settings:
+   - Who can see (public, friends, matches)
+   - Allow comments (toggle)
+   - Allow sharing (toggle)
+   - Age restriction (18+ toggle)
+
+3. Preview & Post:
+   - Post preview
+   - Edit options
+   - Post button
+   - Save as draft
+```
+
+### **3.3 Post Detail Screen**
+
+#### **Full Post View:**
+```
+- Complete post content
+- All comments (paginated)
+- Comment interactions
+- Related posts
+- Post sharing options
+```
+
+#### **Comment System:**
+```
+- Comment input field
+- Comment list with replies
+- Comment actions (like, reply, report)
+- Nested reply threading
+- Comment moderation
+```
+
+---
+
+## **4. Calls & Video Chat System**
+
+### **4.1 Call Interface**
+
+#### **Incoming Call Screen:**
+```
+- Full-screen caller info
+- Caller's profile photo (large)
+- Caller's name and verification status
+- Call type indicator (audio/video)
+- Call duration (if answered)
+- Action buttons:
+  * Accept call (green, large)
+  * Decline call (red, large)
+  * Message instead (secondary)
+  * Block caller (small)
+```
+
+#### **Active Call Screen:**
+```
+- Video call layout (if video):
+  * Main video (remote user)
+  * Picture-in-picture (local user)
+  * Call controls overlay
+
+- Audio call layout:
+  * Caller's profile photo (large)
+  * Call duration
+  * Call controls
+
+- Call Controls:
+  * Mute/unmute
+  * Speaker toggle
+  * Camera flip (video)
+  * End call
+  * Add call
+  * Hold call
+```
+
+#### **Call History Screen:**
+```
+- List of recent calls
+- Call details:
+  * User profile photo
+  * User name
+  * Call type (audio/video)
+  * Call duration
+  * Call status (missed, completed, declined)
+  * Call timestamp
+- Call actions:
+  * Call back
+  * Send message
+  * View profile
+  * Block user
+```
+
+### **4.2 Call Settings**
+
+#### **Call Preferences:**
+```
+- Default call type (audio/video)
+- Call quality settings
+- Bandwidth optimization
+- Call recording (if enabled)
+- Call notifications
+- Do not disturb settings
+```
+
+---
+
+## **5. Safety & Security Features**
+
+### **5.1 Safety Center**
+
+#### **Main Safety Screen:**
+```
+- Safety status overview
+- Emergency contacts
+- Safety guidelines
+- Report history
+- Safety settings
+- Emergency alert button
+```
+
+#### **Emergency Contacts Management:**
+```
+- List of emergency contacts
+- Contact details:
+  * Name
+  * Phone number
+  * Relationship
+  * Primary contact indicator
+- Add new contact
+- Edit existing contact
+- Remove contact
+- Set primary contact
+```
+
+#### **Emergency Alert System:**
+```
+- Emergency alert button (prominent)
+- Alert types:
+  * General emergency
+  * Date safety concern
+  * Harassment
+  * Location sharing
+- Alert recipients (emergency contacts)
+- Alert message customization
+- Location sharing options
+```
+
+### **5.2 Safety Guidelines**
+
+#### **Safety Tips Display:**
+```
+- Meeting safety guidelines
+- Online safety tips
+- Reporting procedures
+- Emergency procedures
+- Community guidelines
+- Safety resources
+```
+
+### **5.3 Report System**
+
+#### **Report Creation:**
+```
+- Report type selection:
+  * Inappropriate behavior
+  * Fake profile
+  * Harassment
+  * Spam
+  * Safety concern
+  * Other
+- Detailed description
+- Evidence upload (photos, screenshots)
+- User identification
+- Submit report
+```
+
+---
+
+## **6. Notifications & Alerts**
+
+### **6.1 Notification Center**
+
+#### **Notification Types:**
+```
+- New matches
+- New messages
+- Story updates
+- Feed interactions
+- Safety alerts
+- System announcements
+- Premium features
+```
+
+#### **Notification Display:**
+```
+- Notification icon
+- Notification title
+- Notification preview
+- Timestamp
+- Action buttons
+- Mark as read
+- Delete notification
+```
+
+### **6.2 Push Notifications**
+
+#### **Notification Settings:**
+```
+- Match notifications
+- Message notifications
+- Story notifications
+- Feed notifications
+- Safety notifications
+- Marketing notifications
+- Quiet hours
+- Do not disturb
+```
+
+---
+
+## **7. Settings & Preferences**
+
+### **7.1 Account Settings**
+
+#### **Profile Settings:**
+```
+- Edit profile
+- Change photos
+- Update bio
+- Change location
+- Privacy settings
+- Account verification
+```
+
+#### **Privacy Settings:**
+```
+- Profile visibility
+- Online status
+- Last seen
+- Distance visibility
+- Age visibility
+- Photo privacy
+```
+
+#### **Notification Settings:**
+```
+- Push notifications
+- Email notifications
+- SMS notifications
+- Notification frequency
+- Quiet hours
+- Do not disturb
+```
+
+### **7.2 Matching Preferences**
+
+#### **Basic Preferences:**
+```
+- Age range
+- Distance range
+- Gender preferences
+- Relationship goals
+- Location preferences
+```
+
+#### **Advanced Preferences:**
+```
+- Education preferences
+- Job preferences
+- Language preferences
+- Music preferences
+- Interest preferences
+- Lifestyle preferences
+```
+
+### **7.3 App Settings**
+
+#### **General Settings:**
+```
+- Language selection
+- Theme selection (light/dark)
+- Font size
+- Sound effects
+- Haptic feedback
+- Auto-play media
+```
+
+#### **Data & Storage:**
+```
+- Cache management
+- Data usage
+- Storage optimization
+- Backup settings
+- Export data
+- Delete account
+```
+
+---
+
+## **8. Premium Features Interface**
+
+### **8.1 Premium Dashboard**
+
+#### **Premium Status Display:**
+```
+- Current plan information
+- Plan benefits overview
+- Usage statistics
+- Upgrade options
+- Billing information
+```
+
+#### **Premium Features Access:**
+```
+- Unlimited likes
+- See who liked you
+- Advanced filters
+- Priority matching
+- Read receipts
+- Voice messages
+- Video calls
+- Superlike packs
+```
+
+### **8.2 Plan Management**
+
+#### **Plan Selection:**
+```
+- Plan comparison table
+- Feature breakdown
+- Pricing information
+- Billing cycle options
+- Special offers
+- Upgrade/downgrade options
+```
+
+#### **Billing Management:**
+```
+- Payment methods
+- Billing history
+- Invoice access
+- Subscription management
+- Cancellation options
+- Refund requests
+```
+
+---
+
+## **9. User Experience Guidelines**
+
+### **9.1 Navigation Patterns**
+
+#### **Bottom Navigation:**
+```
+- Home (Discovery)
+- Matches
+- Messages
+- Stories
+- Profile
+```
+
+#### **Top Navigation:**
+```
+- Back button
+- Screen title
+- Action buttons
+- Menu options
+```
+
+### **9.2 Interaction Patterns**
+
+#### **Touch Gestures:**
+```
+- Tap: Select/activate
+- Double tap: Quick action
+- Long press: Context menu
+- Swipe: Navigation/actions
+- Pinch: Zoom
+- Pull: Refresh
+```
+
+#### **Feedback Patterns:**
+```
+- Visual feedback (color changes)
+- Haptic feedback (vibrations)
+- Audio feedback (sounds)
+- Loading indicators
+- Success/error messages
+- Progress indicators
+```
+
+### **9.3 Accessibility Features**
+
+#### **Accessibility Support:**
+```
+- Screen reader support
+- Voice control
+- High contrast mode
+- Large text support
+- Color blind support
+- Motor accessibility
+```
+
+---
+
+## **10. Technical Implementation Notes**
+
+### **10.1 State Management**
+
+#### **Recommended Architecture:**
+```
+- Provider/Riverpod for state management
+- BLoC pattern for complex business logic
+- Repository pattern for data access
+- Service layer for business logic
+- Local storage for offline support
+```
+
+#### **Key State Variables:**
+```
+- User authentication state
+- Current user profile
+- Matching preferences
+- Active matches
+- Unread messages
+- Story data
+- Feed data
+- Call state
+- Safety settings
+```
+
+### **10.2 API Integration**
+
+#### **API Endpoints:**
+```
+- Authentication: /api/auth/*
+- User profiles: /api/users/*
+- Matching: /api/matching/*
+- Chat: /api/chat/*
+- Stories: /api/stories/*
+- Feed: /api/feeds/*
+- Calls: /api/calls/*
+- Safety: /api/safety/*
+- Plans: /api/plans/*
+```
+
+#### **Real-Time Features:**
+```
+- Pusher integration for chat
+- WebSocket for calls
+- Push notifications
+- Live location updates
+- Real-time matching
+```
+
+### **10.3 Performance Considerations**
+
+#### **Optimization Strategies:**
+```
+- Image caching and compression
+- Lazy loading for lists
+- Pagination for large datasets
+- Background data sync
+- Offline-first approach
+- Memory management
+- Battery optimization
+```
+
+---
+
+## **11. Testing & Quality Assurance**
+
+### **11.1 Testing Strategy**
+
+#### **Test Types:**
+```
+- Unit tests for business logic
+- Widget tests for UI components
+- Integration tests for user flows
+- Performance tests for critical paths
+- Accessibility tests for inclusivity
+- Security tests for data protection
+```
+
+#### **Test Coverage:**
+```
+- Core functionality: 90%+
+- UI components: 85%+
+- API integration: 95%+
+- Error handling: 100%
+- Edge cases: 80%+
+```
+
+### **11.2 Quality Metrics**
+
+#### **Performance Targets:**
+```
+- App launch time: < 3 seconds
+- Screen transitions: < 300ms
+- Image loading: < 2 seconds
+- API response: < 1 second
+- Memory usage: < 200MB
+- Battery impact: < 5% per hour
+```
+
+---
+
+## **12. Deployment & Distribution**
+
+### **12.1 Build Configuration**
+
+#### **Environment Setup:**
+```
+- Development environment
+- Staging environment
+- Production environment
+- Feature flags
+- A/B testing support
+- Analytics integration
+```
+
+#### **Build Variants:**
+```
+- Debug build
+- Release build
+- Profile build
+- Custom builds for testing
+```
+
+### **12.2 App Store Preparation**
+
+#### **Store Assets:**
+```
+- App icons (multiple sizes)
+- Screenshots (device-specific)
+- App description
+- Keywords optimization
+- Privacy policy
+- Terms of service
+- Age rating information
+```
+
+#### **Release Process:**
+```
+- Beta testing (TestFlight/Internal)
+- Staged rollout
+- Full release
+- Post-release monitoring
+- User feedback collection
+- Bug tracking and resolution
+```
+
+---
+
+This comprehensive UI specification covers all the major sections of the LGBTinder mobile app that weren't included in our previous documentation. Each section provides detailed requirements for Flutter implementation, ensuring consistency across the app while maintaining the unique LGBTQ+ community focus and safety features that make LGBTinder special.

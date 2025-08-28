@@ -1,0 +1,160 @@
+{
+  "project_completion_prompts": [
+    {
+      "id": 1,
+      "title": "Complete Core Authentication Infrastructure",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 1: Core Authentication Infrastructure. Create AuthProvider class, authentication models (AuthUser, LoginRequest, etc.), and AuthService with all API methods. Include secure token storage, token refresh mechanism, and proper error handling. Create files in lib/providers/, lib/models/, lib/services/. Continue until all Phase 1 tasks are completed and code compiles without errors."
+    },
+    {
+      "id": 2,
+      "title": "Implement Welcome and Authentication Screens",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 2: Welcome & Authentication Screens. Create WelcomeScreen with LGBTQ+ branding, LoginScreen with validation, PhoneLoginScreen, and OtpVerificationScreen. Include proper navigation, real-time validation, error handling, and loading states. Use existing AppColors and AppTypography. Create screens in lib/screens/auth/. Continue until all Phase 2 tasks are completed."
+    },
+    {
+      "id": 3,
+      "title": "Complete Registration Flow and Validation",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 3: Registration Flow. Create RegistrationScreen with all required fields (name, email, password, phone, birth date, gender, etc.) and RegistrationValidator class with comprehensive validation rules. Include password strength indicator, age verification, real-time validation, and form submission. Create in lib/screens/auth/ and lib/utils/. Continue until all Phase 3 tasks are completed."
+    },
+    {
+      "id": 4,
+      "title": "Implement Verification Flows",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 4: Verification Flows. Create EmailVerificationScreen and PhoneVerificationScreen with 6-digit code input, resend functionality with 60-second countdown, rate limiting (3 attempts per 15 minutes), and proper error handling. Integrate with AuthService verification methods. Create in lib/screens/auth/. Continue until all Phase 4 tasks are completed."
+    },
+    {
+      "id": 5,
+      "title": "Build Profile Completion Wizard",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 5: Profile Completion Wizard. Create ProfileCompletionWelcomeScreen and ProfileWizardScreen with 5 steps: Basic Info, Identity & Preferences, Physical & Lifestyle, Background Info, and Matching Preferences. Include step navigation, progress indicators, data persistence, and API integration. Create in lib/screens/profile_wizard/. Continue until all Phase 5 tasks are completed."
+    },
+    {
+      "id": 6,
+      "title": "Implement Password Reset Flow",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 6: Password Reset Flow. Create ForgotPasswordScreen and PasswordResetScreen with email input, password strength validation, token handling, and rate limiting (3 attempts per hour). Integrate with password reset API endpoints. Create in lib/screens/auth/. Continue until all Phase 6 tasks are completed."
+    },
+    {
+      "id": 7,
+      "title": "Enhance Security and Error Handling",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 7: Security & Error Handling. Enhance JWT token management, implement rate limiting for all authentication actions, add input sanitization, SQL injection prevention, XSS protection, and comprehensive error handling with retry mechanisms. Create security utilities in lib/utils/. Continue until all Phase 7 tasks are completed."
+    },
+    {
+      "id": 8,
+      "title": "Improve UI/UX and Accessibility",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 8: UI/UX & Accessibility. Enhance all screens with skeleton loaders, progress indicators, success animations, error states, screen reader support, keyboard navigation, high contrast mode, and focus management. Create reusable UI components in lib/components/ui/. Continue until all Phase 8 tasks are completed."
+    },
+    {
+      "id": 9,
+      "title": "Complete Testing and Quality Assurance",
+      "prompt": "Based on authentication_tasks.txt, implement Phase 9: Testing & Quality Assurance. Create comprehensive unit tests for validation logic and authentication components, integration tests for complete flows, E2E tests for user scenarios, and security tests for vulnerabilities. Use Flutter testing framework and create mock services. Continue until all Phase 9 tasks are completed."
+    },
+    {
+      "id": 10,
+      "title": "Final Authentication Integration",
+      "prompt": "Integrate all authentication components with the main LGBTinder app. Update main.dart to include AuthProvider, add navigation routes for all authentication screens, ensure proper authentication state management, test complete flows, verify consistent theming, and fix any remaining issues. This is the final phase to ensure everything works together seamlessly. Continue until the entire authentication system is fully integrated and functional."
+    },
+    {
+      "id": 11,
+      "title": "Complete Chat System Implementation",
+      "prompt": "Based on messages_tasks.txt, implement the remaining chat system features. Complete Phase 3: Advanced Chat Features (Media & Attachments, Emoji & Reactions, Search & Filters), Phase 4: Video & Voice Chat (Call UI Components, Video Chat Features, Voice Chat Features), Phase 5: User Profile in Messages (Profile View Components, Profile Actions), and Phase 6: Users List & Discovery. Create all missing components in lib/components/chat/ and lib/pages/. Continue until all chat system tasks are completed."
+    },
+    {
+      "id": 12,
+      "title": "Implement Payment System with Stripe",
+      "prompt": "Based on payment_docs.txt, implement the complete Stripe payment integration system. Create PaymentService for Stripe API calls, implement payment models (Payment, Subscription, PlanPurchaseHistory), create payment UI components (PaymentForm, PaymentMethodSelector, PaymentProcessing), implement webhook handling, add payment confirmation, error handling, and validation. Create all payment-related files in lib/services/, lib/models/, and lib/components/payment/. Continue until the entire payment system is fully functional."
+    },
+    {
+      "id": 13,
+      "title": "Complete Plans and Purchase System",
+      "prompt": "Based on plans_purchase_tasks.txt, implement the remaining plans and purchase features. Complete Phase 2: Core UI Components (Plan Display, SubPlan Selection, Superlike Pack Components, Payment Components), Phase 3: Plan Management Screens (Plans Overview, Plan Details, SubPlan Selection), Phase 4: Superlike Management Screens, and Phase 5: Purchase Flow Implementation. Create all missing components in lib/components/plans/ and lib/pages/plans/. Continue until all plans and purchase tasks are completed."
+    },
+    {
+      "id": 14,
+      "title": "Implement Discovery and Matching Interface",
+      "prompt": "Based on extra_tasks.txt, implement Phase 1: Discovery & Matching Interface. Create DiscoveryPage (main swipe interface), ProfileCard component with full-screen profile photo display, ProfileInfoOverlay component, ActionButtons component (dislike, superlike, like, info), ProfileDetailModal, and MatchNotificationScreen. Implement swipe gestures, navigation elements, and match celebration animations. Create all components in lib/pages/discovery/ and lib/components/discovery/. Continue until all discovery and matching tasks are completed."
+    },
+    {
+      "id": 15,
+      "title": "Build Stories and Social Feed System",
+      "prompt": "Based on extra_tasks.txt, implement Phase 2: Stories System and Phase 3: Social Feed System. Create StoriesHeader component, StoryCreationScreen (text, photo, video), StoryViewerScreen, FeedPage component, FeedPost component, CreatePostScreen, and PostDetailScreen. Implement story creation, viewing, and social feed functionality with proper state management. Create all components in lib/pages/stories/, lib/pages/feed/, and lib/components/. Continue until all stories and social feed tasks are completed."
+    },
+    {
+      "id": 16,
+      "title": "Implement Calls and Video Chat System",
+      "prompt": "Based on extra_tasks.txt, implement Phase 4: Calls & Video Chat System. Create IncomingCallScreen, ActiveCallScreen, CallHistoryScreen, and CallSettingsScreen components. Implement video call layout with main video and picture-in-picture, audio call layout, call controls (mute, speaker, camera flip, end call), and call preferences. Create all components in lib/pages/calls/ and lib/components/calls/. Continue until all calls and video chat tasks are completed."
+    },
+    {
+      "id": 17,
+      "title": "Build Safety and Security Features",
+      "prompt": "Based on extra_tasks.txt, implement Phase 5: Safety & Security Features. Create SafetyCenterScreen, EmergencyAlertScreen, and ReportScreen components. Implement emergency contacts management, safety guidelines, emergency alert system with alert types and recipient management, and comprehensive report system with evidence upload. Create all components in lib/pages/safety/ and lib/components/safety/. Continue until all safety and security tasks are completed."
+    },
+    {
+      "id": 18,
+      "title": "Implement Notifications and Settings",
+      "prompt": "Based on extra_tasks.txt, implement Phase 6: Notifications & Alerts and Phase 7: Settings & Preferences. Create NotificationCenterScreen, NotificationSettingsScreen, AccountSettingsScreen, MatchingPreferencesScreen, and AppSettingsScreen components. Implement notification types, push notification preferences, account settings, privacy settings, matching preferences, and app settings. Create all components in lib/pages/notifications/, lib/pages/settings/, and lib/components/. Continue until all notifications and settings tasks are completed."
+    },
+    {
+      "id": 19,
+      "title": "Build Premium Features and Navigation",
+      "prompt": "Based on extra_tasks.txt, implement Phase 8: Premium Features Interface and Phase 9: Navigation & Core App Structure. Create PremiumDashboardScreen, PlanManagementScreen, update BottomNavBar with all tabs, create TopNavigationBar, and implement AppRouter with route definitions. Add navigation state management, navigation guards, and deep linking. Create all components in lib/pages/premium/, lib/components/navigation/, and lib/routing/. Continue until all premium features and navigation tasks are completed."
+    },
+    {
+      "id": 20,
+      "title": "Final Integration and Project Completion",
+      "prompt": "Complete the final integration phase for the entire LGBTinder app. Implement Phase 10: Integration & Polish from extra_tasks.txt. Create all remaining providers (DiscoveryProvider, StoriesProvider, FeedProvider, CallsProvider, SafetyProvider, SettingsProvider), implement all remaining services (DiscoveryService, StoriesService, FeedService, CallsService, SafetyService, SettingsService), optimize performance with image caching, lazy loading, pagination, and offline support. Test all features together, ensure proper state management, fix any remaining issues, and prepare the app for production deployment. Continue until the entire LGBTinder app is fully functional and ready for release."
+    }
+  ],
+  "project_overview": {
+    "name": "LGBTinder Complete Mobile App",
+    "total_phases": 20,
+    "estimated_time": "14-21 weeks",
+    "key_features": [
+      "Complete authentication system with JWT tokens",
+      "Comprehensive user registration and verification",
+      "Profile completion wizard",
+      "Password reset functionality",
+      "Advanced security features",
+      "Full accessibility support",
+      "Complete chat system with video/voice calls",
+      "Stripe payment integration",
+      "Subscription plans and superlike packs",
+      "Discovery and matching interface",
+      "Stories and social feed system",
+      "Safety and security features",
+      "Premium features and navigation",
+      "Comprehensive testing and optimization"
+    ]
+  },
+  "implementation_notes": {
+    "priority_order": [
+      "Phases 1-10: Authentication system (6-9 weeks)",
+      "Phases 11-13: Chat, payment, and plans systems (3-4 weeks)",
+      "Phases 14-19: Core app features (4-6 weeks)",
+      "Phase 20: Final integration and optimization (1-2 weeks)"
+    ],
+    "existing_components": [
+      "AppColors and AppTypography theme system",
+      "ErrorHandler utility",
+      "SuccessFeedback utility",
+      "ValidationUtils",
+      "ApiService base class",
+      "Provider state management",
+      "Profile system (completed)",
+      "Basic chat system (partially completed)",
+      "Basic plans system (partially completed)"
+    ],
+    "dependencies_to_add": [
+      "flutter_secure_storage",
+      "http",
+      "shared_preferences",
+      "image_picker",
+      "intl",
+      "flutter_svg",
+      "flutter_stripe",
+      "camera",
+      "video_player",
+      "flutter_local_notifications",
+      "permission_handler",
+      "geolocator",
+      "flutter_webrtc",
+      "pusher_client"
+    ]
+  }
+}

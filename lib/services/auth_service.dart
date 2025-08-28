@@ -1,216 +1,440 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
+import '../models/auth_requests.dart';
+import '../models/auth_responses.dart';
+import '../models/auth_user.dart';
+import '../utils/error_handler.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://your-api-url.com/api'; // Replace with your actual API URL
-  static const String _tokenKey = 'jwt_token';
-  static const String _userKey = 'user_data';
+  static const String _baseUrl = 'https://api.lgbtinder.com/api'; // Replace with your actual API base URL
   
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  // Authentication endpoints
+  static const String _loginEndpoint = '/auth/login';
+  static const String _registerEndpoint = '/auth/register';
+  static const String _sendVerificationEndpoint = '/auth/send-verification';
+  static const String _verifyCodeEndpoint = '/auth/verify-registration-code';
+  static const String _sendOtpEndpoint = '/auth/send-otp';
+  static const String _verifyOtpEndpoint = '/auth/verify-otp';
+  static const String _resendVerificationEndpoint = '/auth/resend-verification';
+  static const String _refreshTokenEndpoint = '/auth/refresh-token';
+  static const String _logoutEndpoint = '/auth/logout';
 
-  // Singleton pattern
-  static final AuthService _instance = AuthService._internal();
-  factory AuthService() => _instance;
-  AuthService._internal();
-
-  // Get stored token
-  Future<String?> getToken() async {
-    return await _secureStorage.read(key: _tokenKey);
-  }
-
-  // Get stored user data
-  Future<Map<String, dynamic>?> getUserData() async {
-    final userData = await _secureStorage.read(key: _userKey);
-    if (userData != null) {
-      return json.decode(userData);
-    }
-    return null;
-  }
-
-  // Check if user is authenticated
-  Future<bool> isAuthenticated() async {
-    final token = await getToken();
-    if (token == null) return false;
-    
+  /// Login with email and password
+  static Future<LoginResponse> login(LoginRequest request) async {
     try {
-      // Check if token is expired
-      if (JwtDecoder.isExpired(token)) {
-        await logout();
-        return false;
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_loginEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return LoginResponse.fromJson(data);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Invalid email or password');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Login failed: ${response.statusCode}');
       }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error during login: $e');
+    }
+  }
+
+  /// Login with phone number (send OTP)
+  static Future<bool> sendOtp(PhoneLoginRequest request) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_sendOtpEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] as bool? ?? false;
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid phone number',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 429) {
+        throw RateLimitException('Too many OTP requests. Please wait before trying again.');
+      } else {
+        throw ApiException('Failed to send OTP: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on RateLimitException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending OTP: $e');
+    }
+  }
+
+  /// Verify OTP and login with phone
+  static Future<OtpVerificationResponse> verifyOtp(OtpVerificationRequest request) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_verifyOtpEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return OtpVerificationResponse.fromJson(data);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid OTP',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 401) {
+        throw AuthException('Invalid or expired OTP');
+      } else {
+        throw ApiException('OTP verification failed: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error during OTP verification: $e');
+    }
+  }
+
+  /// Register new user
+  static Future<RegisterResponse> register(RegisterRequest request) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_registerEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return RegisterResponse.fromJson(data);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 409) {
+        throw AuthException('User already exists with this email or phone number');
+      } else {
+        throw ApiException('Registration failed: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error during registration: $e');
+    }
+  }
+
+  /// Send verification code to email
+  static Future<bool> sendVerification(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_sendVerificationEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] as bool? ?? false;
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid email address',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 429) {
+        throw RateLimitException('Too many verification requests. Please wait before trying again.');
+      } else {
+        throw ApiException('Failed to send verification: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on RateLimitException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending verification: $e');
+    }
+  }
+
+  /// Verify email verification code
+  static Future<VerificationResponse> verifyCode(VerificationRequest request) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_verifyCodeEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return VerificationResponse.fromJson(data);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid verification code',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 401) {
+        throw AuthException('Invalid or expired verification code');
+      } else {
+        throw ApiException('Verification failed: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error during verification: $e');
+    }
+  }
+
+  /// Resend verification code
+  static Future<ResendVerificationResponse> resendVerification(ResendVerificationRequest request) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_resendVerificationEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return ResendVerificationResponse.fromJson(data);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid email address',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 429) {
+        final data = jsonDecode(response.body);
+        return ResendVerificationResponse(
+          success: false,
+          message: data['message'] ?? 'Too many requests',
+          cooldownSeconds: data['cooldown_seconds'] ?? 60,
+        );
+      } else {
+        throw ApiException('Failed to resend verification: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while resending verification: $e');
+    }
+  }
+
+  /// Refresh access token
+  static Future<TokenRefreshResponse> refreshToken(String refreshToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_refreshTokenEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $refreshToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return TokenRefreshResponse.fromJson(data);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Invalid or expired refresh token');
+      } else {
+        throw ApiException('Token refresh failed: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error during token refresh: $e');
+    }
+  }
+
+  /// Logout user
+  static Future<bool> logout(String accessToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl$_logoutEndpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      // Logout should not fail even if network is down
+      // Just return true to indicate successful logout
       return true;
-    } catch (e) {
-      await logout();
-      return false;
     }
   }
 
-  // Login
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  /// Get current user profile (requires authentication)
+  static Future<AuthUser> getCurrentUser(String accessToken) async {
     try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/login'),
+      final response = await http.get(
+        Uri.parse('$_baseUrl/user/profile'),
         headers: {
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
         },
-        body: json.encode({
-          'email': email,
-          'password': password,
-        }),
-      );
-
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200) {
-        // Store token and user data
-        await _secureStorage.write(key: _tokenKey, value: data['token']);
-        
-        if (data['user'] != null) {
-          await _secureStorage.write(
-            key: _userKey, 
-            value: json.encode(data['user'])
-          );
-        }
-
-        return {
-          'success': true,
-          'message': 'Login successful',
-          'token': data['token'],
-          'user': data['user'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Login failed',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
-  }
-
-  // Register
-  Future<Map<String, dynamic>> register({
-    required String name,
-    required String email,
-    required String password,
-    required String passwordConfirmation,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/register'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'name': name,
-          'email': email,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-        }),
-      );
-
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        // Store token and user data
-        await _secureStorage.write(key: _tokenKey, value: data['token']);
-        
-        if (data['user'] != null) {
-          await _secureStorage.write(
-            key: _userKey, 
-            value: json.encode(data['user'])
-          );
-        }
-
-        return {
-          'success': true,
-          'message': 'Registration successful',
-          'token': data['token'],
-          'user': data['user'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Registration failed',
-          'errors': data['errors'],
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
-  }
-
-  // Logout
-  Future<void> logout() async {
-    await _secureStorage.delete(key: _tokenKey);
-    await _secureStorage.delete(key: _userKey);
-  }
-
-  // Get headers with authorization token
-  Future<Map<String, String>> getAuthHeaders() async {
-    final token = await getToken();
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-  }
-
-  // Make authenticated API request
-  Future<http.Response> authenticatedRequest(
-    String method,
-    String endpoint, {
-    Map<String, dynamic>? body,
-  }) async {
-    final headers = await getAuthHeaders();
-    final uri = Uri.parse('$_baseUrl$endpoint');
-
-    switch (method.toUpperCase()) {
-      case 'GET':
-        return await http.get(uri, headers: headers);
-      case 'POST':
-        return await http.post(
-          uri,
-          headers: headers,
-          body: body != null ? json.encode(body) : null,
-        );
-      case 'PUT':
-        return await http.put(
-          uri,
-          headers: headers,
-          body: body != null ? json.encode(body) : null,
-        );
-      case 'DELETE':
-        return await http.delete(uri, headers: headers);
-      default:
-        throw Exception('Unsupported HTTP method: $method');
-    }
-  }
-
-  // Refresh token (if your API supports it)
-  Future<bool> refreshToken() async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/refresh'),
-        headers: await getAuthHeaders(),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        await _secureStorage.write(key: _tokenKey, value: data['token']);
-        return true;
+        final data = jsonDecode(response.body);
+        return AuthUser.fromJson(data['user'] ?? data);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Invalid or expired access token');
+      } else {
+        throw ApiException('Failed to get user profile: ${response.statusCode}');
       }
-      return false;
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
     } catch (e) {
-      return false;
+      throw NetworkException('Network error while getting user profile: $e');
+    }
+  }
+
+  /// Update user profile (requires authentication)
+  static Future<AuthUser> updateProfile(String accessToken, Map<String, dynamic> profileData) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$_baseUrl/user/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(profileData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return AuthUser.fromJson(data['user'] ?? data);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Invalid or expired access token');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to update profile: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while updating profile: $e');
+    }
+  }
+
+  /// Check if email exists
+  static Future<bool> checkEmailExists(String email) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/auth/check-email?email=${Uri.encodeComponent(email)}'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['exists'] as bool? ?? false;
+      } else {
+        return false; // Assume email doesn't exist if check fails
+      }
+    } catch (e) {
+      return false; // Assume email doesn't exist if check fails
+    }
+  }
+
+  /// Check if phone number exists
+  static Future<bool> checkPhoneExists(String phoneNumber, String countryCode) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/auth/check-phone?phone_number=${Uri.encodeComponent(phoneNumber)}&country_code=${Uri.encodeComponent(countryCode)}'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['exists'] as bool? ?? false;
+      } else {
+        return false; // Assume phone doesn't exist if check fails
+      }
+    } catch (e) {
+      return false; // Assume phone doesn't exist if check fails
     }
   }
 } 

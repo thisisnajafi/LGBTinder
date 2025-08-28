@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
 
 class ChatListLoading extends StatelessWidget {
   const ChatListLoading({Key? key}) : super(key: key);
@@ -25,7 +24,7 @@ class ChatListLoading extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.navbarBackground,
+              color: Colors.white.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
           ),
@@ -42,7 +41,7 @@ class ChatListLoading extends StatelessWidget {
                   width: double.infinity,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: AppColors.navbarBackground,
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -56,7 +55,7 @@ class ChatListLoading extends StatelessWidget {
                       child: Container(
                         height: 14,
                         decoration: BoxDecoration(
-                          color: AppColors.navbarBackground,
+                          color: Colors.white.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -69,7 +68,7 @@ class ChatListLoading extends StatelessWidget {
                       width: 40,
                       height: 14,
                       decoration: BoxDecoration(
-                        color: AppColors.navbarBackground,
+                        color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

@@ -51,10 +51,10 @@ class _MessageInputState extends State<MessageInput> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.navbarBackground,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -70,8 +70,8 @@ class _MessageInputState extends State<MessageInput> {
                 icon: Icon(
                   Icons.attach_file,
                   color: widget.isEnabled 
-                      ? AppColors.textSecondary 
-                      : AppColors.greyMedium,
+                      ? Colors.white.withOpacity(0.7) 
+                      : Colors.white.withOpacity(0.3),
                   size: 24,
                 ),
                 padding: EdgeInsets.zero,
@@ -86,7 +86,7 @@ class _MessageInputState extends State<MessageInput> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.greyLight,
+                  color: AppColors.navbarBackground,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
@@ -98,7 +98,7 @@ class _MessageInputState extends State<MessageInput> {
                   decoration: InputDecoration(
                     hintText: 'Type a message...',
                     hintStyle: AppTypography.body2.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Colors.white.withOpacity(0.7),
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -107,7 +107,7 @@ class _MessageInputState extends State<MessageInput> {
                     ),
                   ),
                   style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -120,9 +120,9 @@ class _MessageInputState extends State<MessageInput> {
                   : null,
               icon: Icon(
                 _hasText ? Icons.send : Icons.mic,
-                color: (_hasText && widget.isEnabled) 
-                    ? AppColors.primary 
-                    : AppColors.greyMedium,
+                                  color: (_hasText && widget.isEnabled) 
+                      ? AppColors.primaryLight 
+                      : Colors.white.withOpacity(0.3),
                 size: 24,
               ),
               padding: EdgeInsets.zero,

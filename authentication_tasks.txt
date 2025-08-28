@@ -1,0 +1,472 @@
+# LGBTinder Authentication System Implementation Tasks
+
+## **Phase 1: Core Authentication Infrastructure** 🚀
+
+### **1.1 Authentication State Management**
+- [ ] Create `AuthProvider` class for global authentication state
+- [ ] Implement secure token storage using `flutter_secure_storage`
+- [ ] Add authentication state variables:
+  - `isAuthenticated: bool`
+  - `isLoading: bool`
+  - `user: User?`
+  - `token: String?`
+  - `refreshToken: String?`
+  - `authError: String?`
+- [ ] Implement token refresh mechanism
+- [ ] Add token expiration handling
+- [ ] Create authentication state persistence
+
+### **1.2 Authentication Models**
+- [ ] Create `AuthUser` model with properties:
+  - `id: int`
+  - `firstName: String`
+  - `lastName: String`
+  - `email: String`
+  - `phoneNumber: String`
+  - `profileCompleted: bool`
+  - `emailVerified: bool`
+  - `phoneVerified: bool`
+  - `createdAt: DateTime`
+  - `updatedAt: DateTime`
+- [ ] Create `LoginRequest` model
+- [ ] Create `LoginResponse` model
+- [ ] Create `RegisterRequest` model
+- [ ] Create `RegisterResponse` model
+- [ ] Create `VerificationRequest` model
+- [ ] Create `VerificationResponse` model
+- [ ] Create `PasswordResetRequest` model
+
+### **1.3 Authentication Services**
+- [ ] Create `AuthService` class for API calls
+- [ ] Implement `login()` method (POST /api/auth/login)
+- [ ] Implement `register()` method (POST /api/auth/register)
+- [ ] Implement `sendVerification()` method (POST /api/auth/send-verification)
+- [ ] Implement `verifyCode()` method (POST /api/auth/verify-registration-code)
+- [ ] Implement `sendOtp()` method (POST /api/auth/send-otp)
+- [ ] Implement `verifyOtp()` method (POST /api/auth/verify-otp)
+- [ ] Implement `resendVerification()` method (POST /api/auth/resend-verification)
+- [ ] Implement `logout()` method
+- [ ] Implement `refreshToken()` method
+- [ ] Add proper error handling and response parsing
+
+---
+
+## **Phase 2: Welcome & Authentication Screens** 🎨
+
+### **2.1 Welcome Screen**
+- [ ] Create `WelcomeScreen` widget
+- [ ] Add app logo (large, centered)
+- [ ] Add app tagline: "Connect with the LGBTQ+ community"
+- [ ] Add welcome message: "Welcome to LGBTinder"
+- [ ] Implement two main buttons:
+  - "Login" (Primary button with app theme)
+  - "Create Account" (Secondary button)
+- [ ] Add footer links:
+  - "Terms of Service" (navigates to terms page)
+  - "Privacy Policy" (navigates to privacy page)
+  - "Help & Support" (navigates to help page)
+- [ ] Add LGBTQ+ rainbow gradient background
+- [ ] Implement subtle entrance animations
+- [ ] Add accessibility support (screen reader, keyboard navigation)
+
+### **2.2 Login Screen**
+- [ ] Create `LoginScreen` widget
+- [ ] Add input fields:
+  - Email Address (text input, required, email validation)
+  - Password (password input, required, min 8 chars)
+  - "Remember Me" checkbox (optional)
+  - "Forgot Password?" link
+- [ ] Implement buttons:
+  - "Login" button (primary, with loading state)
+  - "Login with Phone" button (secondary)
+  - "Back to Welcome" button
+- [ ] Add social login options (if implemented)
+- [ ] Add "Don't have an account? Sign up" link
+- [ ] Implement real-time validation
+- [ ] Add error message display
+- [ ] Add loading states and disabled states
+
+### **2.3 Phone Login Flow**
+- [ ] Create `PhoneLoginScreen` widget
+- [ ] Add phone number input with international format
+- [ ] Implement phone number validation
+- [ ] Add "Send OTP" button
+- [ ] Create `OtpVerificationScreen` widget
+- [ ] Add 6-digit OTP input field
+- [ ] Implement OTP validation
+- [ ] Add "Verify OTP" button
+- [ ] Add "Resend OTP" button with countdown timer
+- [ ] Add "Back to Login" link
+
+---
+
+## **Phase 3: Registration Flow** 📝
+
+### **3.1 Registration Screen**
+- [ ] Create `RegistrationScreen` widget
+- [ ] Add input fields with validation:
+  - First Name (text input, required, 2-50 chars, letters only)
+  - Last Name (text input, required, 2-50 chars, letters only)
+  - Email Address (email input, required, unique validation)
+  - Password (password input, required, min 8 chars, complexity rules)
+  - Confirm Password (password input, required, must match)
+  - Phone Number (phone input, required, international format)
+  - Birth Date (date picker, required, 18+ validation)
+  - Gender Identity (single selection dropdown from API)
+  - Looking for (multiple selection from API)
+  - Terms & Conditions checkbox (required)
+  - Privacy Policy checkbox (required)
+- [ ] Implement password strength indicator
+- [ ] Add age verification notice
+- [ ] Add "Already have an account? Login" link
+- [ ] Implement real-time validation for all fields
+- [ ] Add validation error messages below each field
+- [ ] Implement form submission with loading state
+
+### **3.2 Registration Validation Rules**
+- [ ] Create `RegistrationValidator` class
+- [ ] Implement name validation (2-50 chars, letters only)
+- [ ] Implement email validation (format + uniqueness)
+- [ ] Implement password validation (min 8 chars, uppercase, lowercase, number)
+- [ ] Implement password confirmation validation
+- [ ] Implement phone number validation (international format)
+- [ ] Implement age validation (18+ years old)
+- [ ] Implement required field validation
+- [ ] Add custom validation error messages
+- [ ] Implement real-time validation feedback
+
+---
+
+## **Phase 4: Verification Flows** ✅
+
+### **4.1 Email Verification Screen**
+- [ ] Create `EmailVerificationScreen` widget
+- [ ] Add email icon or illustration
+- [ ] Add title: "Verify Your Email"
+- [ ] Add message: "We've sent a verification code to [email]"
+- [ ] Add 6-digit verification code input field
+- [ ] Implement code format validation
+- [ ] Add "Verify Email" button (primary)
+- [ ] Add "Resend Code" button with 60-second countdown timer
+- [ ] Add "Change Email" link
+- [ ] Add "Back to Login" link
+- [ ] Add "Skip for now" button (if allowed)
+- [ ] Implement verification process with API
+- [ ] Handle verification responses (success, invalid, expired, too many attempts)
+
+### **4.2 Phone Verification Screen**
+- [ ] Create `PhoneVerificationScreen` widget
+- [ ] Add phone icon or illustration
+- [ ] Add title: "Verify Your Phone"
+- [ ] Add message: "We've sent a verification code to [phone]"
+- [ ] Add 6-digit verification code input field
+- [ ] Implement code format validation
+- [ ] Add "Verify Phone" button (primary)
+- [ ] Add "Resend Code" button with 60-second countdown timer
+- [ ] Add "Change Phone" link
+- [ ] Add "Skip for now" button (if allowed)
+- [ ] Implement verification process with API
+- [ ] Handle verification responses (success, invalid, expired, too many attempts)
+
+### **4.3 Verification Resend Logic**
+- [ ] Implement countdown timer (60 seconds)
+- [ ] Add "Resend Code" button (enabled after countdown)
+- [ ] Show success message when code sent
+- [ ] Handle failed resend attempts
+- [ ] Implement rate limiting (3 attempts per 15 minutes)
+- [ ] Show cooldown message for too many attempts
+
+---
+
+## **Phase 5: Profile Completion Wizard** 🎯
+
+### **5.1 Profile Completion Welcome Screen**
+- [ ] Create `ProfileCompletionWelcomeScreen` widget
+- [ ] Add welcome message: "Welcome to LGBTinder, [Name]!"
+- [ ] Add progress indicator: "Step X of Y"
+- [ ] Add brief explanation of profile completion process
+- [ ] Add "Let's get started!" button
+- [ ] Implement celebratory design with confetti animation
+- [ ] Add progress bar showing completion steps
+- [ ] Add motivational messaging
+
+### **5.2 Profile Wizard Flow**
+- [ ] Create `ProfileWizardScreen` widget with `PageView`
+- [ ] Implement step navigation (back/next/skip)
+- [ ] Add progress indicator for each step
+- [ ] Implement step data persistence
+- [ ] Add completion percentage calculation
+
+#### **Step 1: Basic Information**
+- [ ] Create `BasicInfoStep` widget
+- [ ] Add profile photo upload (required)
+- [ ] Add profile bio text area (0-500 chars, optional)
+- [ ] Add city input with autocomplete
+- [ ] Add country dropdown/autocomplete
+- [ ] Implement validation (photo required, bio max 500 chars)
+- [ ] Add "Skip" button for optional fields
+- [ ] Add "Next" button (enabled when required fields complete)
+
+#### **Step 2: Identity & Preferences**
+- [ ] Create `IdentityPreferencesStep` widget
+- [ ] Add gender identity selection (single selection from API)
+- [ ] Add sexual orientation selection (single selection from API)
+- [ ] Add relationship goals (multiple selection from API)
+- [ ] Add looking for preferences (multiple selection from API)
+- [ ] Implement validation (all fields required)
+- [ ] Add "Back" button
+- [ ] Add "Next" button (enabled when all required fields complete)
+
+#### **Step 3: Physical & Lifestyle**
+- [ ] Create `PhysicalLifestyleStep` widget
+- [ ] Add height input with unit selection
+- [ ] Add weight input with unit selection
+- [ ] Add smoking preference (radio buttons: Yes/No/Sometimes)
+- [ ] Add gym preference (radio buttons: Yes/No/Sometimes)
+- [ ] Add drinking preference (radio buttons: Yes/No/Sometimes)
+- [ ] Implement validation (height/weight optional, lifestyle required)
+- [ ] Add "Back" button
+- [ ] Add "Next" button
+
+#### **Step 4: Background Information**
+- [ ] Create `BackgroundInfoStep` widget
+- [ ] Add education selection (multiple selection from API)
+- [ ] Add job/profession selection (multiple selection from API)
+- [ ] Add languages spoken (multiple selection from API)
+- [ ] Add music genres (multiple selection from API)
+- [ ] Add interests/hobbies (multiple selection from API)
+- [ ] Implement validation (all fields optional but recommended)
+- [ ] Show completion percentage
+- [ ] Add "Back" button
+- [ ] Add "Skip" button (if all optional)
+- [ ] Add "Next" button
+
+#### **Step 5: Matching Preferences**
+- [ ] Create `MatchingPreferencesStep` widget
+- [ ] Add age range dual slider (18-80)
+- [ ] Add distance range slider (1-100 km/miles)
+- [ ] Add "Show My Age" toggle switch
+- [ ] Add "Show My Distance" toggle switch
+- [ ] Implement validation (age range valid, distance required)
+- [ ] Add "Back" button
+- [ ] Add "Complete Profile" button
+
+### **5.3 Profile Wizard API Integration**
+- [ ] Implement `GET /api/profile-wizard/current-step`
+- [ ] Implement `GET /api/profile-wizard/step-options/{step}`
+- [ ] Implement `POST /api/profile-wizard/save-step/{step}`
+- [ ] Implement `POST /api/complete-registration`
+- [ ] Implement `GET /api/profile/completion`
+- [ ] Add step data caching
+- [ ] Implement offline support for form data
+
+---
+
+## **Phase 6: Password Reset Flow** 🔑
+
+### **6.1 Forgot Password Screen**
+- [ ] Create `ForgotPasswordScreen` widget
+- [ ] Add email address input (required, email validation)
+- [ ] Add "Send Reset Link" button
+- [ ] Add "Back to Login" link
+- [ ] Implement email existence validation
+- [ ] Add loading state during API call
+- [ ] Show success message after email sent
+
+### **6.2 Password Reset Process**
+- [ ] Create `PasswordResetScreen` widget
+- [ ] Add new password input (with strength requirements)
+- [ ] Add confirm new password input
+- [ ] Add "Reset Password" button
+- [ ] Implement password strength validation
+- [ ] Implement password confirmation validation
+- [ ] Add token validation
+- [ ] Handle reset success/failure
+
+### **6.3 Password Reset API Integration**
+- [ ] Implement `POST /api/auth/send-otp` (send reset code)
+- [ ] Implement `POST /api/auth/verify-otp` (verify reset code)
+- [ ] Implement `POST /api/auth/reset-password` (reset password)
+- [ ] Add proper error handling
+- [ ] Implement rate limiting (3 attempts per hour)
+
+---
+
+## **Phase 7: Security & Error Handling** 🛡️
+
+### **7.1 Security Features**
+- [ ] Implement JWT token management
+- [ ] Add refresh token mechanism
+- [ ] Implement token expiration handling
+- [ ] Add secure token storage (encrypted)
+- [ ] Implement automatic token refresh
+- [ ] Add input sanitization
+- [ ] Implement SQL injection prevention
+- [ ] Add XSS protection
+- [ ] Implement HTTPS enforcement
+
+### **7.2 Rate Limiting**
+- [ ] Implement login attempts: 5 per 15 minutes
+- [ ] Implement registration: 3 per hour
+- [ ] Implement OTP requests: 3 per 15 minutes
+- [ ] Implement password reset: 3 per hour
+- [ ] Add user-friendly rate limit messages
+- [ ] Implement cooldown timers
+
+### **7.3 Error Handling**
+- [ ] Implement comprehensive error handling
+- [ ] Add network error handling (timeout, offline)
+- [ ] Add validation error handling
+- [ ] Add server error handling
+- [ ] Implement retry mechanisms
+- [ ] Add user-friendly error messages
+- [ ] Implement error logging and monitoring
+- [ ] Add fallback UI for critical failures
+
+---
+
+## **Phase 8: UI/UX & Accessibility** ♿
+
+### **8.1 Loading States**
+- [ ] Add skeleton loaders for content
+- [ ] Implement progress indicators for multi-step processes
+- [ ] Add loading spinners for API calls
+- [ ] Implement disabled buttons during processing
+- [ ] Add loading animations and transitions
+
+### **8.2 Success States**
+- [ ] Implement success animations
+- [ ] Add clear success messages
+- [ ] Implement automatic navigation after success
+- [ ] Add celebration animations for completion
+- [ ] Implement success feedback (haptic, visual)
+
+### **8.3 Error States**
+- [ ] Add clear error messages
+- [ ] Implement error icons and colors
+- [ ] Add retry options
+- [ ] Implement help links for common issues
+- [ ] Add error recovery suggestions
+
+### **8.4 Accessibility Features**
+- [ ] Add screen reader support
+- [ ] Implement keyboard navigation
+- [ ] Add high contrast mode support
+- [ ] Implement large text support
+- [ ] Add voice input support
+- [ ] Implement focus management
+- [ ] Add semantic labels and descriptions
+
+---
+
+## **Phase 9: Testing & Quality Assurance** 🧪
+
+### **9.1 Unit Testing**
+- [ ] Test validation logic
+- [ ] Test authentication state management
+- [ ] Test API service methods
+- [ ] Test form handling
+- [ ] Test error handling
+
+### **9.2 Integration Testing**
+- [ ] Test complete authentication flows
+- [ ] Test API integration
+- [ ] Test token management
+- [ ] Test error scenarios
+- [ ] Test offline/online transitions
+
+### **9.3 E2E Testing**
+- [ ] Test complete user registration flow
+- [ ] Test complete user login flow
+- [ ] Test profile completion wizard
+- [ ] Test password reset flow
+- [ ] Test error handling scenarios
+
+### **9.4 Security Testing**
+- [ ] Test input validation
+- [ ] Test token security
+- [ ] Test rate limiting
+- [ ] Test SQL injection prevention
+- [ ] Test XSS protection
+
+---
+
+## **Phase 10: Documentation & Deployment** 📚
+
+### **10.1 Code Documentation**
+- [ ] Document all authentication classes
+- [ ] Document API endpoints
+- [ ] Document validation rules
+- [ ] Document error codes
+- [ ] Add inline code comments
+
+### **10.2 User Documentation**
+- [ ] Create user registration guide
+- [ ] Create login troubleshooting guide
+- [ ] Create password reset guide
+- [ ] Add help tooltips in UI
+- [ ] Create FAQ section
+
+### **10.3 API Documentation**
+- [ ] Document authentication endpoints
+- [ ] Document request/response formats
+- [ ] Document error responses
+- [ ] Document rate limiting
+- [ ] Create API testing guide
+
+---
+
+## **Implementation Priority** 🎯
+
+### **High Priority (Phase 1-3)**
+1. Core authentication infrastructure
+2. Welcome and login screens
+3. Basic registration flow
+
+### **Medium Priority (Phase 4-6)**
+1. Verification flows
+2. Profile completion wizard
+3. Password reset functionality
+
+### **Low Priority (Phase 7-10)**
+1. Advanced security features
+2. Comprehensive testing
+3. Documentation and deployment
+
+---
+
+## **Estimated Development Time** ⏱️
+
+- **Phase 1-3 (Core Features)**: 2-3 weeks
+- **Phase 4-6 (User Flows)**: 2-3 weeks
+- **Phase 7-9 (Quality & Security)**: 1-2 weeks
+- **Phase 10 (Documentation)**: 1 week
+
+**Total Estimated Time**: 6-9 weeks
+
+---
+
+## **Dependencies & Requirements** 📋
+
+### **Flutter Packages Needed**
+- `provider` (state management)
+- `flutter_secure_storage` (secure token storage)
+- `http` (API calls)
+- `shared_preferences` (local storage)
+- `image_picker` (profile photo upload)
+- `intl` (date formatting)
+- `flutter_svg` (icons and illustrations)
+
+### **API Requirements**
+- Authentication endpoints
+- User management endpoints
+- File upload endpoints
+- Reference data endpoints (genders, orientations, etc.)
+
+### **Design Assets**
+- App logo and branding
+- LGBTQ+ themed illustrations
+- Icon sets
+- Color schemes and typography
+
+This comprehensive authentication system will provide a secure, user-friendly, and accessible experience for the LGBTQ+ community while maintaining high security standards and excellent user experience.

@@ -22,10 +22,10 @@ class ChatHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.navbarBackground,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -37,7 +37,7 @@ class ChatHeader extends StatelessWidget {
           IconButton(
             onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_ios, size: 20),
-            color: AppColors.textPrimary,
+            color: Colors.white,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(
               minWidth: 40,
@@ -59,7 +59,7 @@ class ChatHeader extends StatelessWidget {
                         height: 40,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.greyLight,
+                          color: AppColors.navbarBackground,
                         ),
                         child: chat.displayAvatar != null
                             ? ClipOval(
@@ -105,7 +105,7 @@ class ChatHeader extends StatelessWidget {
                         Text(
                           chat.displayName,
                           style: AppTypography.subtitle2.copyWith(
-                            color: AppColors.textPrimary,
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                           maxLines: 1,
@@ -117,7 +117,7 @@ class ChatHeader extends StatelessWidget {
                           Text(
                             chat.participants.first.statusText,
                             style: AppTypography.caption.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Colors.white.withOpacity(0.7),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -137,7 +137,7 @@ class ChatHeader extends StatelessWidget {
             IconButton(
               onPressed: onCallPressed,
               icon: const Icon(Icons.call, size: 20),
-              color: AppColors.primary,
+              color: AppColors.primaryLight,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(
                 minWidth: 40,
@@ -149,7 +149,7 @@ class ChatHeader extends StatelessWidget {
             IconButton(
               onPressed: onCallPressed,
               icon: const Icon(Icons.videocam, size: 20),
-              color: AppColors.primary,
+              color: AppColors.primaryLight,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(
                 minWidth: 40,
@@ -162,7 +162,7 @@ class ChatHeader extends StatelessWidget {
           IconButton(
             onPressed: onInfoPressed,
             icon: const Icon(Icons.more_vert, size: 20),
-            color: AppColors.textPrimary,
+            color: Colors.white,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(
               minWidth: 40,
@@ -179,7 +179,7 @@ class ChatHeader extends StatelessWidget {
       child: Icon(
         chat.isGroup ? Icons.group : Icons.person,
         size: 20,
-        color: AppColors.textSecondary,
+        color: Colors.white.withOpacity(0.7),
       ),
     );
   }

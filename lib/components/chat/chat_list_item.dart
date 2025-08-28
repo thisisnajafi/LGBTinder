@@ -133,7 +133,7 @@ class ChatListItem extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.greyLight,
+            color: AppColors.navbarBackground,
           ),
           child: chat.displayAvatar != null
               ? ClipOval(

@@ -178,4 +178,40 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
   );
+
+  // Additional typography styles for authentication screens
+  static const TextStyle h1 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 32.0,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.25,
+  );
+
+  static const TextStyle h2 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 28.0,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.25,
+  );
+
+  static const TextStyle h4 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 24.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+  );
+
+  static const TextStyle subtitle1 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 16.0,
+    fontWeight: FontWeight.normal,
+    letterSpacing: 0.15,
+  );
+
+  static const TextStyle body1 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 16.0,
+    fontWeight: FontWeight.normal,
+    letterSpacing: 0.5,
+  );
 } 

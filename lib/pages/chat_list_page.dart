@@ -135,7 +135,7 @@ class _ChatListPageState extends State<ChatListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.navbarBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -213,7 +213,7 @@ class _ChatListPageState extends State<ChatListPage> {
             Text(
               'Failed to load chats',
               style: AppTypography.h6.copyWith(
-                color: AppColors.textPrimary,
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
@@ -221,7 +221,7 @@ class _ChatListPageState extends State<ChatListPage> {
             Text(
               error,
               style: AppTypography.body2.copyWith(
-                color: AppColors.textSecondary,
+                color: Colors.white.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -229,7 +229,7 @@ class _ChatListPageState extends State<ChatListPage> {
             ElevatedButton(
               onPressed: _onRefresh,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.primaryLight,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -247,23 +247,25 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  Widget _buildLoadingMore() {
-    return const Padding(
-      padding: EdgeInsets.all(16),
-      child: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
+     Widget _buildLoadingMore() {
+     return Padding(
+       padding: const EdgeInsets.all(16),
+       child: Center(
+         child: CircularProgressIndicator(
+           color: AppColors.primaryLight,
+         ),
+       ),
+     );
+   }
 
   void _showChatOptions(Chat chat) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        decoration: BoxDecoration(
+          color: AppColors.navbarBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
           child: Column(
@@ -275,7 +277,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.greyLight,
+                  color: Colors.white.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -284,12 +286,12 @@ class _ChatListPageState extends State<ChatListPage> {
               ListTile(
                 leading: Icon(
                   chat.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                  color: AppColors.textPrimary,
+                  color: Colors.white,
                 ),
                 title: Text(
                   chat.isPinned ? 'Unpin chat' : 'Pin chat',
                   style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
                 onTap: () {
@@ -301,14 +303,14 @@ class _ChatListPageState extends State<ChatListPage> {
               ListTile(
                 leading: Icon(
                   chat.isArchived ? Icons.unarchive : Icons.archive,
-                  color: AppColors.textPrimary,
+                  color: Colors.white,
                 ),
-                title: Text(
-                  chat.isArchived ? 'Unarchive chat' : 'Archive chat',
-                  style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                                  title: Text(
+                    chat.isArchived ? 'Unarchive chat' : 'Archive chat',
+                    style: AppTypography.body2.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
                 onTap: () {
                   Navigator.pop(context);
                   _toggleArchiveChat(chat);
@@ -409,13 +411,13 @@ class _ChatListPageState extends State<ChatListPage> {
         title: Text(
           'Delete Chat',
           style: AppTypography.h6.copyWith(
-            color: AppColors.textPrimary,
+            color: Colors.white,
           ),
         ),
         content: Text(
           'Are you sure you want to delete this chat? This action cannot be undone.',
           style: AppTypography.body2.copyWith(
-            color: AppColors.textSecondary,
+            color: Colors.white.withOpacity(0.7),
           ),
         ),
         actions: [
@@ -424,7 +426,7 @@ class _ChatListPageState extends State<ChatListPage> {
             child: Text(
               'Cancel',
               style: AppTypography.button.copyWith(
-                color: AppColors.textSecondary,
+                color: Colors.white.withOpacity(0.7),
               ),
             ),
           ),

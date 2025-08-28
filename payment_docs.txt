@@ -1,0 +1,530 @@
+# LGBTinder Mobile App - Stripe Payment Integration Documentation
+
+## **Overview**
+
+This document provides comprehensive documentation for integrating Stripe payment processing with the LGBTinder mobile app, covering subscriptions, one-time purchases, superlike packs, and webhook handling.
+
+---
+
+## **1. Stripe Configuration & Setup**
+
+### **1.1 Environment Variables**
+```env
+STRIPE_KEY=pk_test_your_publishable_key_here
+STRIPE_SECRET=sk_test_your_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+STRIPE_CURRENCY=usd
+```
+
+### **1.2 Service Configuration**
+```php
+// app/Services/StripeService.php
+class StripeService
+{
+    public function __construct()
+    {
+        Stripe::setApiKey(config('services.stripe.secret'));
+    }
+    
+    public function createCustomer($user)
+    public function getOrCreateCustomer($user)
+    public function createPaymentIntent($subPlan, $currency = 'usd')
+    public function createCheckoutSession($user, $subPlan, $successUrl, $cancelUrl, $currency = 'usd')
+    public function createSubscription($user, $subPlan, $currency = 'usd')
+    public function cancelSubscription($subscriptionId)
+    public function createRefund($paymentIntentId, $amount = null, $reason = 'requested_by_customer')
+}
+```
+
+---
+
+## **2. Payment Models & Database Structure**
+
+### **2.1 Core Models**
+- **Payment**: Tracks all payment transactions
+- **Subscription**: Manages recurring subscriptions
+- **PlanPurchaseHistory**: Records plan purchases
+- **SubPlan**: Defines subscription plan options
+
+### **2.2 Database Tables**
+```sql
+-- Payments table
+CREATE TABLE `payments` (
+    `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` bigint UNSIGNED NOT NULL,
+    `amount` decimal(10,2) NOT NULL,
+    `currency` varchar(3) DEFAULT 'USD',
+    `status` enum('pending','completed','failed','refunded','cancelled'),
+    `payment_type` enum('subscription','one_time','superlike_pack'),
+    `stripe_payment_intent_id` varchar(255),
+    `stripe_customer_id` varchar(255),
+    `stripe_subscription_id` varchar(255),
+    PRIMARY KEY (`id`)
+);
+
+-- Subscriptions table
+CREATE TABLE `subscriptions` (
+    `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` bigint UNSIGNED NOT NULL,
+    `plan_id` bigint UNSIGNED NOT NULL,
+    `status` enum('active','cancelled','expired','past_due','trialing'),
+    `amount` decimal(10,2) NOT NULL,
+    `stripe_subscription_id` varchar(255),
+    PRIMARY KEY (`id`)
+);
+```
+
+---
+
+## **3. Payment API Endpoints**
+
+### **3.1 Core Endpoints**
+```http
+POST /api/stripe/payment-intent     # Create payment intent
+POST /api/stripe/checkout          # Create checkout session
+POST /api/stripe/subscription      # Create subscription
+DELETE /api/stripe/subscription/{id} # Cancel subscription
+POST /api/stripe/refund           # Create refund
+```
+
+### **3.2 Request/Response Examples**
+```json
+// Create Payment Intent
+POST /api/stripe/payment-intent
+{
+    "sub_plan_id": 1,
+    "currency": "usd"
+}
+
+Response:
+{
+    "client_secret": "pi_xxx_secret_xxx"
+}
+
+// Create Checkout Session
+POST /api/stripe/checkout
+{
+    "sub_plan_id": 1,
+    "success_url": "https://app.com/success",
+    "cancel_url": "https://app.com/cancel",
+    "currency": "usd"
+}
+
+Response:
+{
+    "url": "https://checkout.stripe.com/pay/xxx"
+}
+```
+
+---
+
+## **4. Webhook Handling**
+
+### **4.1 Webhook Events**
+- `checkout.session.completed`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+
+### **4.2 Webhook Processing**
+```php
+public function handleStripeWebhook(Request $request)
+{
+    $payload = $request->getContent();
+    $sig_header = $request->header('Stripe-Signature');
+    $webhookSecret = config('services.stripe.webhook_secret');
+    
+    try {
+        $event = \Stripe\Webhook::constructEvent(
+            $payload, $sig_header, $webhookSecret
+        );
+    } catch (\Exception $e) {
+        return response('Invalid payload or signature', 400);
+    }
+
+    if ($event->type === 'checkout.session.completed') {
+        $session = $event->data->object;
+        
+        // Process successful payment
+        $this->processSuccessfulPayment($session);
+    }
+    
+    return response('Webhook handled', 200);
+}
+```
+
+---
+
+## **5. Flutter Frontend Integration**
+
+### **5.1 Dependencies**
+```yaml
+dependencies:
+  flutter_stripe: ^10.0.0
+  http: ^1.1.0
+```
+
+### **5.2 Stripe Service**
+```dart
+class StripeService {
+  static Future<void> initialize() async {
+    Stripe.publishableKey = 'pk_test_your_key_here';
+    await Stripe.instance.applySettings();
+  }
+  
+  static Future<String> createPaymentIntent(int subPlanId) async {
+    final response = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/stripe/payment-intent'),
+      headers: {
+        'Authorization': 'Bearer ${await AuthService.getToken()}',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'sub_plan_id': subPlanId,
+        'currency': 'usd',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['client_secret'];
+    } else {
+      throw Exception('Failed to create payment intent');
+    }
+  }
+}
+```
+
+### **5.3 Payment Confirmation**
+```dart
+class PaymentService {
+  static Future<void> confirmPayment(String clientSecret, BillingDetails billingDetails) async {
+    try {
+      await Stripe.instance.confirmPayment(
+        clientSecret,
+        PaymentMethodParams.card(
+          paymentMethodData: PaymentMethodData(
+            billingDetails: billingDetails,
+          ),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Payment confirmation failed: $e');
+    }
+  }
+}
+```
+
+---
+
+## **6. Payment UI Components**
+
+### **6.1 Payment Form**
+```dart
+class PaymentForm extends StatefulWidget {
+  final int subPlanId;
+  final double amount;
+  
+  PaymentForm({required this.subPlanId, required this.amount});
+  
+  @override
+  _PaymentFormState createState() => _PaymentFormState();
+}
+
+class _PaymentFormState extends State<PaymentForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _cardNumberController = TextEditingController();
+  final _expiryController = TextEditingController();
+  final _cvvController = TextEditingController();
+  final _nameController = TextEditingController();
+  
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          TextFormField(
+            controller: _nameController,
+            decoration: InputDecoration(
+              labelText: 'Cardholder Name',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value?.isEmpty ?? true) {
+                return 'Please enter cardholder name';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            controller: _cardNumberController,
+            decoration: InputDecoration(
+              labelText: 'Card Number',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.credit_card),
+            ),
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              if (value?.isEmpty ?? true) {
+                return 'Please enter card number';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _expiryController,
+                  decoration: InputDecoration(
+                    labelText: 'MM/YY',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: _cvvController,
+                  decoration: InputDecoration(
+                    labelText: 'CVV',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _processPayment,
+            child: Text('Pay \$${widget.amount.toStringAsFixed(2)}'),
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size(double.infinity, 50),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future<void> _processPayment() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    try {
+      final clientSecret = await PaymentService.createPaymentIntent(widget.subPlanId);
+      
+      await PaymentService.confirmPayment(
+        clientSecret,
+        BillingDetails(
+          name: _nameController.text,
+        ),
+      );
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment successful!')),
+      );
+      
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment failed: $e')),
+      );
+    }
+  }
+}
+```
+
+---
+
+## **7. Subscription Management**
+
+### **7.1 Create Subscription**
+```dart
+class SubscriptionService {
+  static Future<Map<String, dynamic>> createSubscription(int subPlanId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/stripe/subscription'),
+        headers: {
+          'Authorization': 'Bearer ${await AuthService.getToken()}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'sub_plan_id': subPlanId,
+          'currency': 'usd',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'];
+      } else {
+        throw Exception('Failed to create subscription');
+      }
+    } catch (e) {
+      throw Exception('Subscription creation failed: $e');
+    }
+  }
+}
+```
+
+### **7.2 Cancel Subscription**
+```dart
+class SubscriptionService {
+  static Future<void> cancelSubscription(String subscriptionId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${ApiConfig.baseUrl}/stripe/subscription/$subscriptionId'),
+        headers: {
+          'Authorization': 'Bearer ${await AuthService.getToken()}',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to cancel subscription');
+      }
+    } catch (e) {
+      throw Exception('Subscription cancellation failed: $e');
+    }
+  }
+}
+```
+
+---
+
+## **8. Error Handling & Validation**
+
+### **8.1 Payment Error Handling**
+```dart
+class PaymentErrorHandler {
+  static String getErrorMessage(dynamic error) {
+    if (error is StripeException) {
+      switch (error.error.code) {
+        case 'card_declined':
+          return 'Your card was declined. Please try another card.';
+        case 'expired_card':
+          return 'Your card has expired. Please use a different card.';
+        case 'incorrect_cvc':
+          return 'The security code (CVC) is incorrect.';
+        case 'insufficient_funds':
+          return 'Your card has insufficient funds.';
+        default:
+          return 'Payment failed. Please try again.';
+      }
+    }
+    return 'An unexpected error occurred. Please try again.';
+  }
+}
+```
+
+### **8.2 Input Validation**
+```dart
+class CardValidator {
+  static bool isValidCardNumber(String cardNumber) {
+    cardNumber = cardNumber.replaceAll(RegExp(r'[\s-]'), '');
+    
+    if (cardNumber.length < 13 || cardNumber.length > 19) {
+      return false;
+    }
+    
+    int sum = 0;
+    bool alternate = false;
+    
+    for (int i = cardNumber.length - 1; i >= 0; i--) {
+      int n = int.parse(cardNumber[i]);
+      if (alternate) {
+        n *= 2;
+        if (n > 9) {
+          n = (n % 10) + 1;
+        }
+      }
+      sum += n;
+      alternate = !alternate;
+    }
+    
+    return (sum % 10 == 0);
+  }
+}
+```
+
+---
+
+## **9. Testing & Development**
+
+### **9.1 Test Card Numbers**
+```
+Visa: 4242424242424242
+Mastercard: 5555555555554444
+American Express: 378282246310005
+Declined: 4000000000000002
+```
+
+### **9.2 Stripe CLI Testing**
+```bash
+# Install Stripe CLI
+brew install stripe/stripe-cli/stripe
+
+# Login and forward webhooks
+stripe login
+stripe listen --forward-to localhost:8000/api/stripe/webhook
+
+# Trigger test events
+stripe trigger checkout.session.completed
+```
+
+---
+
+## **10. Security Best Practices**
+
+### **10.1 API Security**
+- All payment endpoints require authentication
+- Implement rate limiting
+- Validate all input parameters
+- Use HTTPS for all endpoints
+
+### **10.2 Data Security**
+- Never store credit card numbers
+- Store only Stripe payment method IDs
+- Verify webhook signatures
+- Implement proper encryption
+
+---
+
+## **11. Production Deployment**
+
+### **11.1 Environment Setup**
+```env
+STRIPE_KEY=pk_live_your_live_publishable_key
+STRIPE_SECRET=sk_live_your_live_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_live_webhook_secret
+```
+
+### **11.2 Monitoring**
+- Set up payment failure alerts
+- Monitor webhook delivery
+- Track subscription metrics
+- Implement error logging
+
+---
+
+## **12. Support Resources**
+
+### **12.1 Documentation**
+- [Stripe API Documentation](https://stripe.com/docs/api)
+- [Flutter Stripe Plugin](https://pub.dev/packages/flutter_stripe)
+- [Laravel Cashier](https://laravel.com/docs/cashier)
+
+### **12.2 Testing**
+- Use test keys for development
+- Test with Stripe CLI
+- Verify webhook handling
+- Test error scenarios
+
+---
+
+This documentation provides everything needed to implement secure Stripe payment processing in the LGBTinder mobile app, ensuring reliable handling of subscriptions, superlike packs, and other premium features.

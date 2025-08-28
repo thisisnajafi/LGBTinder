@@ -35,15 +35,15 @@ class MessageBubble extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.greyLight,
+                  color: AppColors.navbarBackground,
                 ),
-                child: ClipOval(
-                  child: Icon(
-                    Icons.person,
-                    size: 16,
-                    color: AppColors.textSecondary,
+                                  child: ClipOval(
+                    child: Icon(
+                      Icons.person,
+                      size: 16,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
                   ),
-                ),
               ),
             ],
             
@@ -66,8 +66,8 @@ class MessageBubble extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: isOwnMessage 
-                            ? AppColors.primary 
-                            : AppColors.greyLight,
+                            ? AppColors.primaryLight 
+                            : AppColors.navbarBackground,
                         borderRadius: BorderRadius.circular(16).copyWith(
                           bottomLeft: isOwnMessage 
                               ? const Radius.circular(16) 
@@ -89,7 +89,7 @@ class MessageBubble extends StatelessWidget {
                         Text(
                           _formatTime(message.timestamp),
                           style: AppTypography.caption.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Colors.white.withOpacity(0.7),
                             fontSize: 11,
                           ),
                         ),
@@ -138,7 +138,7 @@ class MessageBubble extends StatelessWidget {
     return Text(
       message.content,
       style: AppTypography.body2.copyWith(
-        color: isOwnMessage ? Colors.white : AppColors.textPrimary,
+        color: isOwnMessage ? Colors.white : Colors.white,
       ),
     );
   }
@@ -164,10 +164,10 @@ class MessageBubble extends StatelessWidget {
               return Container(
                 width: 200,
                 height: 150,
-                color: AppColors.greyLight,
-                child: const Icon(
+                color: AppColors.navbarBackground,
+                child: Icon(
                   Icons.broken_image,
-                  color: AppColors.textSecondary,
+                  color: Colors.white.withOpacity(0.7),
                 ),
               );
             },
@@ -180,7 +180,7 @@ class MessageBubble extends StatelessWidget {
           Text(
             message.content,
             style: AppTypography.body2.copyWith(
-              color: isOwnMessage ? Colors.white : AppColors.textPrimary,
+              color: isOwnMessage ? Colors.white : Colors.white,
             ),
           ),
         ],
@@ -202,7 +202,7 @@ class MessageBubble extends StatelessWidget {
           width: 200,
           height: 150,
           decoration: BoxDecoration(
-            color: AppColors.greyLight,
+            color: AppColors.navbarBackground,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Stack(
@@ -216,10 +216,10 @@ class MessageBubble extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: AppColors.greyLight,
-                      child: const Icon(
+                      color: AppColors.navbarBackground,
+                      child: Icon(
                         Icons.videocam,
-                        color: AppColors.textSecondary,
+                        color: Colors.white.withOpacity(0.7),
                       ),
                     );
                   },
@@ -275,7 +275,7 @@ class MessageBubble extends StatelessWidget {
           Text(
             message.content,
             style: AppTypography.body2.copyWith(
-              color: isOwnMessage ? Colors.white : AppColors.textPrimary,
+              color: isOwnMessage ? Colors.white : Colors.white,
             ),
           ),
         ],
@@ -295,14 +295,14 @@ class MessageBubble extends StatelessWidget {
       decoration: BoxDecoration(
         color: isOwnMessage 
             ? Colors.white.withOpacity(0.2) 
-            : AppColors.greyMedium,
+            : AppColors.navbarBackground,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
           Icon(
             Icons.play_arrow,
-            color: isOwnMessage ? Colors.white : AppColors.textPrimary,
+            color: isOwnMessage ? Colors.white : Colors.white,
             size: 24,
           ),
           
@@ -315,7 +315,7 @@ class MessageBubble extends StatelessWidget {
                 Text(
                   'Voice Message',
                   style: AppTypography.caption.copyWith(
-                    color: isOwnMessage ? Colors.white : AppColors.textPrimary,
+                    color: isOwnMessage ? Colors.white : Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -327,7 +327,7 @@ class MessageBubble extends StatelessWidget {
                     style: AppTypography.caption.copyWith(
                       color: isOwnMessage 
                           ? Colors.white.withOpacity(0.8) 
-                          : AppColors.textSecondary,
+                          : Colors.white.withOpacity(0.7),
                       fontSize: 10,
                     ),
                   ),
@@ -352,14 +352,14 @@ class MessageBubble extends StatelessWidget {
       decoration: BoxDecoration(
         color: isOwnMessage 
             ? Colors.white.withOpacity(0.2) 
-            : AppColors.greyMedium,
+            : AppColors.navbarBackground,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
           Icon(
             Icons.attach_file,
-            color: isOwnMessage ? Colors.white : AppColors.textPrimary,
+            color: isOwnMessage ? Colors.white : Colors.white,
             size: 24,
           ),
           
@@ -369,27 +369,27 @@ class MessageBubble extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  attachment.displayName,
-                  style: AppTypography.caption.copyWith(
-                    color: isOwnMessage ? Colors.white : AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                                  Text(
+                    attachment.displayName,
+                    style: AppTypography.caption.copyWith(
+                      color: isOwnMessage ? Colors.white : Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 
                 const SizedBox(height: 2),
                 
-                Text(
-                  attachment.fileSize,
-                  style: AppTypography.caption.copyWith(
-                    color: isOwnMessage 
-                        ? Colors.white.withOpacity(0.8) 
-                        : AppColors.textSecondary,
-                    fontSize: 10,
+                                  Text(
+                    attachment.fileSize,
+                    style: AppTypography.caption.copyWith(
+                      color: isOwnMessage 
+                          ? Colors.white.withOpacity(0.8) 
+                          : Colors.white.withOpacity(0.7),
+                      fontSize: 10,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -405,7 +405,7 @@ class MessageBubble extends StatelessWidget {
       decoration: BoxDecoration(
         color: isOwnMessage 
             ? Colors.white.withOpacity(0.2) 
-            : AppColors.greyMedium,
+            : AppColors.navbarBackground,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Stack(
@@ -415,14 +415,14 @@ class MessageBubble extends StatelessWidget {
             width: 200,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.greyLight,
+              color: AppColors.navbarBackground,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.location_on,
-              color: AppColors.primary,
-              size: 32,
-            ),
+                          child: const Icon(
+                Icons.location_on,
+                color: AppColors.primaryLight,
+                size: 32,
+              ),
           ),
           
           // Location name
@@ -462,7 +462,7 @@ class MessageBubble extends StatelessWidget {
       decoration: BoxDecoration(
         color: isOwnMessage 
             ? Colors.white.withOpacity(0.2) 
-            : AppColors.greyMedium,
+            : AppColors.navbarBackground,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -471,12 +471,12 @@ class MessageBubble extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.greyLight,
+              color: AppColors.navbarBackground,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.7),
             ),
           ),
           
@@ -489,7 +489,7 @@ class MessageBubble extends StatelessWidget {
                 Text(
                   'Contact',
                   style: AppTypography.caption.copyWith(
-                    color: isOwnMessage ? Colors.white : AppColors.textPrimary,
+                    color: isOwnMessage ? Colors.white : Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -501,7 +501,7 @@ class MessageBubble extends StatelessWidget {
                   style: AppTypography.caption.copyWith(
                     color: isOwnMessage 
                         ? Colors.white.withOpacity(0.8) 
-                        : AppColors.textSecondary,
+                        : Colors.white.withOpacity(0.7),
                     fontSize: 10,
                   ),
                   maxLines: 1,
@@ -527,10 +527,10 @@ class MessageBubble extends StatelessWidget {
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            color: AppColors.greyLight,
-            child: const Icon(
+            color: AppColors.navbarBackground,
+            child: Icon(
               Icons.emoji_emotions,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.7),
               size: 48,
             ),
           );
@@ -551,10 +551,10 @@ class MessageBubble extends StatelessWidget {
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
-            color: AppColors.greyLight,
-            child: const Icon(
+            color: AppColors.navbarBackground,
+            child: Icon(
               Icons.gif,
-              color: AppColors.textSecondary,
+              color: Colors.white.withOpacity(0.7),
               size: 48,
             ),
           );
@@ -570,19 +570,19 @@ class MessageBubble extends StatelessWidget {
     switch (message.status) {
       case MessageStatus.sending:
         icon = Icons.schedule;
-        color = AppColors.textSecondary;
+        color = Colors.white.withOpacity(0.7);
         break;
       case MessageStatus.sent:
         icon = Icons.check;
-        color = AppColors.textSecondary;
+        color = Colors.white.withOpacity(0.7);
         break;
       case MessageStatus.delivered:
         icon = Icons.done_all;
-        color = AppColors.textSecondary;
+        color = Colors.white.withOpacity(0.7);
         break;
       case MessageStatus.read:
         icon = Icons.done_all;
-        color = AppColors.primary;
+        color = AppColors.primaryLight;
         break;
       case MessageStatus.failed:
         icon = Icons.error_outline;

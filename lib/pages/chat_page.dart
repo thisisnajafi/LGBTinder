@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../models/models.dart';
@@ -226,9 +227,9 @@ class _ChatPageState extends State<ChatPage> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        decoration: BoxDecoration(
+          color: AppColors.navbarBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
           child: Column(
@@ -240,7 +241,7 @@ class _ChatPageState extends State<ChatPage> {
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.greyLight,
+                  color: AppColors.navbarBackground,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -248,11 +249,11 @@ class _ChatPageState extends State<ChatPage> {
               // Options
               if (isOwnMessage) ...[
                 ListTile(
-                  leading: const Icon(Icons.edit, color: AppColors.textPrimary),
+                  leading: const Icon(Icons.edit, color: Colors.white),
                   title: Text(
                     'Edit',
                     style: AppTypography.body2.copyWith(
-                      color: AppColors.textPrimary,
+                      color: Colors.white,
                     ),
                   ),
                   onTap: () {
@@ -262,14 +263,14 @@ class _ChatPageState extends State<ChatPage> {
                 ),
               ],
               
-              ListTile(
-                leading: const Icon(Icons.reply, color: AppColors.textPrimary),
-                title: Text(
-                  'Reply',
-                  style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                              ListTile(
+                  leading: const Icon(Icons.reply, color: Colors.white),
+                  title: Text(
+                    'Reply',
+                    style: AppTypography.body2.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
                 onTap: () {
                   Navigator.pop(context);
                   _replyToMessage(message);
@@ -277,11 +278,11 @@ class _ChatPageState extends State<ChatPage> {
               ),
               
               ListTile(
-                leading: const Icon(Icons.forward, color: AppColors.textPrimary),
+                leading: const Icon(Icons.forward, color: Colors.white),
                 title: Text(
                   'Forward',
                   style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
                 onTap: () {
@@ -362,7 +363,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.navbarBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -382,19 +383,23 @@ class _ChatPageState extends State<ChatPage> {
                   final isLoading = chatProvider.isLoadingMessages(widget.chat.id);
                   
                   if (isLoading && messages.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                                         return Center(
+                       child: CircularProgressIndicator(
+                         color: AppColors.primaryLight,
+                       ),
+                     );
                   }
                   
                   return Column(
                     children: [
                       // Loading more indicator
                       if (_isLoadingMore)
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          child: const CircularProgressIndicator(),
-                        ),
+                                                 Container(
+                           padding: const EdgeInsets.all(8),
+                           child: CircularProgressIndicator(
+                             color: AppColors.primaryLight,
+                           ),
+                         ),
                       
                       // Messages list
                       Expanded(
@@ -456,9 +461,9 @@ class _ChatPageState extends State<ChatPage> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        decoration: BoxDecoration(
+          color: AppColors.navbarBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
           child: Column(
@@ -470,18 +475,18 @@ class _ChatPageState extends State<ChatPage> {
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.greyLight,
+                  color: AppColors.navbarBackground,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               
               // Attachment options
               ListTile(
-                leading: const Icon(Icons.photo, color: AppColors.textPrimary),
+                leading: const Icon(Icons.photo, color: Colors.white),
                 title: Text(
                   'Photo',
                   style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
                 onTap: () {
@@ -491,11 +496,11 @@ class _ChatPageState extends State<ChatPage> {
               ),
               
               ListTile(
-                leading: const Icon(Icons.videocam, color: AppColors.textPrimary),
+                leading: const Icon(Icons.videocam, color: Colors.white),
                 title: Text(
                   'Video',
                   style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
                 onTap: () {
@@ -505,11 +510,11 @@ class _ChatPageState extends State<ChatPage> {
               ),
               
               ListTile(
-                leading: const Icon(Icons.mic, color: AppColors.textPrimary),
+                leading: const Icon(Icons.mic, color: Colors.white),
                 title: Text(
                   'Voice Message',
                   style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
                 onTap: () {
@@ -519,11 +524,11 @@ class _ChatPageState extends State<ChatPage> {
               ),
               
               ListTile(
-                leading: const Icon(Icons.attach_file, color: AppColors.textPrimary),
+                leading: const Icon(Icons.attach_file, color: Colors.white),
                 title: Text(
                   'Document',
                   style: AppTypography.body2.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
                 onTap: () {

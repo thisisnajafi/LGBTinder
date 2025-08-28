@@ -207,6 +207,40 @@ class ValidationUtils {
     return null;
   }
 
+  /// Validates email format and returns boolean
+  static bool isValidEmail(String email) {
+    if (email.trim().isEmpty) return false;
+    return _emailRegex.hasMatch(email.trim());
+  }
+
+  /// Validates password strength and returns boolean
+  static bool isValidPassword(String password) {
+    if (password.length < 8) return false;
+    
+    // Check for at least one uppercase letter
+    if (!password.contains(RegExp(r'[A-Z]'))) return false;
+    
+    // Check for at least one lowercase letter
+    if (!password.contains(RegExp(r'[a-z]'))) return false;
+    
+    // Check for at least one number
+    if (!password.contains(RegExp(r'[0-9]'))) return false;
+    
+    // Check for at least one special character
+    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return false;
+    
+    return true;
+  }
+
+  /// Validates phone number format and returns boolean
+  static bool isValidPhone(String phone) {
+    if (phone.trim().isEmpty) return false;
+    
+    // Remove all non-digit characters except +
+    final cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+    return _phoneRegex.hasMatch(cleanPhone);
+  }
+
   /// Validates school name
   static String? validateSchool(String? school) {
     if (school == null || school.trim().isEmpty) {

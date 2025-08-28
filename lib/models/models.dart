@@ -5,6 +5,11 @@ export 'user_preferences.dart';
 export 'user_verification.dart';
 export 'user_settings.dart';
 
+// Authentication Models
+export 'auth_user.dart';
+export 'auth_requests.dart';
+export 'auth_responses.dart';
+
 // Reference Data Models
 export 'reference_data.dart';
 

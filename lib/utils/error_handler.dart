@@ -39,6 +39,13 @@ class AuthException extends AppException {
       : super(message, code: code, originalError: originalError);
 }
 
+class RateLimitException extends AppException {
+  final int cooldownSeconds;
+
+  RateLimitException(String message, {this.cooldownSeconds = 0, String? code, dynamic originalError})
+      : super(message, code: code, originalError: originalError);
+}
+
 /// Error handler utility class
 class ErrorHandler {
   static final ErrorHandler _instance = ErrorHandler._internal();

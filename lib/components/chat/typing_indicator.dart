@@ -76,15 +76,15 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.greyLight,
+                  color: AppColors.navbarBackground,
                 ),
-                child: ClipOval(
-                  child: Icon(
-                    Icons.person,
-                    size: 16,
-                    color: AppColors.textSecondary,
+                                  child: ClipOval(
+                    child: Icon(
+                      Icons.person,
+                      size: 16,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
                   ),
-                ),
               ),
               
               // Typing bubble
@@ -94,7 +94,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.greyLight,
+                  color: AppColors.navbarBackground,
                   borderRadius: BorderRadius.circular(16).copyWith(
                     bottomLeft: const Radius.circular(4),
                   ),
@@ -106,7 +106,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                     Text(
                       _getTypingText(otherTypingUsers),
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Colors.white.withOpacity(0.7),
                         fontSize: 12,
                         fontStyle: FontStyle.italic,
                       ),
@@ -127,7 +127,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                                 left: index > 0 ? 2 : 0,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.textSecondary.withOpacity(
+                                color: Colors.white.withOpacity(
                                   0.3 + (_dotAnimations[index].value * 0.7),
                                 ),
                                 shape: BoxShape.circle,
