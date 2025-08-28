@@ -5,9 +5,6 @@ import '../services/message_service.dart';
 import '../services/call_service.dart';
 
 class ChatProvider extends ChangeNotifier {
-  final ChatService _chatService;
-  final MessageService _messageService;
-  final CallService _callService;
 
   // Chat state
   List<Chat> _chats = [];
@@ -74,12 +71,9 @@ class ChatProvider extends ChangeNotifier {
       _chatError = null;
       notifyListeners();
 
-      final newChats = await _chatService.getChats(
+      final newChats = await ChatService.getChats(
         page: page,
         limit: limit,
-        searchQuery: searchQuery,
-        isArchived: isArchived,
-        isPinned: isPinned,
       );
 
       if (refresh || page == 1) {

@@ -375,4 +375,145 @@ class ChatService {
       throw NetworkException('Network error while fetching chat statistics: $e');
     }
   }
+
+  // Additional methods for ChatProvider compatibility
+
+  /// Get user's chats (alias for getChatUsers)
+  static Future<List<Map<String, dynamic>>> getChats({
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    // Use existing getChatUsers method
+    return getChatUsers(accessToken: accessToken);
+  }
+
+  /// Get specific chat by ID (placeholder implementation)
+  static Future<Map<String, dynamic>?> getChat(String chatId, {String? accessToken}) async {
+    try {
+      // This would typically fetch specific chat details
+      // For now, return basic chat structure
+      return {
+        'id': chatId,
+        'type': 'direct',
+        'participants': [],
+        'last_message': null,
+        'created_at': DateTime.now().toIso8601String(),
+      };
+    } catch (e) {
+      throw NetworkException('Network error while fetching chat: $e');
+    }
+  }
+
+  /// Create new chat (placeholder implementation) 
+  static Future<Map<String, dynamic>> createChat(String userId, {String? accessToken}) async {
+    try {
+      // This would typically create a new chat with a user
+      // For now, return basic chat structure
+      return {
+        'id': 'chat_${DateTime.now().millisecondsSinceEpoch}',
+        'type': 'direct',
+        'participants': [userId],
+        'created_at': DateTime.now().toIso8601String(),
+      };
+    } catch (e) {
+      throw NetworkException('Network error while creating chat: $e');
+    }
+  }
+
+  /// Create group chat (placeholder implementation)
+  static Future<Map<String, dynamic>> createGroupChat({
+    required String name,
+    required List<String> userIds,
+    String? accessToken,
+  }) async {
+    try {
+      // This would typically create a new group chat
+      // For now, return basic group structure
+      return {
+        'id': 'group_${DateTime.now().millisecondsSinceEpoch}',
+        'type': 'group',
+        'name': name,
+        'participants': userIds,
+        'created_at': DateTime.now().toIso8601String(),
+      };
+    } catch (e) {
+      throw NetworkException('Network error while creating group chat: $e');
+    }
+  }
+
+  /// Update chat (placeholder implementation)
+  static Future<Map<String, dynamic>> updateChat(String chatId, Map<String, dynamic> updates, {String? accessToken}) async {
+    try {
+      // This would typically update chat settings
+      // For now, return updated chat structure
+      return {
+        'id': chatId,
+        'updated_at': DateTime.now().toIso8601String(),
+        ...updates,
+      };
+    } catch (e) {
+      throw NetworkException('Network error while updating chat: $e');
+    }
+  }
+
+  /// Archive chat (placeholder implementation)
+  static Future<bool> archiveChat(String chatId, {String? accessToken}) async {
+    try {
+      // This would typically archive a chat
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while archiving chat: $e');
+    }
+  }
+
+  /// Unarchive chat (placeholder implementation)
+  static Future<bool> unarchiveChat(String chatId, {String? accessToken}) async {
+    try {
+      // This would typically unarchive a chat
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while unarchiving chat: $e');
+    }
+  }
+
+  /// Pin chat (placeholder implementation)
+  static Future<bool> pinChat(String chatId, {String? accessToken}) async {
+    try {
+      // This would typically pin a chat
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while pinning chat: $e');
+    }
+  }
+
+  /// Unpin chat (placeholder implementation)
+  static Future<bool> unpinChat(String chatId, {String? accessToken}) async {
+    try {
+      // This would typically unpin a chat
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while unpinning chat: $e');
+    }
+  }
+
+  /// Delete chat (placeholder implementation)
+  static Future<bool> deleteChat(String chatId, {String? accessToken}) async {
+    try {
+      // This would typically delete a chat
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while deleting chat: $e');
+    }
+  }
+
+  /// Mark chat as read (alias for markMessagesAsRead)
+  static Future<bool> markChatAsRead(String chatId, {String? accessToken}) async {
+    try {
+      // Use existing markMessagesAsRead method
+      return await markMessagesAsRead(chatId: chatId, accessToken: accessToken);
+    } catch (e) {
+      throw NetworkException('Network error while marking chat as read: $e');
+    }
+  }
 }

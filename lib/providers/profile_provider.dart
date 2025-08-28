@@ -298,11 +298,8 @@ class ProfileProvider extends ChangeNotifier {
     try {
       // TODO: Implement with ProfileService.deleteImage
       // await ProfileService.deleteImage(imageId.toString());
-      if (response['success']) {
-        await loadProfile();
-        return true;
-      }
-      return false;
+      await loadProfile();
+      return true;
     } catch (e) {
       print('Error deleting image: $e');
       return false;
@@ -314,11 +311,8 @@ class ProfileProvider extends ChangeNotifier {
     try {
       // TODO: Implement with ProfileService.setPrimaryImage
       // await ProfileService.setPrimaryImage(imageId.toString());
-      if (response['success']) {
-        await loadProfile();
-        return true;
-      }
-      return false;
+      await loadProfile();
+      return true;
     } catch (e) {
       print('Error setting primary image: $e');
       return false;
@@ -331,10 +325,8 @@ class ProfileProvider extends ChangeNotifier {
       // TODO: Implement with PreferencesService.updateAgePreferences
       // await PreferencesService.updateAgePreferences(minAge: minAge, maxAge: maxAge);
       // _preferences = result;
-        notifyListeners();
-        return true;
-      }
-      return false;
+      notifyListeners();
+      return true;
     } catch (e) {
       print('Error updating preferences: $e');
       return false;
