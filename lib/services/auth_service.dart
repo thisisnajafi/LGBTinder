@@ -4,26 +4,25 @@ import '../models/auth_requests.dart';
 import '../models/auth_responses.dart';
 import '../models/auth_user.dart';
 import '../utils/error_handler.dart';
+import '../config/api_config.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://api.lgbtinder.com/api'; // Replace with your actual API base URL
-  
   // Authentication endpoints
-  static const String _loginEndpoint = '/auth/login';
-  static const String _registerEndpoint = '/auth/register';
-  static const String _sendVerificationEndpoint = '/auth/send-verification';
-  static const String _verifyCodeEndpoint = '/auth/verify-registration-code';
-  static const String _sendOtpEndpoint = '/auth/send-otp';
-  static const String _verifyOtpEndpoint = '/auth/verify-otp';
-  static const String _resendVerificationEndpoint = '/auth/resend-verification';
-  static const String _refreshTokenEndpoint = '/auth/refresh-token';
-  static const String _logoutEndpoint = '/auth/logout';
+  static const String _loginEndpoint = ApiConfig.login;
+  static const String _registerEndpoint = ApiConfig.register;
+  static const String _sendVerificationEndpoint = ApiConfig.sendVerification;
+  static const String _verifyCodeEndpoint = ApiConfig.verifyCode;
+  static const String _sendOtpEndpoint = ApiConfig.sendOtp;
+  static const String _verifyOtpEndpoint = ApiConfig.verifyOtp;
+  static const String _resendVerificationEndpoint = ApiConfig.resendVerification;
+  static const String _refreshTokenEndpoint = ApiConfig.refreshToken;
+  static const String _logoutEndpoint = ApiConfig.logout;
 
   /// Login with email and password
   static Future<LoginResponse> login(LoginRequest request) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_loginEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_loginEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -60,7 +59,7 @@ class AuthService {
   static Future<bool> sendOtp(PhoneLoginRequest request) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_sendOtpEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_sendOtpEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -97,7 +96,7 @@ class AuthService {
   static Future<OtpVerificationResponse> verifyOtp(OtpVerificationRequest request) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_verifyOtpEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_verifyOtpEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -134,7 +133,7 @@ class AuthService {
   static Future<RegisterResponse> register(RegisterRequest request) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_registerEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_registerEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -142,7 +141,7 @@ class AuthService {
         body: jsonEncode(request.toJson()),
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return RegisterResponse.fromJson(data);
       } else if (response.statusCode == 422) {
@@ -151,8 +150,9 @@ class AuthService {
           data['message'] ?? 'Validation failed',
           data['errors'] ?? <String, String>{},
         );
-      } else if (response.statusCode == 409) {
-        throw AuthException('User already exists with this email or phone number');
+      } else if (response.statusCode == 500) {
+        final data = jsonDecode(response.body);
+        throw ApiException(data['message'] ?? 'Registration failed');
       } else {
         throw ApiException('Registration failed: ${response.statusCode}');
       }
@@ -171,7 +171,7 @@ class AuthService {
   static Future<bool> sendVerification(String email) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_sendVerificationEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_sendVerificationEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -208,7 +208,7 @@ class AuthService {
   static Future<VerificationResponse> verifyCode(VerificationRequest request) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_verifyCodeEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_verifyCodeEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -245,7 +245,7 @@ class AuthService {
   static Future<ResendVerificationResponse> resendVerification(ResendVerificationRequest request) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_resendVerificationEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_resendVerificationEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -285,7 +285,7 @@ class AuthService {
   static Future<TokenRefreshResponse> refreshToken(String refreshToken) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_refreshTokenEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_refreshTokenEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -314,7 +314,7 @@ class AuthService {
   static Future<bool> logout(String accessToken) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl$_logoutEndpoint'),
+        Uri.parse(ApiConfig.getUrl(_logoutEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -334,7 +334,7 @@ class AuthService {
   static Future<AuthUser> getCurrentUser(String accessToken) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/user/profile'),
+        Uri.parse(ApiConfig.getUrl(ApiConfig.profile)),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -362,7 +362,7 @@ class AuthService {
   static Future<AuthUser> updateProfile(String accessToken, Map<String, dynamic> profileData) async {
     try {
       final response = await http.put(
-        Uri.parse('$_baseUrl/user/profile'),
+        Uri.parse(ApiConfig.getUrl(ApiConfig.profile)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -400,7 +400,7 @@ class AuthService {
   static Future<bool> checkEmailExists(String email) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/auth/check-email?email=${Uri.encodeComponent(email)}'),
+        Uri.parse(ApiConfig.getUrl('${ApiConfig.checkEmail}?email=${Uri.encodeComponent(email)}')),
         headers: {
           'Accept': 'application/json',
         },
@@ -421,7 +421,7 @@ class AuthService {
   static Future<bool> checkPhoneExists(String phoneNumber, String countryCode) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/auth/check-phone?phone_number=${Uri.encodeComponent(phoneNumber)}&country_code=${Uri.encodeComponent(countryCode)}'),
+        Uri.parse(ApiConfig.getUrl('${ApiConfig.checkPhone}?phone_number=${Uri.encodeComponent(phoneNumber)}&country_code=${Uri.encodeComponent(countryCode)}')),
         headers: {
           'Accept': 'application/json',
         },
@@ -442,7 +442,7 @@ class AuthService {
   static Future<bool> sendPasswordResetEmail(String email) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/auth/forgot-password'),
+        Uri.parse(ApiConfig.getUrl(ApiConfig.forgotPassword)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

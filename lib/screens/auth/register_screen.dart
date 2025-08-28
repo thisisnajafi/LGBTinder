@@ -22,12 +22,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _dateOfBirthController = TextEditingController();
-  
-  DateTime? _selectedDate;
-  String? _selectedGender;
-  String? _selectedInterestedIn;
-  String? _selectedRelationshipGoal;
   
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -38,16 +32,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isFirstNameValid = false;
   bool _isLastNameValid = false;
   
-  // Reference data for dropdowns
-  final List<String> _genders = ['Man', 'Woman', 'Non-binary', 'Gender fluid', 'Other'];
-  final List<String> _interestedIn = ['Men', 'Women', 'Non-binary', 'Everyone'];
-  final List<String> _relationshipGoals = [
-    'Long-term relationship',
-    'Casual dating',
-    'Friendship',
-    'Marriage',
-    'Not sure yet'
-  ];
+  // Password strength validation
+  bool _hasMinLength = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasNumber = false;
+  bool _hasSpecialChar = false;
 
   @override
   void initState() {
@@ -57,6 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmPasswordController.addListener(_validateConfirmPassword);
     _firstNameController.addListener(_validateFirstName);
     _lastNameController.addListener(_validateLastName);
+    _passwordController.addListener(_validatePasswordStrength);
   }
 
   @override
@@ -66,7 +57,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmPasswordController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _dateOfBirthController.dispose();
     super.dispose();
   }
 
@@ -104,45 +94,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
   }
 
-  Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 6570)), // 18 years ago
-      firstDate: DateTime.now().subtract(const Duration(days: 36500)), // 100 years ago
-      lastDate: DateTime.now().subtract(const Duration(days: 6570)), // 18 years ago
+  void _validatePasswordStrength() {
+    final password = _passwordController.text;
+    setState(() {
+      _hasMinLength = password.length >= 8;
+      _hasUppercase = password.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = password.contains(RegExp(r'[a-z]'));
+      _hasNumber = password.contains(RegExp(r'[0-9]'));
+      _hasSpecialChar = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+    });
+  }
+
+  Widget _buildPasswordRequirement(String text, bool isValid) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(
+            isValid ? Icons.check_circle : Icons.circle_outlined,
+            size: 16,
+            color: isValid ? AppColors.success : Colors.white30,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: AppTypography.body2.copyWith(
+              color: isValid ? AppColors.success : Colors.white54,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
-    
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateOfBirthController.text = '${picked.day}/${picked.month}/${picked.year}';
-      });
-    }
   }
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
     
-    // Comprehensive validation using RegistrationValidator
-    final validationResults = RegistrationValidator.validateRegistrationForm(
-      firstName: _firstNameController.text,
-      lastName: _lastNameController.text,
-      email: _emailController.text,
-      password: _passwordController.text,
-      confirmPassword: _confirmPasswordController.text,
-      dateOfBirth: _selectedDate,
-      gender: _selectedGender,
-      interestedIn: _selectedInterestedIn,
-      relationshipGoal: _selectedRelationshipGoal,
-    );
-    
-    if (!RegistrationValidator.isFormValid(validationResults)) {
-      final errors = RegistrationValidator.getValidationErrors(validationResults);
+    // Check if all password requirements are met
+    if (!(_hasMinLength && _hasUppercase && _hasLowercase && _hasNumber && _hasSpecialChar)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please fix the following errors:\n${errors.join('\n')}'),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 5),
+        const SnackBar(
+          content: Text('Please ensure all password requirements are met'),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -153,35 +147,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final authProvider = context.read<AuthProvider>();
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
       final request = RegisterRequest(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
-        dateOfBirth: _selectedDate!,
-        gender: _selectedGender!,
-        interestedIn: _selectedInterestedIn!,
-        relationshipGoal: _selectedRelationshipGoal!,
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        passwordConfirmation: _confirmPasswordController.text,
       );
 
       final success = await authProvider.register(request);
       
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Registration successful! Please check your email for verification.'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        
-        // Navigate to email verification screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => EmailVerificationScreen(
               email: _emailController.text.trim(),
-              redirectRoute: '/home', // TODO: Update with actual home route
+              redirectRoute: '/home',
             ),
           ),
         );
@@ -190,8 +174,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Registration failed: $e'),
-            backgroundColor: AppColors.error,
+            content: Text('Registration failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -204,696 +188,406 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  /// Builds the password strength indicator widget
-  Widget _buildPasswordStrengthIndicator() {
-    final strength = RegistrationValidator.getPasswordStrength(_passwordController.text);
-    final strengthText = RegistrationValidator.getPasswordStrengthText(strength);
-    final strengthColor = RegistrationValidator.getPasswordStrengthColor(strength);
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Password Strength:',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            Text(
-              strengthText,
-              style: AppTypography.caption.copyWith(
-                color: strengthColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: List.generate(5, (index) {
-            return Expanded(
-              child: Container(
-                height: 4,
-                margin: EdgeInsets.only(right: index < 4 ? 4 : 0),
-                decoration: BoxDecoration(
-                  color: index < strength ? strengthColor : AppColors.greyMedium,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                
-                // Header
-                Text(
-                  'Create Account',
-                  style: AppTypography.h1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
+      backgroundColor: AppColors.navbarBackground,
+      body: Container(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // Back Button
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
-                const SizedBox(height: 8),
-                
-                Text(
-                  'Join LGBTinder and find your perfect match',
-                  style: AppTypography.subtitle1.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                
-                // Personal Information Section
-                Text(
-                  'Personal Information',
-                  style: AppTypography.h6.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // First Name
-                Text(
-                  'First Name',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                TextFormField(
-                  controller: _firstNameController,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    hintText: 'Enter your first name',
-                    prefixIcon: Icon(
-                      Icons.person_outline,
-                      color: AppColors.textSecondary,
-                    ),
-                    suffixIcon: _isFirstNameValid
-                        ? Icon(
-                            Icons.check_circle,
-                            color: AppColors.success,
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.error),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
-                  ),
-                  validator: (value) => RegistrationValidator.validateFirstName(value),
-                ),
-                const SizedBox(height: 20),
-                
-                // Last Name
-                Text(
-                  'Last Name',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                TextFormField(
-                  controller: _lastNameController,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    hintText: 'Enter your last name',
-                    prefixIcon: Icon(
-                      Icons.person_outline,
-                      color: AppColors.textSecondary,
-                    ),
-                    suffixIcon: _isLastNameValid
-                        ? Icon(
-                            Icons.check_circle,
-                            color: AppColors.success,
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.error),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
-                  ),
-                  validator: (value) => RegistrationValidator.validateLastName(value),
-                ),
-                const SizedBox(height: 20),
-                
-                // Date of Birth
-                Text(
-                  'Date of Birth',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                TextFormField(
-                  controller: _dateOfBirthController,
-                  readOnly: true,
-                  onTap: _selectDate,
-                  decoration: InputDecoration(
-                    hintText: 'Select your date of birth',
-                    prefixIcon: Icon(
-                      Icons.calendar_today_outlined,
-                      color: AppColors.textSecondary,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
-                  ),
-                  validator: (value) {
-                    if (_selectedDate == null) {
-                      return 'Date of birth is required';
-                    }
-                    return RegistrationValidator.validateDateOfBirth(_selectedDate);
-                  },
-                ),
-                
-                // Age Display
-                if (_selectedDate != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 20),
+                  
+                  // Header
                   Text(
-                    'Age: ${RegistrationValidator.calculateAge(_selectedDate!)} years old',
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    'Create Account',
+                    style: AppTypography.h1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ],
-                
-                const SizedBox(height: 20),
-                
-                // Gender Selection
-                Text(
-                  'Gender',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.greyMedium),
-                    borderRadius: BorderRadius.circular(12),
-                    color: AppColors.navbarBackground,
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedGender,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      hintText: 'Select your gender',
-                    ),
-                    items: _genders.map((gender) {
-                      return DropdownMenuItem<String>(
-                        value: gender,
-                        child: Text(
-                          gender,
-                          style: AppTypography.body2.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedGender = value;
-                      });
-                    },
-                    dropdownColor: AppColors.navbarBackground,
-                    icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
-                    validator: (value) => RegistrationValidator.validateGender(value),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // Preferences Section
-                Text(
-                  'Preferences',
-                  style: AppTypography.h6.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Interested In
-                Text(
-                  'Interested In',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.greyMedium),
-                    borderRadius: BorderRadius.circular(12),
-                    color: AppColors.navbarBackground,
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedInterestedIn,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      hintText: 'Select who you\'re interested in',
-                    ),
-                    items: _interestedIn.map((option) {
-                      return DropdownMenuItem<String>(
-                        value: option,
-                        child: Text(
-                          option,
-                          style: AppTypography.body2.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedInterestedIn = value;
-                      });
-                    },
-                    dropdownColor: AppColors.navbarBackground,
-                    icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
-                    validator: (value) => RegistrationValidator.validateInterestedIn(value),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                
-                // Relationship Goal
-                Text(
-                  'Relationship Goal',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.greyMedium),
-                    borderRadius: BorderRadius.circular(12),
-                    color: AppColors.navbarBackground,
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedRelationshipGoal,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      hintText: 'Select your relationship goal',
-                    ),
-                    items: _relationshipGoals.map((goal) {
-                      return DropdownMenuItem<String>(
-                        value: goal,
-                        child: Text(
-                          goal,
-                          style: AppTypography.body2.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedRelationshipGoal = value;
-                      });
-                    },
-                    dropdownColor: AppColors.navbarBackground,
-                    icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
-                    validator: (value) => RegistrationValidator.validateRelationshipGoal(value),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // Account Information Section
-                Text(
-                  'Account Information',
-                  style: AppTypography.h6.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Email
-                Text(
-                  'Email',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    hintText: 'Enter your email address',
-                    prefixIcon: Icon(
-                      Icons.email_outlined,
-                      color: AppColors.textSecondary,
-                    ),
-                    suffixIcon: _isEmailValid
-                        ? Icon(
-                            Icons.check_circle,
-                            color: AppColors.success,
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.error),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
-                  ),
-                  validator: (value) => RegistrationValidator.validateEmail(value),
-                ),
-                
-                // Password Strength Indicator
-                if (_passwordController.text.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  _buildPasswordStrengthIndicator(),
                   const SizedBox(height: 8),
-                ],
-                
-                const SizedBox(height: 20),
-                
-                // Password
-                Text(
-                  'Password',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
+                  
+                  Text(
+                    'Join LGBTinder and find your perfect match',
+                    style: AppTypography.subtitle1.copyWith(
+                      color: Colors.white70,
+                      fontSize: 18,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: !_isPasswordVisible,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    hintText: 'Create a strong password',
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: AppColors.textSecondary,
-                    ),
-                    suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_isPasswordValid)
-                          Icon(
-                            Icons.check_circle,
-                            color: AppColors.success,
-                          ),
-                        IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                            color: AppColors.textSecondary,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.error),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
-                  ),
-                  validator: (value) => RegistrationValidator.validatePassword(value),
-                ),
-                const SizedBox(height: 20),
-                
-                // Confirm Password
-                Text(
-                  'Confirm Password',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: !_isConfirmPasswordVisible,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    hintText: 'Confirm your password',
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: AppColors.textSecondary,
-                    ),
-                    suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_isConfirmPasswordValid)
-                          Icon(
-                            Icons.check_circle,
-                            color: AppColors.success,
-                          ),
-                        IconButton(
-                          icon: Icon(
-                            _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                            color: AppColors.textSecondary,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.error),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
-                  ),
-                  validator: (value) => RegistrationValidator.validateConfirmPassword(value, _passwordController.text),
-                ),
-                const SizedBox(height: 32),
-                
-                // Register Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleRegister,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 40),
+                  
+
+                  
+                  // First Name
+                  TextFormField(
+                    controller: _firstNameController,
+                    textInputAction: TextInputAction.next,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'First Name',
+                      hintText: 'Enter your first name',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                        color: Colors.white70,
                       ),
-                      elevation: 0,
+                      suffixIcon: _isFirstNameValid
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppColors.success,
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    child: _isLoading
-                        ? SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : Text(
-                            'Create Account',
-                            style: AppTypography.button.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                    validator: (value) => RegistrationValidator.validateFirstName(value),
                   ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Terms and Privacy
-                Row(
-                  children: [
-                    Checkbox(
-                      value: true,
-                      onChanged: (value) {},
-                      activeColor: AppColors.primary,
-                      checkColor: Colors.white,
+                  const SizedBox(height: 20),
+                  
+                  // Last Name
+                  TextFormField(
+                    controller: _lastNameController,
+                    textInputAction: TextInputAction.next,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Last Name',
+                      hintText: 'Enter your last name',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                        color: Colors.white70,
+                      ),
+                      suffixIcon: _isLastNameValid
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppColors.success,
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    Expanded(
-                      child: RichText(
-                        text: TextSpan(
+                    validator: (value) => RegistrationValidator.validateLastName(value),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Email
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      prefixIcon: const Icon(
+                        Icons.email_outlined,
+                        color: Colors.white70,
+                      ),
+                      suffixIcon: _isEmailValid
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppColors.success,
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                    ),
+                    validator: (value) => RegistrationValidator.validateEmail(value),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Password
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: !_isPasswordVisible,
+                    textInputAction: TextInputAction.next,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      prefixIcon: const Icon(
+                        Icons.lock_outlined,
+                        color: Colors.white70,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.white70,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                    ),
+                    validator: (value) => RegistrationValidator.validatePassword(value),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Password Strength Checklist
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white30.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Password Requirements',
                           style: AppTypography.body2.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
-                          children: [
-                            const TextSpan(text: 'I agree to the '),
-                            TextSpan(
-                              text: 'Terms of Service',
-                              style: TextStyle(
-                                color: AppColors.primary,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildPasswordRequirement('At least 8 characters', _hasMinLength),
+                        _buildPasswordRequirement('Contains uppercase letter', _hasUppercase),
+                        _buildPasswordRequirement('Contains lowercase letter', _hasLowercase),
+                        _buildPasswordRequirement('Contains number', _hasNumber),
+                        _buildPasswordRequirement('Contains special character', _hasSpecialChar),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Confirm Password
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: !_isConfirmPasswordVisible,
+                    textInputAction: TextInputAction.next,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      hintText: 'Confirm your password',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      prefixIcon: const Icon(
+                        Icons.lock_outlined,
+                        color: Colors.white70,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.white70,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                    ),
+                    validator: (value) => RegistrationValidator.validateConfirmPassword(value, _passwordController.text),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Register Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _handleRegister,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              'Create Account',
+                              style: AppTypography.button.copyWith(
+                                color: Colors.white,
                                 fontWeight: FontWeight.w600,
+                                fontSize: 18,
                               ),
                             ),
-                            const TextSpan(text: ' and '),
-                            TextSpan(
-                              text: 'Privacy Policy',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Terms and Privacy
+                  Row(
+                    children: [
+                                             Checkbox(
+                         value: true,
+                         onChanged: (value) {},
+                         activeColor: AppColors.primary,
+                         checkColor: Colors.white,
+                         side: const BorderSide(color: Colors.white30),
+                       ),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: AppTypography.body2.copyWith(
+                              color: AppColors.textSecondary,
                             ),
-                          ],
+                            children: [
+                              const TextSpan(text: 'I agree to the '),
+                              TextSpan(
+                                text: 'Terms of Service',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                
-                // Login Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Already have an account? ',
-                      style: AppTypography.body2.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        'Sign In',
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Login Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Already have an account? ',
                         style: AppTypography.body2.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Sign In',
+                          style: AppTypography.body2.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

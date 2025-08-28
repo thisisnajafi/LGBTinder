@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
-  static const String _baseUrl = 'https://your-api-url.com/api'; // Replace with your actual API URL
+  static const String _baseUrl = 'http://127.0.0.1:8000/api'; // Replace with your actual API URL
   static const String _tokenKey = 'jwt_token';
   
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();

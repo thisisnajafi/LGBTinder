@@ -62,49 +62,75 @@ class LoginResponse {
 }
 
 class RegisterResponse {
-  final AuthUser user;
+  final bool status;
   final String message;
-  final bool requiresVerification;
+  final RegisterResponseData? data;
+  final Map<String, List<String>>? errors;
+  final String? error;
 
   const RegisterResponse({
-    required this.user,
+    required this.status,
     required this.message,
-    required this.requiresVerification,
+    this.data,
+    this.errors,
+    this.error,
   });
 
   factory RegisterResponse.fromJson(Map<String, dynamic> json) {
     return RegisterResponse(
-      user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
+      status: json['status'] as bool,
       message: json['message'] as String,
-      requiresVerification: json['requires_verification'] as bool? ?? true,
+      data: json['data'] != null 
+          ? RegisterResponseData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+      errors: json['errors'] != null 
+          ? Map<String, List<String>>.from(
+              (json['errors'] as Map<String, dynamic>).map(
+                (key, value) => MapEntry(
+                  key, 
+                  (value as List).cast<String>(),
+                ),
+              ),
+            )
+          : null,
+      error: json['error'] as String?,
+    );
+  }
+
+  bool get isSuccess => status && data != null;
+  bool get hasErrors => errors != null && errors!.isNotEmpty;
+  bool get isServerError => error != null;
+}
+
+class RegisterResponseData {
+  final String userId;
+  final String email;
+  final String resendAvailableAt;
+  final int hourlyAttemptsRemaining;
+
+  const RegisterResponseData({
+    required this.userId,
+    required this.email,
+    required this.resendAvailableAt,
+    required this.hourlyAttemptsRemaining,
+  });
+
+  factory RegisterResponseData.fromJson(Map<String, dynamic> json) {
+    return RegisterResponseData(
+      userId: json['user_id'] as String,
+      email: json['email'] as String,
+      resendAvailableAt: json['resend_available_at'] as String,
+      hourlyAttemptsRemaining: json['hourly_attempts_remaining'] as int,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'user': user.toJson(),
-      'message': message,
-      'requires_verification': requiresVerification,
+      'user_id': userId,
+      'email': email,
+      'resend_available_at': resendAvailableAt,
+      'hourly_attempts_remaining': hourlyAttemptsRemaining,
     };
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is RegisterResponse &&
-        other.user == user &&
-        other.message == message &&
-        other.requiresVerification == requiresVerification;
-  }
-
-  @override
-  int get hashCode {
-    return user.hashCode ^ message.hashCode ^ requiresVerification.hashCode;
-  }
-
-  @override
-  String toString() {
-    return 'RegisterResponse(user: $user, message: $message, requiresVerification: $requiresVerification)';
   }
 }
 

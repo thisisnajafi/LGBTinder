@@ -15,9 +15,6 @@ import 'screens/auth/welcome_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/auth/email_verification_screen.dart';
-import 'screens/auth/phone_verification_screen.dart';
-import 'screens/auth/phone_login_screen.dart';
-import 'screens/auth/otp_verification_screen.dart';
 import 'screens/auth/auth_wrapper.dart';
 import 'screens/auth/forgot_password_screen.dart';
 import 'screens/auth/profile_completion_welcome_screen.dart';
@@ -60,12 +57,10 @@ class LGBTinderApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/email-verification': (context) => const EmailVerificationScreen(email: '', redirectRoute: '/home'),
-                             '/phone-verification': (context) => const PhoneVerificationScreen(phoneNumber: '', countryCode: '+1', redirectRoute: '/home'),
-                   '/phone-login': (context) => const PhoneLoginScreen(),
-                   '/otp-verification': (context) => const OtpVerificationScreen(phoneNumber: '', countryCode: '+1'),
           '/forgot-password': (context) => const ForgotPasswordScreen(),
           '/profile-completion': (context) => const ProfileCompletionWelcomeScreen(userName: ''),
           '/profile-wizard': (context) => const ProfileWizardScreen(),
+          '/home': (context) => const HomePage(),
           '/main': (context) => const MainScreen(),
         },
       ),

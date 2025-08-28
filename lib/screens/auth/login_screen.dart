@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
-import '../../providers/auth_provider.dart';
 import '../../models/auth_requests.dart';
-import '../../utils/validation.dart';
-import 'phone_login_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,12 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
   bool _isPasswordVisible = false;
-  bool _rememberMe = false;
-  bool _isLoading = false;
-  
-  // Validation states
   bool _isEmailValid = false;
   bool _isPasswordValid = false;
 
@@ -44,57 +37,46 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _validateEmail() {
     setState(() {
-      _isEmailValid = ValidationUtils.isValidEmail(_emailController.text);
+      _isEmailValid = _emailController.text.trim().isNotEmpty;
     });
   }
 
   void _validatePassword() {
     setState(() {
-      _isPasswordValid = _passwordController.text.isNotEmpty;
+      _isPasswordValid = _passwordController.text.length >= 6;
     });
   }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
     try {
-      final authProvider = context.read<AuthProvider>();
-      final request = LoginRequest(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        rememberMe: _rememberMe,
+      await authProvider.login(
+        LoginRequest(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
       );
-
-      final success = await authProvider.login(request);
       
-      if (success && mounted) {
-        // Navigate to main app or show success message
+      if (mounted) {
+        // Navigation will be handled by AuthWrapper
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Login successful!'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context); // Return to previous screen
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login failed: $e'),
-            backgroundColor: AppColors.error,
+            content: Text('Login failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
@@ -102,172 +84,153 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                
-                // Header
-                Text(
-                  'Welcome Back',
-                  style: AppTypography.h1.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
+      backgroundColor: AppColors.navbarBackground,
+      body: Container(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // Back Button
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
-                const SizedBox(height: 8),
-                
-                Text(
-                  'Sign in to continue your journey',
-                  style: AppTypography.subtitle1.copyWith(
-                    color: AppColors.textSecondary,
+                  const SizedBox(height: 20),
+                  
+                  // Header
+                  Text(
+                    'Welcome Back',
+                    style: AppTypography.h1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 40),
-                
-                // Email Field
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
-                    prefixIcon: Icon(
-                      Icons.email_outlined,
-                      color: AppColors.textSecondary,
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sign in to continue your journey',
+                    style: AppTypography.subtitle1.copyWith(
+                      color: Colors.white70,
+                      fontSize: 18,
                     ),
-                    suffixIcon: _isEmailValid
-                        ? Icon(
-                            Icons.check_circle,
-                            color: AppColors.success,
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.error),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Email is required';
-                    }
-                    if (!ValidationUtils.isValidEmail(value)) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                
-                // Password Field
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: !_isPasswordVisible,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Enter your password',
-                    prefixIcon: Icon(
-                      Icons.lock_outlined,
-                      color: AppColors.textSecondary,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: AppColors.textSecondary,
+                  const SizedBox(height: 40),
+                  
+                  // Email Field
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(color: Colors.white),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Email is required';
+                      }
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      hintStyle: const TextStyle(color: Colors.white30),
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: Colors.white70,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
+                      suffixIcon: _isEmailValid
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppColors.success,
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.greyMedium),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.error),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.navbarBackground,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password is required';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                
-                // Remember Me & Forgot Password
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _rememberMe,
-                          onChanged: (value) {
-                            setState(() {
-                              _rememberMe = value ?? false;
-                            });
-                          },
-                          activeColor: AppColors.primary,
+                  const SizedBox(height: 20),
+                  
+                  // Password Field
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: !_isPasswordVisible,
+                    style: const TextStyle(color: Colors.white),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Password is required';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      prefixIcon: Icon(
+                        Icons.lock_outlined,
+                        color: Colors.white70,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.white70,
                         ),
-                        Text(
-                          'Remember me',
-                          style: AppTypography.body2.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white30),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    TextButton(
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Forgot Password Link
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/forgot-password');
                       },
@@ -275,132 +238,85 @@ class _LoginScreenState extends State<LoginScreen> {
                         'Forgot Password?',
                         style: AppTypography.body2.copyWith(
                           color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                
-                // Login Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isLoading
-                        ? SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : Text(
-                            'Sign In',
-                            style: AppTypography.button.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Divider
-                Row(
-                  children: [
-                    Expanded(
-                      child: Divider(color: AppColors.greyMedium),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: AppTypography.body2.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Divider(color: AppColors.greyMedium),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                // Phone Login Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PhoneLoginScreen(),
-                        ),
-                      );
-                    },
-                    icon: Icon(Icons.phone, color: AppColors.primary),
-                    label: Text(
-                      'Continue with Phone',
-                      style: AppTypography.button.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.primary, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // Sign Up Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Don't have an account? ",
-                      style: AppTypography.body2.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RegisterScreen(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        'Sign Up',
-                        style: AppTypography.body2.copyWith(
-                          color: AppColors.primary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Login Button
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: authProvider.isLoading ? null : _handleLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: authProvider.isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  'Sign In',
+                                  style: AppTypography.button.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                                                        const SizedBox(height: 24),
+                   
+                   // Sign Up Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                                             Text(
+                         "Don't have an account? ",
+                         style: AppTypography.body2.copyWith(
+                           color: AppColors.textSecondary,
+                         ),
+                       ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RegisterScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Sign Up',
+                          style: AppTypography.body2.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

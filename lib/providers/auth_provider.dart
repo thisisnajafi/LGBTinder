@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/auth_user.dart';
 import '../models/auth_requests.dart';
@@ -54,7 +55,10 @@ class AuthProvider extends ChangeNotifier {
   bool get isPhoneVerified => _user?.phoneVerified ?? false;
 
   AuthProvider() {
-    _initializeAuth();
+    // Initialize auth state asynchronously
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAuth();
+    });
   }
 
   /// Initialize authentication state from secure storage
@@ -197,16 +201,23 @@ class AuthProvider extends ChangeNotifier {
       
       final response = await AuthService.register(request);
       
-      // Store authentication data if verification is not required
-      if (!response.requiresVerification) {
-        // This would typically happen if email verification is disabled
-        // For now, we'll require verification
-        _setError('Email verification required. Please check your email.');
+      if (response.isSuccess) {
+        _clearError();
+        return true;
+      } else if (response.hasErrors) {
+        // Handle validation errors
+        final errorMessages = response.errors!.entries
+            .map((e) => e.value.join(', '))
+            .join('\n');
+        _setError(errorMessages);
+        return false;
+      } else if (response.isServerError) {
+        _setError(response.message);
+        return false;
+      } else {
+        _setError(response.message);
         return false;
       }
-      
-      _setError('Registration successful! Please check your email for verification.');
-      return true;
     } on AppException catch (e) {
       _setError(e.message);
       return false;

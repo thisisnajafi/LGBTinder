@@ -90,20 +90,14 @@ class RegisterRequest {
   final String lastName;
   final String email;
   final String password;
-  final DateTime dateOfBirth;
-  final String gender;
-  final String interestedIn;
-  final String relationshipGoal;
+  final String passwordConfirmation;
 
   const RegisterRequest({
     required this.firstName,
     required this.lastName,
     required this.email,
     required this.password,
-    required this.dateOfBirth,
-    required this.gender,
-    required this.interestedIn,
-    required this.relationshipGoal,
+    required this.passwordConfirmation,
   });
 
   factory RegisterRequest.fromJson(Map<String, dynamic> json) {
@@ -112,10 +106,7 @@ class RegisterRequest {
       lastName: json['last_name'] as String,
       email: json['email'] as String,
       password: json['password'] as String,
-      dateOfBirth: DateTime.parse(json['date_of_birth'] as String),
-      gender: json['gender'] as String,
-      interestedIn: json['interested_in'] as String,
-      relationshipGoal: json['relationship_goal'] as String,
+      passwordConfirmation: json['password_confirmation'] as String,
     );
   }
 
@@ -125,10 +116,7 @@ class RegisterRequest {
       'last_name': lastName,
       'email': email,
       'password': password,
-            'date_of_birth': dateOfBirth.toIso8601String(),
-      'gender': gender,
-      'interested_in': interestedIn,
-      'relationship_goal': relationshipGoal,
+      'password_confirmation': passwordConfirmation,
     };
   }
 
@@ -140,10 +128,7 @@ class RegisterRequest {
         other.lastName == lastName &&
         other.email == email &&
         other.password == password &&
-        other.dateOfBirth == dateOfBirth &&
-        other.gender == gender &&
-        other.interestedIn == interestedIn &&
-        other.relationshipGoal == relationshipGoal;
+        other.passwordConfirmation == passwordConfirmation;
   }
 
   @override
@@ -152,15 +137,12 @@ class RegisterRequest {
         lastName.hashCode ^
         email.hashCode ^
         password.hashCode ^
-        dateOfBirth.hashCode ^
-        gender.hashCode ^
-        interestedIn.hashCode ^
-        relationshipGoal.hashCode;
+        passwordConfirmation.hashCode;
   }
 
   @override
   String toString() {
-    return 'RegisterRequest(firstName: $firstName, lastName: $lastName, email: $email, dateOfBirth: $dateOfBirth, gender: $gender, interestedIn: $interestedIn, relationshipGoal: $relationshipGoal)';
+    return 'RegisterRequest(firstName: $firstName, lastName: $lastName, email: $email, passwordConfirmation: $passwordConfirmation)';
   }
 }
 

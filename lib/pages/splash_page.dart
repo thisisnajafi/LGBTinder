@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
-import 'onboarding_page.dart';
+import '../components/navbar/lgbtinder_logo.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({Key? key}) : super(key: key);
+  const SplashPage({super.key});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -56,25 +57,17 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     
     if (!mounted) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
-
-    if (onboardingCompleted) {
-      // Navigate to main app
-      Navigator.pushReplacementNamed(context, '/main');
-    } else {
-      // Navigate to onboarding
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const OnboardingPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-      );
-    }
+    // The AuthWrapper will handle navigation based on authentication status
+    // We just need to wait for the AuthProvider to finish initializing
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Wait a bit more for the AuthProvider to finish initialization
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    if (!mounted) return;
+    
+    // The AuthWrapper will automatically navigate based on auth state
+    // No need to manually navigate here
   }
 
   @override
@@ -97,88 +90,38 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
           child: AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
-              return Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Opacity(
-                  opacity: _fadeAnimation.value,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // App Logo/Icon
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppColors.primaryLight,
-                              AppColors.secondaryLight,
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryLight.withOpacity(0.3),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.favorite,
-                          size: 60,
-                          color: Colors.white,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // App Name
-                      Text(
-                        'LGBTinder',
-                        style: AppTypography.headlineLargeStyle.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 36,
-                          letterSpacing: 1.5,
-                          shadows: [
-                            Shadow(
-                              color: AppColors.primaryLight.withOpacity(0.5),
-                              blurRadius: 16,
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Tagline
-                      Text(
-                        'Find your perfect match',
-                        style: AppTypography.bodyLargeStyle.copyWith(
-                          color: AppColors.textSecondaryLight,
-                          fontSize: 18,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 48),
-                      
-                      // Loading indicator
-                      SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.primaryLight,
-                          ),
-                          strokeWidth: 3,
-                        ),
-                      ),
-                    ],
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: const LGBTinderLogo(size: 120),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'LGBTinder',
+                      style: AppTypography.h1.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'Find your perfect match',
+                      style: AppTypography.subtitle1.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           ),

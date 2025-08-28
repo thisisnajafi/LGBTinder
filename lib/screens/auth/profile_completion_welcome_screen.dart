@@ -89,20 +89,8 @@ class _ProfileCompletionWelcomeScreenState extends State<ProfileCompletionWelcom
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.navbarBackground,
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.background,
-              AppColors.primary.withOpacity(0.1),
-              AppColors.background,
-            ],
-            stops: [0.0, 0.5, 1.0],
-          ),
-        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),

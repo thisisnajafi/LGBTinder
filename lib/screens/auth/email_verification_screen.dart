@@ -280,7 +280,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.navbarBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
