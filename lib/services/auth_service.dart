@@ -476,4 +476,236 @@ class AuthService {
       throw NetworkException('Network error while sending password reset email: $e');
     }
   }
+
+  /// Verify login code (for 2FA or email verification during login)
+  static Future<LoginResponse> verifyLoginCode(String email, String code) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.verifyLoginCode)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'code': code,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return LoginResponse.fromJson(data);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid verification code',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 404) {
+        throw ApiException('Login session not found');
+      } else {
+        throw ApiException('Failed to verify login code: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while verifying login code: $e');
+    }
+  }
+
+  /// Resend verification email for existing user
+  static Future<bool> resendVerificationExisting(String email, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.resendVerificationExisting)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'email': email,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid email address',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 429) {
+        throw RateLimitException('Too many verification requests. Please wait before trying again.');
+      } else {
+        throw ApiException('Failed to resend verification: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on RateLimitException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while resending verification: $e');
+    }
+  }
+
+  /// Reset password with reset token
+  static Future<bool> resetPassword(String token, String password, String passwordConfirmation) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.resetPassword)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'token': token,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid reset token or password',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 404) {
+        throw ApiException('Invalid or expired reset token');
+      } else {
+        throw ApiException('Failed to reset password: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while resetting password: $e');
+    }
+  }
+
+  /// Change password for authenticated user
+  static Future<bool> changePassword(String currentPassword, String newPassword, String passwordConfirmation, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.changePassword)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'current_password': currentPassword,
+          'password': newPassword,
+          'password_confirmation': passwordConfirmation,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid password',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to change password: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while changing password: $e');
+    }
+  }
+
+  /// Delete user account
+  static Future<bool> deleteAccount(String password, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.deleteAccount)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid password',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to delete account: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while deleting account: $e');
+    }
+  }
+
+  /// Complete user registration (additional profile information)
+  static Future<bool> completeRegistration(Map<String, dynamic> profileData, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.completeRegistration)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(profileData),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to complete registration: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while completing registration: $e');
+    }
+  }
 } 

@@ -1,278 +1,378 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 import '../models/models.dart';
-import 'api_service.dart';
+import '../utils/error_handler.dart';
 
 class ChatService {
-  final ApiService _apiService;
-
-  ChatService({ApiService? apiService}) : _apiService = apiService ?? ApiService();
-
-  /// Get all chats for the current user
-  Future<List<Chat>> getChats({
-    int page = 1,
-    int limit = 20,
-    String? searchQuery,
-    bool? isArchived,
-    bool? isPinned,
+  /// Send a message
+  static Future<Message> sendMessage(String recipientId, String content, {
+    String? accessToken,
+    String messageType = 'text',
+    File? attachment,
   }) async {
     try {
-      final queryParams = <String, String>{
-        'page': page.toString(),
-        'limit': limit.toString(),
-      };
+      http.Response response;
 
-      if (searchQuery != null && searchQuery.isNotEmpty) {
-        queryParams['search'] = searchQuery;
-      }
-      if (isArchived != null) {
-        queryParams['archived'] = isArchived.toString();
-      }
-      if (isPinned != null) {
-        queryParams['pinned'] = isPinned.toString();
+      if (attachment != null) {
+        // Send multipart request for messages with attachments
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConfig.getUrl(ApiConfig.chatSend)),
+        );
+
+        request.headers.addAll({
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        });
+
+        request.fields.addAll({
+          'recipient_id': recipientId,
+          'content': content,
+          'type': messageType,
+        });
+
+        request.files.add(await http.MultipartFile.fromPath('attachment', attachment.path));
+
+        final streamResponse = await request.send();
+        final responseBody = await streamResponse.stream.bytesToString();
+        response = http.Response(responseBody, streamResponse.statusCode);
+      } else {
+        // Send regular JSON request for text messages
+        response = await http.post(
+          Uri.parse(ApiConfig.getUrl(ApiConfig.chatSend)),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+          },
+          body: jsonEncode({
+            'recipient_id': recipientId,
+            'content': content,
+            'type': messageType,
+          }),
+        );
       }
 
-      final response = await _apiService.get('/chats', queryParameters: queryParams);
-      
-      final List<dynamic> chatsData = response['chats'] ?? [];
-      return chatsData.map((json) => Chat.fromJson(json)).toList();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching chats: $e');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Message.fromJson(data['data'] ?? data);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 404) {
+        throw ApiException('Recipient not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Cannot send message to this user');
+      } else {
+        throw ApiException('Failed to send message: ${response.statusCode}');
       }
+    } on AuthException {
       rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending message: $e');
     }
   }
 
-  /// Get a specific chat by ID
-  Future<Chat> getChat(String chatId) async {
-    try {
-      final response = await _apiService.get('/chats/$chatId');
-      return Chat.fromJson(response);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Create a new chat with a user
-  Future<Chat> createChat(String userId) async {
-    try {
-      final response = await _apiService.post('/chats', {
-        'userId': userId,
-      });
-      return Chat.fromJson(response);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error creating chat with user $userId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Create a group chat
-  Future<Chat> createGroupChat({
-    required String name,
-    required List<String> userIds,
-    String? avatar,
+  /// Get chat history with a user
+  static Future<List<Message>> getChatHistory(String userId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+    String? beforeMessageId,
   }) async {
     try {
-      final response = await _apiService.post('/chats/group', {
-        'name': name,
-        'userIds': userIds,
-        if (avatar != null) 'avatar': avatar,
-      });
-      return Chat.fromJson(response);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error creating group chat: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Update chat metadata
-  Future<Chat> updateChat(String chatId, Map<String, dynamic> updates) async {
-    try {
-      final response = await _apiService.put('/chats/$chatId', updates);
-      return Chat.fromJson(response);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error updating chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Archive a chat
-  Future<void> archiveChat(String chatId) async {
-    try {
-      await _apiService.put('/chats/$chatId/archive', {});
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error archiving chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Unarchive a chat
-  Future<void> unarchiveChat(String chatId) async {
-    try {
-      await _apiService.put('/chats/$chatId/unarchive', {});
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error unarchiving chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Pin a chat
-  Future<void> pinChat(String chatId) async {
-    try {
-      await _apiService.put('/chats/$chatId/pin', {});
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error pinning chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Unpin a chat
-  Future<void> unpinChat(String chatId) async {
-    try {
-      await _apiService.put('/chats/$chatId/unpin', {});
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error unpinning chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Delete a chat
-  Future<void> deleteChat(String chatId) async {
-    try {
-      await _apiService.delete('/chats/$chatId');
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error deleting chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Mark chat as read
-  Future<void> markChatAsRead(String chatId) async {
-    try {
-      await _apiService.put('/chats/$chatId/read', {});
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error marking chat $chatId as read: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Get chat participants
-  Future<List<ChatParticipant>> getChatParticipants(String chatId) async {
-    try {
-      final response = await _apiService.get('/chats/$chatId/participants');
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.chatHistory));
       
-      final List<dynamic> participantsData = response['participants'] ?? [];
-      return participantsData.map((json) => ChatParticipant.fromJson(json)).toList();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching chat participants for $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Add participants to group chat
-  Future<void> addParticipants(String chatId, List<String> userIds) async {
-    try {
-      await _apiService.post('/chats/$chatId/participants', {
-        'userIds': userIds,
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error adding participants to chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Remove participants from group chat
-  Future<void> removeParticipants(String chatId, List<String> userIds) async {
-    try {
-      await _apiService.post('/chats/$chatId/participants/remove', {
-        'userIds': userIds,
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error removing participants from chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Update participant role in group chat
-  Future<void> updateParticipantRole(String chatId, String userId, String role) async {
-    try {
-      await _apiService.put('/chats/$chatId/participants/$userId', {
-        'role': role,
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error updating participant role in chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Leave group chat
-  Future<void> leaveGroupChat(String chatId) async {
-    try {
-      await _apiService.post('/chats/$chatId/leave', {});
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error leaving group chat $chatId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Get unread count for all chats
-  Future<int> getTotalUnreadCount() async {
-    try {
-      final response = await _apiService.get('/chats/unread-count');
-      return response['unreadCount'] ?? 0;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching total unread count: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Search chats
-  Future<List<Chat>> searchChats(String query) async {
-    try {
-      final response = await _apiService.get('/chats/search', queryParameters: {
-        'q': query,
-      });
+      // Add query parameters
+      final queryParams = <String, String>{'user_id': userId};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      if (beforeMessageId != null) queryParams['before'] = beforeMessageId;
       
-      final List<dynamic> chatsData = response['chats'] ?? [];
-      return chatsData.map((json) => Chat.fromJson(json)).toList();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error searching chats: $e');
+      uri = uri.replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => Message.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Chat not found');
+      } else {
+        throw ApiException('Failed to fetch chat history: ${response.statusCode}');
       }
+    } on AuthException {
       rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching chat history: $e');
     }
   }
-} 
+
+  /// Get all chat users (conversations list)
+  static Future<List<Chat>> getChatUsers({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatUsers)),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => Chat.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch chat users: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching chat users: $e');
+    }
+  }
+
+  /// Get accessible users (users you can chat with)
+  static Future<List<User>> getAccessibleUsers({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatAccessUsers)),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch accessible users: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching accessible users: $e');
+    }
+  }
+
+  /// Delete a message
+  static Future<bool> deleteMessage(String messageId, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatMessage) + '?message_id=$messageId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Message not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Cannot delete this message');
+      } else {
+        throw ApiException('Failed to delete message: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while deleting message: $e');
+    }
+  }
+
+  /// Get unread message count
+  static Future<int> getUnreadCount({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatUnreadCount)),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data']['unread_count'] ?? data['unread_count'] ?? 0;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch unread count: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching unread count: $e');
+    }
+  }
+
+  /// Send typing indicator
+  static Future<bool> sendTypingIndicator(String userId, bool isTyping, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatTyping)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'is_typing': isTyping,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('User not found');
+      } else {
+        throw ApiException('Failed to send typing indicator: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending typing indicator: $e');
+    }
+  }
+
+  /// Mark messages as read
+  static Future<bool> markMessagesAsRead(String userId, {String? accessToken, List<String>? messageIds}) async {
+    try {
+      final requestBody = <String, dynamic>{'user_id': userId};
+      if (messageIds != null && messageIds.isNotEmpty) {
+        requestBody['message_ids'] = messageIds;
+      }
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatRead)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('User not found');
+      } else {
+        throw ApiException('Failed to mark messages as read: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while marking messages as read: $e');
+    }
+  }
+
+  /// Update online status
+  static Future<bool> updateOnlineStatus(bool isOnline, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatOnline)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'is_online': isOnline,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to update online status: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while updating online status: $e');
+    }
+  }
+
+  /// Get chat statistics (unread count per conversation)
+  static Future<Map<String, dynamic>> getChatStatistics({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatUnreadCount) + '/detailed'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch chat statistics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching chat statistics: $e');
+    }
+  }
+}
