@@ -522,23 +522,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   // Mock data methods - these would be replaced with actual API calls
   List<Gender> _getMockGenders() {
     return [
-      Gender(id: 1, title: 'Man'),
-      Gender(id: 2, title: 'Woman'),
-      Gender(id: 3, title: 'Non-binary'),
-      Gender(id: 4, title: 'Gender fluid'),
-      Gender(id: 5, title: 'Trans man'),
-      Gender(id: 6, title: 'Trans woman'),
-      Gender(id: 7, title: 'Other'),
+      Gender(id: 1, name: 'Man'),
+      Gender(id: 2, name: 'Woman'),
+      Gender(id: 3, name: 'Non-binary'),
+      Gender(id: 4, name: 'Gender fluid'),
+      Gender(id: 5, name: 'Trans man'),
+      Gender(id: 6, name: 'Trans woman'),
+      Gender(id: 7, name: 'Other'),
     ];
   }
 
   List<RelationshipGoal> _getMockRelationshipGoals() {
     return [
-      RelationshipGoal(id: 1, title: 'Long-term relationship'),
-      RelationshipGoal(id: 2, title: 'Short-term relationship'),
-      RelationshipGoal(id: 3, title: 'Casual dating'),
-      RelationshipGoal(id: 4, title: 'Friendship'),
-      RelationshipGoal(id: 5, title: 'Marriage'),
+      RelationshipGoal(id: 1, name: 'Long-term relationship'),
+      RelationshipGoal(id: 2, name: 'Short-term relationship'),
+      RelationshipGoal(id: 3, name: 'Casual dating'),
+      RelationshipGoal(id: 4, name: 'Friendship'),
+      RelationshipGoal(id: 5, name: 'Marriage'),
     ];
   }
 }

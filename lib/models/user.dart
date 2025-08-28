@@ -27,7 +27,7 @@ class User {
   final List<Language> languages;
   final List<Interest> interests;
   final List<RelationGoal> relationGoals;
-  final RelationshipGoal? relationshipGoal; // Current relationship goal
+  final RelationGoal? relationshipGoal; // Current relationship goal
   final List<PreferredGender> preferredGenders;
   final List<Gender>? interestedIn; // Alias for preferredGenders
   final String? gender;
@@ -190,7 +190,7 @@ class User {
           ?.map((goal) => RelationGoal.fromJson(goal))
           .toList() ?? [],
       relationshipGoal: json['relationship_goal'] != null
-          ? RelationshipGoal.fromJson(json['relationship_goal'])
+          ? RelationGoal.fromJson(json['relationship_goal'])
           : null,
       preferredGenders: (json['preferred_genders'] as List<dynamic>?)
           ?.map((gender) => PreferredGender.fromJson(gender))
@@ -299,7 +299,7 @@ class User {
     List<Language>? languages,
     List<Interest>? interests,
     List<RelationGoal>? relationGoals,
-    RelationshipGoal? relationshipGoal,
+    RelationGoal? relationshipGoal,
     List<PreferredGender>? preferredGenders,
     List<Gender>? interestedIn,
     String? gender,

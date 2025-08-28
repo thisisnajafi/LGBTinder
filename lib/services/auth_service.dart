@@ -400,7 +400,7 @@ class AuthService {
   static Future<bool> checkEmailExists(String email) async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.getUrl('${ApiConfig.checkEmail}?email=${Uri.encodeComponent(email)}')),
+        Uri.parse('${ApiConfig.getUrl(ApiConfig.checkEmail)}?email=${Uri.encodeComponent(email)}'),
         headers: {
           'Accept': 'application/json',
         },
@@ -421,7 +421,7 @@ class AuthService {
   static Future<bool> checkPhoneExists(String phoneNumber, String countryCode) async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.getUrl('${ApiConfig.checkPhone}?phone_number=${Uri.encodeComponent(phoneNumber)}&country_code=${Uri.encodeComponent(countryCode)}')),
+        Uri.parse('${ApiConfig.getUrl(ApiConfig.checkPhone)}?phone_number=${Uri.encodeComponent(phoneNumber)}&country_code=${Uri.encodeComponent(countryCode)}'),
         headers: {
           'Accept': 'application/json',
         },

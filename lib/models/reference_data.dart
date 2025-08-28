@@ -1,6 +1,6 @@
 // Reference data models for dropdown options and selections
 
-class Education {
+class Education implements ReferenceItem {
   final int id;
   final String name;
   final String? description;
@@ -36,11 +36,14 @@ class Education {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
 }
 
-class Gender {
+class Gender implements ReferenceItem {
   final int id;
   final String name;
   final String? description;
@@ -76,11 +79,14 @@ class Gender {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
 }
 
-class Interest {
+class Interest implements ReferenceItem {
   final int id;
   final String name;
   final String? description;
@@ -120,11 +126,14 @@ class Interest {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
 }
 
-class Job {
+class Job implements ReferenceItem {
   final int id;
   final String name;
   final String? description;
@@ -164,11 +173,14 @@ class Job {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
 }
 
-class Language {
+class Language implements ReferenceItem {
   final int id;
   final String name;
   final String? code;
@@ -208,11 +220,14 @@ class Language {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
 }
 
-class MusicGenre {
+class MusicGenre implements ReferenceItem {
   final int id;
   final String name;
   final String? description;
@@ -248,11 +263,14 @@ class MusicGenre {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
 }
 
-class PreferredGender {
+class PreferredGender implements ReferenceItem {
   final int id;
   final String name;
   final String? description;
@@ -288,11 +306,14 @@ class PreferredGender {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
 }
 
-class RelationGoal {
+class RelationGoal implements ReferenceItem {
   final int id;
   final String name;
   final String? description;
@@ -328,6 +349,62 @@ class RelationGoal {
   @override
   int get hashCode => id.hashCode;
 
+  // Getter for UI compatibility  
+  String get title => name;
+
   @override
   String toString() => name;
+}
+
+class SexualOrientation implements ReferenceItem {
+  final int id;
+  final String name;
+  final String? description;
+
+  const SexualOrientation({
+    required this.id,
+    required this.name,
+    this.description,
+  });
+
+  factory SexualOrientation.fromJson(Map<String, dynamic> json) {
+    return SexualOrientation(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is SexualOrientation && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  // Getter for UI compatibility  
+  String get title => name;
+
+  @override
+  String toString() => name;
+}
+
+// Type alias for backward compatibility
+typedef RelationshipGoal = RelationGoal;
+
+// Base interface for reference data items
+abstract class ReferenceItem {
+  int get id;
+  String get name;
+  String get title;
 }
