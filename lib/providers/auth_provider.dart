@@ -477,6 +477,28 @@ class AuthProvider extends ChangeNotifier {
     return _accessToken;
   }
 
+  /// Send password reset email
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      _setLoading(true);
+      _clearError();
+      
+      final success = await AuthService.sendPasswordResetEmail(email);
+      
+      if (success) {
+        return true;
+      } else {
+        _setError('Failed to send password reset email');
+        return false;
+      }
+    } catch (e) {
+      _setError('Failed to send password reset email: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   @override
   void dispose() {
     _tokenRefreshTimer?.cancel();

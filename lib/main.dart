@@ -10,6 +10,18 @@ import 'pages/splash_page.dart';
 import 'pages/onboarding_page.dart';
 import 'providers/profile_provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/auth_provider.dart';
+import 'screens/auth/welcome_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/auth/email_verification_screen.dart';
+import 'screens/auth/phone_verification_screen.dart';
+import 'screens/auth/phone_login_screen.dart';
+import 'screens/auth/otp_verification_screen.dart';
+import 'screens/auth/auth_wrapper.dart';
+import 'screens/auth/forgot_password_screen.dart';
+import 'screens/auth/profile_completion_welcome_screen.dart';
+import 'screens/auth/profile_wizard_screen.dart';
 
 void main() {
   runApp(const LGBTinderApp());
@@ -22,6 +34,7 @@ class LGBTinderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
@@ -41,8 +54,18 @@ class LGBTinderApp extends StatelessWidget {
         ),
         initialRoute: '/',
         routes: {
-          '/': (context) => const SplashPage(),
+          '/': (context) => const AuthWrapper(),
           '/onboarding': (context) => const OnboardingPage(),
+          '/welcome': (context) => const WelcomeScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
+          '/email-verification': (context) => const EmailVerificationScreen(email: '', redirectRoute: '/home'),
+                             '/phone-verification': (context) => const PhoneVerificationScreen(phoneNumber: '', countryCode: '+1', redirectRoute: '/home'),
+                   '/phone-login': (context) => const PhoneLoginScreen(),
+                   '/otp-verification': (context) => const OtpVerificationScreen(phoneNumber: '', countryCode: '+1'),
+          '/forgot-password': (context) => const ForgotPasswordScreen(),
+          '/profile-completion': (context) => const ProfileCompletionWelcomeScreen(userName: ''),
+          '/profile-wizard': (context) => const ProfileWizardScreen(),
           '/main': (context) => const MainScreen(),
         },
       ),

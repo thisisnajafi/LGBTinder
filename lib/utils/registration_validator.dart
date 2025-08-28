@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:email_validator/email_validator.dart';
 
 /// Comprehensive validation class for user registration
 class RegistrationValidator {
   // Validation patterns
-  static final RegExp _emailRegex = RegExp(
-    r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
-  );
-  
-  static final RegExp _nameRegex = RegExp(r'^[a-zA-Z\s\'-]+$');
+    static final RegExp _nameRegex = RegExp(r"^[a-zA-Z\s'-]+$");
   
   // Minimum age requirement (18 years)
   static const int _minimumAge = 18;
@@ -63,7 +60,7 @@ class RegistrationValidator {
       return 'Email is required';
     }
     
-    if (!_emailRegex.hasMatch(value.trim())) {
+    if (!EmailValidator.validate(value.trim())) {
       return 'Please enter a valid email address';
     }
     

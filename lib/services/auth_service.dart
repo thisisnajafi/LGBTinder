@@ -437,4 +437,43 @@ class AuthService {
       return false; // Assume phone doesn't exist if check fails
     }
   }
+
+  /// Send password reset email
+  static Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/forgot-password'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] as bool? ?? false;
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid email address',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 429) {
+        throw RateLimitException('Too many password reset requests. Please wait before trying again.');
+      } else {
+        throw ApiException('Failed to send password reset email: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on RateLimitException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending password reset email: $e');
+    }
+  }
 } 
