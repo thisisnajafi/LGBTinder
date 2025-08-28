@@ -31,6 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isConfirmPasswordValid = false;
   bool _isFirstNameValid = false;
   bool _isLastNameValid = false;
+  bool _isTermsAccepted = false;
   
   // Password strength validation
   bool _hasMinLength = false;
@@ -129,10 +130,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
-    if (!_formKey.currentState!.validate()) return;
+    print('🚀 Registration attempt started');
+    print('📋 Form validation: ${_formKey.currentState!.validate()}');
+    print('📋 Terms accepted: $_isTermsAccepted');
+    print('📋 Password requirements: ${_hasMinLength && _hasUppercase && _hasLowercase && _hasNumber && _hasSpecialChar}');
+    
+    if (!_formKey.currentState!.validate()) {
+      print('❌ Form validation failed');
+      return;
+    }
+    
+    // Check if terms are accepted
+    if (!_isTermsAccepted) {
+      print('❌ Terms not accepted');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept the Terms of Service and Privacy Policy'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     
     // Check if all password requirements are met
     if (!(_hasMinLength && _hasUppercase && _hasLowercase && _hasNumber && _hasSpecialChar)) {
+      print('❌ Password requirements not met');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please ensure all password requirements are met'),
@@ -147,6 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
+      print('🔄 Creating registration request...');
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
       final request = RegisterRequest(
@@ -157,9 +180,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         passwordConfirmation: _confirmPasswordController.text,
       );
 
+      print('📝 Registration data: firstName=${request.firstName}, lastName=${request.lastName}, email=${request.email}');
+      print('🔐 Password length: ${_passwordController.text.length}');
+      print('🔐 Passwords match: ${_passwordController.text == _confirmPasswordController.text}');
+      
+      print('📡 Calling auth provider register...');
       final success = await authProvider.register(request);
+      print('📡 Auth provider result: $success');
       
       if (success && mounted) {
+        print('✅ Registration successful, navigating to verification');
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Account created successfully! Please check your email for verification.'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        
+        // Navigate to verification screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -169,13 +209,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
         );
+      } else {
+        print('❌ Registration failed but no exception thrown');
+        print('❌ Auth provider error: ${authProvider.authError}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Unable to create account. Please check your information and try again.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
       }
     } catch (e) {
+      print('💥 Registration exception: ${e.toString()}');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Registration failed: ${e.toString()}'),
+          const SnackBar(
+            content: Text('Unable to create account. Please check your internet connection and try again.'),
             backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
           ),
         );
       }
@@ -232,8 +286,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // First Name
                   TextFormField(
                     controller: _firstNameController,
+                    enabled: !_isLoading,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: _isLoading ? Colors.white60 : Colors.white),
                     decoration: InputDecoration(
                       labelText: 'First Name',
                       hintText: 'Enter your first name',
@@ -275,8 +330,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Last Name
                   TextFormField(
                     controller: _lastNameController,
+                    enabled: !_isLoading,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: _isLoading ? Colors.white60 : Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Last Name',
                       hintText: 'Enter your last name',
@@ -318,9 +374,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Email
                   TextFormField(
                     controller: _emailController,
+                    enabled: !_isLoading,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: _isLoading ? Colors.white60 : Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Email',
                       hintText: 'Enter your email',
@@ -362,9 +419,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Password
                   TextFormField(
                     controller: _passwordController,
+                    enabled: !_isLoading,
                     obscureText: !_isPasswordVisible,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: _isLoading ? Colors.white60 : Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Password',
                       hintText: 'Enter your password',
@@ -440,9 +498,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Confirm Password
                   TextFormField(
                     controller: _confirmPasswordController,
+                    enabled: !_isLoading,
                     obscureText: !_isConfirmPasswordVisible,
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: _isLoading ? Colors.white60 : Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Confirm Password',
                       hintText: 'Confirm your password',
@@ -493,23 +552,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _handleRegister,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: _isLoading ? AppColors.primary.withOpacity(0.7) : AppColors.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        elevation: 0,
+                        elevation: _isLoading ? 0 : 2,
                       ),
                       child: _isLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Creating Account...',
+                                  style: AppTypography.button.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
                             )
                           : Text(
                               'Create Account',
@@ -526,13 +599,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Terms and Privacy
                   Row(
                     children: [
-                                             Checkbox(
-                         value: true,
-                         onChanged: (value) {},
-                         activeColor: AppColors.primary,
-                         checkColor: Colors.white,
-                         side: const BorderSide(color: Colors.white30),
-                       ),
+                      Checkbox(
+                        value: _isTermsAccepted,
+                        onChanged: _isLoading ? null : (value) {
+                          setState(() {
+                            _isTermsAccepted = value ?? false;
+                          });
+                        },
+                        activeColor: AppColors.primary,
+                        checkColor: Colors.white,
+                        side: const BorderSide(color: Colors.white30),
+                      ),
                       Expanded(
                         child: RichText(
                           text: TextSpan(

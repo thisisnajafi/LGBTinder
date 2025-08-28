@@ -101,10 +101,13 @@ class AuthProvider extends ChangeNotifier {
   /// Login with email and password
   Future<bool> login(LoginRequest request) async {
     try {
+      print('🏁 AuthProvider.login() started');
       _setLoading(true);
       _clearError();
       
+      print('📡 Calling AuthService.login()...');
       final response = await AuthService.login(request);
+      print('📡 AuthService.login() response received');
       
       // Store authentication data
       await _storeAuthData(
@@ -117,15 +120,19 @@ class AuthProvider extends ChangeNotifier {
       _isAuthenticated = true;
       _startTokenRefreshTimer();
       
+      print('✅ Login successful in AuthProvider');
       notifyListeners();
       return true;
     } on AppException catch (e) {
-      _setError(e.message);
+      print('💥 AuthProvider login AppException: ${e.message}');
+      _setError('Invalid email or password. Please try again.');
       return false;
     } catch (e) {
-      _setError('Login failed: $e');
+      print('💥 AuthProvider login Exception: $e');
+      _setError('Network error. Please check your internet connection.');
       return false;
     } finally {
+      print('🏁 AuthProvider.login() completed');
       _setLoading(false);
     }
   }
@@ -196,35 +203,48 @@ class AuthProvider extends ChangeNotifier {
   /// Register new user
   Future<bool> register(RegisterRequest request) async {
     try {
+      print('🏁 AuthProvider.register() started');
       _setLoading(true);
       _clearError();
       
+      print('📡 Calling AuthService.register()...');
       final response = await AuthService.register(request);
+      print('📡 AuthService.register() response: $response');
       
       if (response.isSuccess) {
+        print('✅ Registration successful in AuthProvider');
         _clearError();
         return true;
       } else if (response.hasErrors) {
         // Handle validation errors
+        print('❌ Registration validation errors: ${response.errors}');
         final errorMessages = response.errors!.entries
             .map((e) => e.value.join(', '))
             .join('\n');
-        _setError(errorMessages);
+        print('📋 Detailed validation errors: $errorMessages');
+        
+        // Set user-friendly error message instead of technical details
+        _setError('Please check your information and try again.');
         return false;
       } else if (response.isServerError) {
-        _setError(response.message);
+        print('❌ Registration server error: ${response.message}');
+        _setError('Our servers are experiencing issues. Please try again later.');
         return false;
       } else {
-        _setError(response.message);
+        print('❌ Registration failed: ${response.message}');
+        _setError('Unable to create account. Please try again.');
         return false;
       }
     } on AppException catch (e) {
-      _setError(e.message);
+      print('💥 AuthProvider registration AppException: ${e.message}');
+      _setError('Unable to create account. Please try again.');
       return false;
     } catch (e) {
-      _setError('Registration failed: $e');
+      print('💥 AuthProvider registration Exception: $e');
+      _setError('Network error. Please check your internet connection.');
       return false;
     } finally {
+      print('🏁 AuthProvider.register() completed');
       _setLoading(false);
     }
   }

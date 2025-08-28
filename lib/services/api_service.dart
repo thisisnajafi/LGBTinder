@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/api_config.dart';
 
 class ApiService {
-  static const String _baseUrl = 'http://127.0.0.1:8000/api'; // Replace with your actual API URL
+  // Use the centralized API configuration
+  static String get _baseUrl => ApiConfig.baseUrl;
   static const String _tokenKey = 'jwt_token';
   
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
@@ -37,6 +39,15 @@ class ApiService {
   Map<String, dynamic> _handleResponse(http.Response response) {
     final statusCode = response.statusCode;
     final body = response.body.isNotEmpty ? json.decode(response.body) : {};
+
+    // Enhanced logging for testing
+    print('🔄 API Request: ${response.request?.method} ${response.request?.url}');
+    print('📤 Request Headers: ${response.request?.headers}');
+    print('📥 Response Status: $statusCode');
+    print('📥 Response Headers: ${response.headers}');
+    print('📥 Response Body: ${response.body}');
+    print('⏱️ Response Time: ${DateTime.now().toIso8601String()}');
+    print('─' * 80);
 
     switch (statusCode) {
       case 200:

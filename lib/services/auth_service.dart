@@ -24,10 +24,10 @@ class AuthService {
       final response = await http.post(
         Uri.parse(ApiConfig.getUrl(_loginEndpoint)),
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
         },
-        body: jsonEncode(request.toJson()),
+        body: request.toFormData(),
       );
 
       if (response.statusCode == 200) {
@@ -132,37 +132,78 @@ class AuthService {
   /// Register new user
   static Future<RegisterResponse> register(RegisterRequest request) async {
     try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.getUrl(_registerEndpoint)),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(request.toJson()),
-      );
+      print('🚀 AuthService.register() starting');
+      print('🌐 Registration URL: ${ApiConfig.getUrl(_registerEndpoint)}');
+      print('🔧 Base URL: ${ApiConfig.baseUrl}');
+      print('🔧 Register Endpoint: $_registerEndpoint');
+      print('📦 Request payload (JSON): ${jsonEncode(request.toJson())}');
+      print('📦 Request payload (Form): ${request.toFormData()}');
+      
+      // Try form-urlencoded first since Postman works with this format
+      http.Response response;
+      try {
+        response = await http.post(
+          Uri.parse(ApiConfig.getUrl(_registerEndpoint)),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+          },
+          body: request.toFormData(),
+        );
+        print('📋 Used form-urlencoded content type');
+      } catch (e) {
+        print('⚠️ Form-urlencoded failed, trying JSON: $e');
+        // Fallback to JSON if form-urlencoded fails
+        response = await http.post(
+          Uri.parse(ApiConfig.getUrl(_registerEndpoint)),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode(request.toJson()),
+        );
+        print('📋 Used JSON content type as fallback');
+      }
+      
+      print('📥 Registration response status: ${response.statusCode}');
+      print('📥 Registration response body: ${response.body}');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Registration successful');
         final data = jsonDecode(response.body);
+        print('📋 Parsed response data: $data');
+        print('📋 Response data type: ${data.runtimeType}');
+        if (data['data'] != null) {
+          print('📋 Data section: ${data['data']}');
+          print('📋 User ID type: ${data['data']['user_id'].runtimeType}');
+        }
         return RegisterResponse.fromJson(data);
       } else if (response.statusCode == 422) {
+        print('❌ Registration validation error');
         final data = jsonDecode(response.body);
         throw ValidationException(
           data['message'] ?? 'Validation failed',
           data['errors'] ?? <String, String>{},
         );
       } else if (response.statusCode == 500) {
+        print('❌ Registration server error');
         final data = jsonDecode(response.body);
         throw ApiException(data['message'] ?? 'Registration failed');
       } else {
+        print('❌ Registration failed with status: ${response.statusCode}');
         throw ApiException('Registration failed: ${response.statusCode}');
       }
-    } on ValidationException {
+    } on ValidationException catch (e) {
+      print('💥 AuthService registration ValidationException: ${e.message}');
       rethrow;
-    } on AuthException {
+    } on AuthException catch (e) {
+      print('💥 AuthService registration AuthException: ${e.message}');
       rethrow;
-    } on ApiException {
+    } on ApiException catch (e) {
+      print('💥 AuthService registration ApiException: ${e.message}');
       rethrow;
     } catch (e) {
+      print('💥 AuthService registration NetworkException: $e');
       throw NetworkException('Network error during registration: $e');
     }
   }

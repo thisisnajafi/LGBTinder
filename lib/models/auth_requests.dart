@@ -27,6 +27,13 @@ class LoginRequest {
     };
   }
 
+  String toFormData() {
+    final data = toJson();
+    return data.entries
+        .map((entry) => '${Uri.encodeComponent(entry.key)}=${Uri.encodeComponent(entry.value.toString())}')
+        .join('&');
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -118,6 +125,13 @@ class RegisterRequest {
       'password': password,
       'password_confirmation': passwordConfirmation,
     };
+  }
+
+  String toFormData() {
+    final data = toJson();
+    return data.entries
+        .map((entry) => '${Uri.encodeComponent(entry.key)}=${Uri.encodeComponent(entry.value.toString())}')
+        .join('&');
   }
 
   @override

@@ -379,7 +379,7 @@ class ChatService {
   // Additional methods for ChatProvider compatibility
 
   /// Get user's chats (alias for getChatUsers)
-  static Future<List<Map<String, dynamic>>> getChats({
+  static Future<List<Chat>> getChats({
     String? accessToken,
     int? page,
     int? limit,
@@ -389,40 +389,42 @@ class ChatService {
   }
 
   /// Get specific chat by ID (placeholder implementation)
-  static Future<Map<String, dynamic>?> getChat(String chatId, {String? accessToken}) async {
+  static Future<Chat?> getChat(String chatId, {String? accessToken}) async {
     try {
       // This would typically fetch specific chat details
       // For now, return basic chat structure
-      return {
+      final chatData = {
         'id': chatId,
         'type': 'direct',
         'participants': [],
         'last_message': null,
         'created_at': DateTime.now().toIso8601String(),
       };
+      return Chat.fromJson(chatData);
     } catch (e) {
       throw NetworkException('Network error while fetching chat: $e');
     }
   }
 
   /// Create new chat (placeholder implementation) 
-  static Future<Map<String, dynamic>> createChat(String userId, {String? accessToken}) async {
+  static Future<Chat> createChat(String userId, {String? accessToken}) async {
     try {
       // This would typically create a new chat with a user
       // For now, return basic chat structure
-      return {
+      final chatData = {
         'id': 'chat_${DateTime.now().millisecondsSinceEpoch}',
         'type': 'direct',
         'participants': [userId],
         'created_at': DateTime.now().toIso8601String(),
       };
+      return Chat.fromJson(chatData);
     } catch (e) {
       throw NetworkException('Network error while creating chat: $e');
     }
   }
 
   /// Create group chat (placeholder implementation)
-  static Future<Map<String, dynamic>> createGroupChat({
+  static Future<Chat> createGroupChat({
     required String name,
     required List<String> userIds,
     String? accessToken,
@@ -430,28 +432,33 @@ class ChatService {
     try {
       // This would typically create a new group chat
       // For now, return basic group structure
-      return {
+      final chatData = {
         'id': 'group_${DateTime.now().millisecondsSinceEpoch}',
         'type': 'group',
         'name': name,
         'participants': userIds,
         'created_at': DateTime.now().toIso8601String(),
       };
+      return Chat.fromJson(chatData);
     } catch (e) {
       throw NetworkException('Network error while creating group chat: $e');
     }
   }
 
   /// Update chat (placeholder implementation)
-  static Future<Map<String, dynamic>> updateChat(String chatId, Map<String, dynamic> updates, {String? accessToken}) async {
+  static Future<Chat> updateChat(String chatId, Map<String, dynamic> updates, {String? accessToken}) async {
     try {
       // This would typically update chat settings
       // For now, return updated chat structure
-      return {
+      final chatData = {
         'id': chatId,
+        'type': 'direct',
+        'participants': [],
         'updated_at': DateTime.now().toIso8601String(),
+        'created_at': DateTime.now().toIso8601String(),
         ...updates,
       };
+      return Chat.fromJson(chatData);
     } catch (e) {
       throw NetworkException('Network error while updating chat: $e');
     }
@@ -510,10 +517,114 @@ class ChatService {
   /// Mark chat as read (alias for markMessagesAsRead)
   static Future<bool> markChatAsRead(String chatId, {String? accessToken}) async {
     try {
-      // Use existing markMessagesAsRead method
-      return await markMessagesAsRead(chatId: chatId, accessToken: accessToken);
+      // Use existing markMessagesAsRead method with chatId as userId
+      return await markMessagesAsRead(chatId, accessToken: accessToken);
     } catch (e) {
       throw NetworkException('Network error while marking chat as read: $e');
+    }
+  }
+
+  // Additional message methods for ChatProvider compatibility
+
+  /// Get messages (alias for getChatHistory)
+  static Future<List<Message>> getMessages(
+    String chatId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+    String? beforeMessageId,
+    String? afterMessageId,
+  }) async {
+    return getChatHistory(chatId, accessToken: accessToken, page: page, limit: limit);
+  }
+
+  /// Send text message (alias for sendMessage)
+  static Future<Message> sendTextMessage(
+    String recipientId,
+    String content, {
+    String? accessToken,
+    String? replyToId,
+  }) async {
+    return sendMessage(recipientId, content, accessToken: accessToken);
+  }
+
+  /// Send media message (placeholder - adjust parameters as needed)
+  static Future<Message> sendMediaMessage(
+    String chatId,
+    String type,
+    List<File> attachments, {
+    String? content,
+    String? replyToId,
+    String? accessToken,
+  }) async {
+    // For now, use the first attachment and call sendMessage
+    final attachment = attachments.isNotEmpty ? attachments.first : null;
+    final messageContent = content ?? '';
+    return sendMessage(chatId, messageContent, accessToken: accessToken, attachment: attachment);
+  }
+
+  /// Edit message (placeholder implementation)
+  static Future<Message> editMessage(
+    String chatId,
+    String messageId,
+    String newContent, {
+    String? accessToken,
+  }) async {
+    try {
+      // This would typically edit an existing message
+      // For now, return a basic message structure
+      final messageData = {
+        'id': messageId,
+        'chat_id': chatId,
+        'content': newContent,
+        'sender_id': 'current_user',
+        'type': 'text',
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+      return Message.fromJson(messageData);
+    } catch (e) {
+      throw NetworkException('Network error while editing message: $e');
+    }
+  }
+
+  /// Mark message as read (placeholder implementation)
+  static Future<bool> markMessageAsRead(String chatId, String messageId, {String? accessToken}) async {
+    try {
+      // This would typically mark a specific message as read
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while marking message as read: $e');
+    }
+  }
+
+  /// Mark all messages as read (placeholder implementation)
+  static Future<bool> markAllMessagesAsRead(String chatId, {String? accessToken}) async {
+    try {
+      // This would typically mark all messages in a chat as read
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while marking all messages as read: $e');
+    }
+  }
+
+  /// React to message (placeholder implementation)
+  static Future<bool> reactToMessage(String chatId, String messageId, String reaction, {String? accessToken}) async {
+    try {
+      // This would typically add a reaction to a message
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while reacting to message: $e');
+    }
+  }
+
+  /// Remove reaction (placeholder implementation)
+  static Future<bool> removeReaction(String chatId, String messageId, {String? accessToken}) async {
+    try {
+      // This would typically remove a reaction from a message
+      return true;
+    } catch (e) {
+      throw NetworkException('Network error while removing reaction: $e');
     }
   }
 }

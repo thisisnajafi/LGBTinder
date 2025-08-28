@@ -1,6 +1,18 @@
 class ApiConfig {
-  // Base URL for the API
-  static const String baseUrl = 'http://127.0.0.1:8000/api'; // Using the server URL from API docs
+  // Environment-specific base URLs
+  static const String _androidEmulatorUrl = 'http://10.0.2.2:8000/api';
+  static const String _iosSimulatorUrl = 'http://127.0.0.1:8000/api';
+  static const String _physicalDeviceUrl = 'http://YOUR_COMPUTER_IP:8000/api'; // Replace with your computer's IP
+  static const String _productionUrl = 'https://your-production-domain.com/api';
+  
+  // Current environment - change this based on your setup
+  static const String baseUrl = _androidEmulatorUrl; // <-- Change this line for different environments
+  
+  // Easy switching helper - uncomment the one you need:
+  // static const String baseUrl = _androidEmulatorUrl;    // For Android Emulator
+  // static const String baseUrl = _iosSimulatorUrl;       // For iOS Simulator  
+  // static const String baseUrl = _physicalDeviceUrl;     // For Physical Device
+  // static const String baseUrl = _productionUrl;         // For Production
   
   // Auth endpoints
   static const String login = '/auth/login';

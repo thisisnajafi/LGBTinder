@@ -77,24 +77,33 @@ class RegisterResponse {
   });
 
   factory RegisterResponse.fromJson(Map<String, dynamic> json) {
-    return RegisterResponse(
-      status: json['status'] as bool,
-      message: json['message'] as String,
-      data: json['data'] != null 
-          ? RegisterResponseData.fromJson(json['data'] as Map<String, dynamic>)
-          : null,
-      errors: json['errors'] != null 
-          ? Map<String, List<String>>.from(
-              (json['errors'] as Map<String, dynamic>).map(
-                (key, value) => MapEntry(
-                  key, 
-                  (value as List).cast<String>(),
+    print('🔍 RegisterResponse.fromJson called with: $json');
+    try {
+      final result = RegisterResponse(
+        status: json['status'] as bool,
+        message: json['message'] as String,
+        data: json['data'] != null 
+            ? RegisterResponseData.fromJson(json['data'] as Map<String, dynamic>)
+            : null,
+        errors: json['errors'] != null 
+            ? Map<String, List<String>>.from(
+                (json['errors'] as Map<String, dynamic>).map(
+                  (key, value) => MapEntry(
+                    key, 
+                    (value as List).cast<String>(),
+                  ),
                 ),
-              ),
-            )
-          : null,
-      error: json['error'] as String?,
-    );
+              )
+            : null,
+        error: json['error'] as String?,
+      );
+      print('🔍 RegisterResponse created successfully');
+      return result;
+    } catch (e) {
+      print('💥 Error in RegisterResponse.fromJson: $e');
+      print('💥 JSON data: $json');
+      rethrow;
+    }
   }
 
   bool get isSuccess => status && data != null;
@@ -117,7 +126,7 @@ class RegisterResponseData {
 
   factory RegisterResponseData.fromJson(Map<String, dynamic> json) {
     return RegisterResponseData(
-      userId: json['user_id'] as String,
+      userId: json['user_id'].toString(), // Convert int or String to String
       email: json['email'] as String,
       resendAvailableAt: json['resend_available_at'] as String,
       hourlyAttemptsRemaining: json['hourly_attempts_remaining'] as int,

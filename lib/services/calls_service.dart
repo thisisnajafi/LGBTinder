@@ -430,7 +430,7 @@ class CallsService {
     Map<String, dynamic>? settings,
   }) async {
     try {
-      final requestBody = {'is_available': isAvailable};
+      final requestBody = <String, dynamic>{'is_available': isAvailable};
       if (settings != null) requestBody['settings'] = settings;
 
       final response = await http.put(

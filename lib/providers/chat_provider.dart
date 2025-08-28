@@ -1,8 +1,9 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/chat_service.dart';
 import '../services/message_service.dart';
-import '../services/call_service.dart';
+import '../services/calls_service.dart';
 
 class ChatProvider extends ChangeNotifier {
 
@@ -28,13 +29,7 @@ class ChatProvider extends ChangeNotifier {
   Map<String, List<Map<String, dynamic>>> _typingIndicators = {};
   Map<String, int> _unreadCounts = {};
 
-  ChatProvider({
-    ChatService? chatService,
-    MessageService? messageService,
-    CallService? callService,
-  })  : _chatService = chatService ?? ChatService(),
-        _messageService = messageService ?? MessageService(),
-        _callService = callService ?? CallService();
+  ChatProvider();
 
   // Getters
   List<Chat> get chats => _chats;
@@ -101,7 +96,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> loadChat(String chatId) async {
     try {
-      final chat = await _chatService.getChat(chatId);
+      final chat = await ChatService.getChat(chatId);
       _currentChat = chat;
       notifyListeners();
     } catch (e) {
@@ -113,7 +108,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> createChat(String userId) async {
     try {
-      final newChat = await _chatService.createChat(userId);
+      final newChat = await ChatService.createChat(userId);
       _chats.insert(0, newChat);
       notifyListeners();
     } catch (e) {
@@ -130,10 +125,9 @@ class ChatProvider extends ChangeNotifier {
     String? avatar,
   }) async {
     try {
-      final newChat = await _chatService.createGroupChat(
+      final newChat = await ChatService.createGroupChat(
         name: name,
         userIds: userIds,
-        avatar: avatar,
       );
       _chats.insert(0, newChat);
       notifyListeners();
@@ -147,7 +141,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> updateChat(String chatId, Map<String, dynamic> updates) async {
     try {
-      final updatedChat = await _chatService.updateChat(chatId, updates);
+      final updatedChat = await ChatService.updateChat(chatId, updates);
       final index = _chats.indexWhere((chat) => chat.id == chatId);
       if (index != -1) {
         _chats[index] = updatedChat;
@@ -166,7 +160,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> archiveChat(String chatId) async {
     try {
-      await _chatService.archiveChat(chatId);
+      await ChatService.archiveChat(chatId);
       final index = _chats.indexWhere((chat) => chat.id == chatId);
       if (index != -1) {
         _chats[index] = _chats[index].copyWith(isArchived: true);
@@ -182,7 +176,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> unarchiveChat(String chatId) async {
     try {
-      await _chatService.unarchiveChat(chatId);
+      await ChatService.unarchiveChat(chatId);
       final index = _chats.indexWhere((chat) => chat.id == chatId);
       if (index != -1) {
         _chats[index] = _chats[index].copyWith(isArchived: false);
@@ -198,7 +192,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> pinChat(String chatId) async {
     try {
-      await _chatService.pinChat(chatId);
+      await ChatService.pinChat(chatId);
       final index = _chats.indexWhere((chat) => chat.id == chatId);
       if (index != -1) {
         _chats[index] = _chats[index].copyWith(isPinned: true);
@@ -214,7 +208,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> unpinChat(String chatId) async {
     try {
-      await _chatService.unpinChat(chatId);
+      await ChatService.unpinChat(chatId);
       final index = _chats.indexWhere((chat) => chat.id == chatId);
       if (index != -1) {
         _chats[index] = _chats[index].copyWith(isPinned: false);
@@ -230,7 +224,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> deleteChat(String chatId) async {
     try {
-      await _chatService.deleteChat(chatId);
+      await ChatService.deleteChat(chatId);
       _chats.removeWhere((chat) => chat.id == chatId);
       _messages.remove(chatId);
       _unreadCounts.remove(chatId);
@@ -248,7 +242,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> markChatAsRead(String chatId) async {
     try {
-      await _chatService.markChatAsRead(chatId);
+      await ChatService.markChatAsRead(chatId);
       _unreadCounts[chatId] = 0;
       
       // Update chat in list
@@ -279,7 +273,7 @@ class ChatProvider extends ChangeNotifier {
       _messageErrors[chatId] = null;
       notifyListeners();
 
-      final newMessages = await _messageService.getMessages(
+      final newMessages = await ChatService.getMessages(
         chatId,
         page: page,
         limit: limit,
@@ -310,7 +304,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<Message> sendTextMessage(String chatId, String content, {String? replyToId}) async {
     try {
-      final message = await _messageService.sendTextMessage(
+      final message = await ChatService.sendTextMessage(
         chatId,
         content,
         replyToId: replyToId,
@@ -348,10 +342,10 @@ class ChatProvider extends ChangeNotifier {
     String? replyToId,
   }) async {
     try {
-      final message = await _messageService.sendMediaMessage(
+      final message = await ChatService.sendMediaMessage(
         chatId,
-        type,
-        attachments,
+        type.toString().split('.').last, // Convert enum to string
+        attachments.map((attachment) => File(attachment.url ?? '')).toList(),
         content: content,
         replyToId: replyToId,
       );
@@ -382,7 +376,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> editMessage(String chatId, String messageId, String newContent) async {
     try {
-      final updatedMessage = await _messageService.editMessage(
+      final updatedMessage = await ChatService.editMessage(
         chatId,
         messageId,
         newContent,
@@ -406,7 +400,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> deleteMessage(String chatId, String messageId) async {
     try {
-      await _messageService.deleteMessage(chatId, messageId);
+      await ChatService.deleteMessage(messageId);
 
       // Remove message from local state
       final messages = _messages[chatId] ?? [];
@@ -423,7 +417,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> markMessageAsRead(String chatId, String messageId) async {
     try {
-      await _messageService.markMessageAsRead(chatId, messageId);
+      await ChatService.markMessageAsRead(chatId, messageId);
       
       // Update message status in local state
       final messages = _messages[chatId] ?? [];
@@ -444,7 +438,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> markAllMessagesAsRead(String chatId) async {
     try {
-      await _messageService.markAllMessagesAsRead(chatId);
+      await ChatService.markAllMessagesAsRead(chatId);
       
       // Update all messages status in local state
       final messages = _messages[chatId] ?? [];
@@ -462,7 +456,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> reactToMessage(String chatId, String messageId, String reaction) async {
     try {
-      await _messageService.reactToMessage(chatId, messageId, reaction);
+      await ChatService.reactToMessage(chatId, messageId, reaction);
       
       // Update message reactions in local state
       final messages = _messages[chatId] ?? [];
@@ -488,7 +482,7 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> removeReaction(String chatId, String messageId) async {
     try {
-      await _messageService.removeReaction(chatId, messageId);
+      await ChatService.removeReaction(chatId, messageId);
       
       // Clear message reactions in local state
       final messages = _messages[chatId] ?? [];
@@ -515,7 +509,8 @@ class ChatProvider extends ChangeNotifier {
       _callError = null;
       notifyListeners();
 
-      _activeCalls = await _callService.getActiveCalls();
+      final callMaps = await CallsService.getActiveCalls();
+      _activeCalls = callMaps.map((callMap) => Call.fromJson(callMap)).toList();
       _isLoadingCalls = false;
       notifyListeners();
     } catch (e) {
@@ -530,7 +525,11 @@ class ChatProvider extends ChangeNotifier {
 
   Future<Call> initiateCall(String receiverId, CallType type) async {
     try {
-      final call = await _callService.initiateCall(receiverId, type);
+      final callMap = await CallsService.initiateCall(
+        recipientId: receiverId,
+        callType: type.toString().split('.').last, // Convert CallType enum to string
+      );
+      final call = Call.fromJson(callMap);
       _currentCall = call;
       _activeCalls.add(call);
       notifyListeners();
@@ -545,7 +544,8 @@ class ChatProvider extends ChangeNotifier {
 
   Future<Call> acceptCall(String callId) async {
     try {
-      final call = await _callService.acceptCall(callId);
+      final callMap = await CallsService.acceptCall(callId);
+      final call = Call.fromJson(callMap);
       _currentCall = call;
       
       // Update call in active calls list
@@ -566,7 +566,8 @@ class ChatProvider extends ChangeNotifier {
 
   Future<Call> rejectCall(String callId, {String? reason}) async {
     try {
-      final call = await _callService.rejectCall(callId, reason: reason);
+      final callMap = await CallsService.rejectCall(callId, reason: reason);
+      final call = Call.fromJson(callMap);
       
       // Remove call from active calls list
       _activeCalls.removeWhere((c) => c.id == callId);
@@ -586,7 +587,8 @@ class ChatProvider extends ChangeNotifier {
 
   Future<Call> endCall(String callId) async {
     try {
-      final call = await _callService.endCall(callId);
+      final callMap = await CallsService.endCall(callId);
+      final call = Call.fromJson(callMap);
       
       // Remove call from active calls list
       _activeCalls.removeWhere((c) => c.id == callId);

@@ -47,34 +47,55 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    Future<void> _handleLogin() async {
+    print('🚀 Login attempt started');
+    if (!_formKey.currentState!.validate()) {
+      print('❌ Login form validation failed');
+      return;
+    }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
     try {
-      await authProvider.login(
+      print('📡 Calling auth provider login...');
+      final success = await authProvider.login(
         LoginRequest(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         ),
       );
       
-      if (mounted) {
+      print('📡 Auth provider login result: $success');
+      
+      if (success && mounted) {
+        print('✅ Login successful');
         // Navigation will be handled by AuthWrapper
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Login successful!'),
+            content: Text('Welcome back!'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else if (mounted) {
+        print('❌ Login failed but no exception thrown');
+        print('❌ Auth provider error: ${authProvider.authError}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid email or password. Please try again.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
           ),
         );
       }
     } catch (e) {
+      print('💥 Login exception: ${e.toString()}');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login failed: ${e.toString()}'),
+          const SnackBar(
+            content: Text('Unable to sign in. Please check your internet connection and try again.'),
             backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
           ),
         );
       }
@@ -120,10 +141,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 40),
                   
                   // Email Field
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(color: Colors.white),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return TextFormField(
+                        controller: _emailController,
+                        enabled: !authProvider.isLoading,
+                        keyboardType: TextInputType.emailAddress,
+                        style: TextStyle(color: authProvider.isLoading ? Colors.white60 : Colors.white),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Email is required';
@@ -167,14 +191,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
                     ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 20),
                   
                   // Password Field
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: !_isPasswordVisible,
-                    style: const TextStyle(color: Colors.white),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return TextFormField(
+                        controller: _passwordController,
+                        enabled: !authProvider.isLoading,
+                        obscureText: !_isPasswordVisible,
+                        style: TextStyle(color: authProvider.isLoading ? Colors.white60 : Colors.white),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Password is required';
@@ -199,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               : Icons.visibility,
                           color: Colors.white70,
                         ),
-                        onPressed: () {
+                        onPressed: authProvider.isLoading ? null : () {
                           setState(() {
                             _isPasswordVisible = !_isPasswordVisible;
                           });
@@ -224,6 +253,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
                     ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 20),
                   
@@ -254,23 +285,37 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: authProvider.isLoading ? null : _handleLogin,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: authProvider.isLoading ? AppColors.primary.withOpacity(0.7) : AppColors.primary,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            elevation: 0,
+                            elevation: authProvider.isLoading ? 0 : 2,
                           ),
                           child: authProvider.isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Signing In...',
+                                      style: AppTypography.button.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
                                 )
                               : Text(
                                   'Sign In',
