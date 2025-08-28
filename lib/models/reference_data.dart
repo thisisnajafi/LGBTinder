@@ -1,308 +1,333 @@
-// Base class for reference data items
-abstract class ReferenceItem {
+// Reference data models for dropdown options and selections
+
+class Education {
   final int id;
-  final String title;
-  final String? img;
+  final String name;
+  final String? description;
 
-  ReferenceItem({
+  const Education({
     required this.id,
-    required this.title,
-    this.img,
-  });
-  
-  // Alias for title to match the expected interface
-  String get name => title;
-
-  factory ReferenceItem.fromJson(Map<String, dynamic> json) {
-    throw UnimplementedError('Subclasses must implement fromJson');
-  }
-
-  Map<String, dynamic> toJson();
-
-  @override
-  String toString() => title;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is ReferenceItem && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
-}
-
-// Relationship Goal model (alias for RelationGoal)
-class RelationshipGoal extends ReferenceItem {
-  final String? subtitle;
-
-  RelationshipGoal({
-    required super.id,
-    required super.title,
-    super.img,
-    this.subtitle,
-  });
-
-  factory RelationshipGoal.fromJson(Map<String, dynamic> json) {
-    return RelationshipGoal(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
-      subtitle: json['subtitle'],
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'img': img,
-      'subtitle': subtitle,
-    };
-  }
-}
-
-// Job/Profession model
-class Job extends ReferenceItem {
-  Job({
-    required super.id,
-    required super.title,
-    super.img,
-  });
-
-  factory Job.fromJson(Map<String, dynamic> json) {
-    return Job(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'img': img,
-    };
-  }
-}
-
-// Education model
-class Education extends ReferenceItem {
-  Education({
-    required super.id,
-    required super.title,
-    super.img,
+    required this.name,
+    this.description,
   });
 
   factory Education.fromJson(Map<String, dynamic> json) {
     return Education(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
-      'img': img,
+      'name': name,
+      'description': description,
     };
-  }
-}
-
-// Music Genre model
-class MusicGenre extends ReferenceItem {
-  MusicGenre({
-    required super.id,
-    required super.title,
-    super.img,
-  });
-
-  factory MusicGenre.fromJson(Map<String, dynamic> json) {
-    return MusicGenre(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
-    );
   }
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'img': img,
-    };
-  }
-}
-
-// Language model
-class Language extends ReferenceItem {
-  Language({
-    required super.id,
-    required super.title,
-    super.img,
-  });
-
-  factory Language.fromJson(Map<String, dynamic> json) {
-    return Language(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
-    );
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Education && other.id == id;
   }
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'img': img,
-    };
-  }
-}
-
-// Interest/Hobby model
-class Interest extends ReferenceItem {
-  Interest({
-    required super.id,
-    required super.title,
-    super.img,
-  });
-
-  factory Interest.fromJson(Map<String, dynamic> json) {
-    return Interest(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
-    );
-  }
+  int get hashCode => id.hashCode;
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'img': img,
-    };
-  }
+  String toString() => name;
 }
 
-// Gender model
-class Gender extends ReferenceItem {
-  Gender({
-    required super.id,
-    required super.title,
-    super.img,
+class Gender {
+  final int id;
+  final String name;
+  final String? description;
+
+  const Gender({
+    required this.id,
+    required this.name,
+    this.description,
   });
 
   factory Gender.fromJson(Map<String, dynamic> json) {
     return Gender(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
-      'img': img,
+      'name': name,
+      'description': description,
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Gender && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => name;
 }
 
-// Preferred Gender model
-class PreferredGender extends ReferenceItem {
-  PreferredGender({
-    required super.id,
-    required super.title,
-    super.img,
+class Interest {
+  final int id;
+  final String name;
+  final String? description;
+  final String? category;
+
+  const Interest({
+    required this.id,
+    required this.name,
+    this.description,
+    this.category,
+  });
+
+  factory Interest.fromJson(Map<String, dynamic> json) {
+    return Interest(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      category: json['category'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'category': category,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Interest && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => name;
+}
+
+class Job {
+  final int id;
+  final String name;
+  final String? description;
+  final String? category;
+
+  const Job({
+    required this.id,
+    required this.name,
+    this.description,
+    this.category,
+  });
+
+  factory Job.fromJson(Map<String, dynamic> json) {
+    return Job(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      category: json['category'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'category': category,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Job && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => name;
+}
+
+class Language {
+  final int id;
+  final String name;
+  final String? code;
+  final String? nativeName;
+
+  const Language({
+    required this.id,
+    required this.name,
+    this.code,
+    this.nativeName,
+  });
+
+  factory Language.fromJson(Map<String, dynamic> json) {
+    return Language(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      code: json['code'] as String?,
+      nativeName: json['native_name'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'code': code,
+      'native_name': nativeName,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Language && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => name;
+}
+
+class MusicGenre {
+  final int id;
+  final String name;
+  final String? description;
+
+  const MusicGenre({
+    required this.id,
+    required this.name,
+    this.description,
+  });
+
+  factory MusicGenre.fromJson(Map<String, dynamic> json) {
+    return MusicGenre(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is MusicGenre && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => name;
+}
+
+class PreferredGender {
+  final int id;
+  final String name;
+  final String? description;
+
+  const PreferredGender({
+    required this.id,
+    required this.name,
+    this.description,
   });
 
   factory PreferredGender.fromJson(Map<String, dynamic> json) {
     return PreferredGender(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
-      'img': img,
-    };
-  }
-}
-
-// Sexual Orientation model
-class SexualOrientation extends ReferenceItem {
-  final String? description;
-
-  SexualOrientation({
-    required super.id,
-    required super.title,
-    super.img,
-    this.description,
-  });
-
-  factory SexualOrientation.fromJson(Map<String, dynamic> json) {
-    return SexualOrientation(
-      id: json['id'],
-      title: json['label'] ?? json['title'] ?? '',
-      img: json['img'],
-      description: json['description'],
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'label': title,
-      'img': img,
+      'name': name,
       'description': description,
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is PreferredGender && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => name;
 }
 
-// Relationship Goal model
-class RelationGoal extends ReferenceItem {
-  final String? subtitle;
+class RelationGoal {
+  final int id;
+  final String name;
+  final String? description;
 
-  RelationGoal({
-    required super.id,
-    required super.title,
-    super.img,
-    this.subtitle,
+  const RelationGoal({
+    required this.id,
+    required this.name,
+    this.description,
   });
 
   factory RelationGoal.fromJson(Map<String, dynamic> json) {
     return RelationGoal(
-      id: json['id'],
-      title: json['title'] ?? '',
-      img: json['img'],
-      subtitle: json['subtitle'],
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String?,
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
-      'img': img,
-      'subtitle': subtitle,
+      'name': name,
+      'description': description,
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is RelationGoal && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => name;
 }
