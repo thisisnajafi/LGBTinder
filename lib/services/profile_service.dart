@@ -392,4 +392,402 @@ class ProfileService {
       throw NetworkException('Network error while fetching profile pictures: $e');
     }
   }
+
+  /// Get user's feeds
+  static Future<List<Map<String, dynamic>>> getProfileFeeds(String userId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileFeeds, {'id': userId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Profile not found');
+      } else {
+        throw ApiException('Failed to fetch profile feeds: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profile feeds: $e');
+    }
+  }
+
+  /// Get profiles by job
+  static Future<List<User>> getProfilesByJob(String jobId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByJob, {'jobId': jobId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by job: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by job: $e');
+    }
+  }
+
+  /// Get profiles by language
+  static Future<List<User>> getProfilesByLanguage(String languageId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByLanguage, {'languageId': languageId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by language: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by language: $e');
+    }
+  }
+
+  /// Get profiles by relation goal
+  static Future<List<User>> getProfilesByRelationGoal(String relationGoalId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByRelationGoal, {'relationGoalId': relationGoalId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by relation goal: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by relation goal: $e');
+    }
+  }
+
+  /// Get profiles by interest
+  static Future<List<User>> getProfilesByInterest(String interestId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByInterest, {'interestId': interestId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by interest: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by interest: $e');
+    }
+  }
+
+  /// Get profiles by music genre
+  static Future<List<User>> getProfilesByMusicGenre(String musicGenreId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByMusicGenre, {'musicGenreId': musicGenreId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by music genre: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by music genre: $e');
+    }
+  }
+
+  /// Get profiles by education
+  static Future<List<User>> getProfilesByEducation(String educationId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByEducation, {'educationId': educationId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by education: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by education: $e');
+    }
+  }
+
+  /// Get profiles by preferred gender
+  static Future<List<User>> getProfilesByPreferredGender(String preferredGenderId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByPreferredGender, {'preferredGenderId': preferredGenderId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by preferred gender: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by preferred gender: $e');
+    }
+  }
+
+  /// Get profiles by gender
+  static Future<List<User>> getProfilesByGender(String genderId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.profileByGender, {'genderId': genderId}));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch profiles by gender: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching profiles by gender: $e');
+    }
+  }
 }

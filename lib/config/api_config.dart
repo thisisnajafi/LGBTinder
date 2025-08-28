@@ -5,7 +5,12 @@ class ApiConfig {
   // Auth endpoints
   static const String login = '/auth/login';
   static const String register = '/auth/register';
+  static const String verifyCode = '/auth/verify-code';
   static const String verifyLoginCode = '/auth/verify-login-code';
+  static const String refreshToken = '/auth/refresh-token';
+  static const String checkEmail = '/auth/check-email';
+  static const String checkPhone = '/auth/check-phone';
+  static const String forgotPassword = '/auth/forgot-password';
   static const String resendVerification = '/auth/resend-verification';
   static const String resendVerificationExisting = '/auth/resend-verification-existing';
   static const String sendVerification = '/auth/send-verification';
