@@ -15,7 +15,7 @@ class AuthService {
   static const String _sendOtpEndpoint = ApiConfig.sendOtp;
   static const String _verifyOtpEndpoint = ApiConfig.verifyOtp;
   static const String _resendVerificationEndpoint = ApiConfig.resendVerification;
-  static const String _refreshTokenEndpoint = ApiConfig.refreshToken;
+  // static const String _refreshTokenEndpoint = ApiConfig.refreshToken; // Not implemented in backend
   static const String _logoutEndpoint = ApiConfig.logout;
 
   /// Login with email and password
@@ -248,6 +248,9 @@ class AuthService {
   /// Verify email verification code
   static Future<VerificationResponse> verifyCode(VerificationRequest request) async {
     try {
+      print('📡 Calling verifyCode endpoint: ${ApiConfig.getUrl(_verifyCodeEndpoint)}');
+      print('📡 Request payload: ${jsonEncode(request.toJson())}');
+      
       final response = await http.post(
         Uri.parse(ApiConfig.getUrl(_verifyCodeEndpoint)),
         headers: {
@@ -256,6 +259,9 @@ class AuthService {
         },
         body: jsonEncode(request.toJson()),
       );
+
+      print('📡 Response status: ${response.statusCode}');
+      print('📡 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -322,34 +328,35 @@ class AuthService {
     }
   }
 
-  /// Refresh access token
-  static Future<TokenRefreshResponse> refreshToken(String refreshToken) async {
-    try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.getUrl(_refreshTokenEndpoint)),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $refreshToken',
-        },
-      );
+  /// Refresh access token - Not implemented in backend
+  // static Future<TokenRefreshResponse> refreshToken(String refreshToken) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(ApiConfig.getUrl(_refreshTokenEndpoint)),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json',
+  //         'Authorization': 'Bearer $refreshToken',
+  //       },
+  //     );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return TokenRefreshResponse.fromJson(data);
-      } else if (response.statusCode == 401) {
-        throw AuthException('Invalid or expired refresh token');
-      } else {
-        throw ApiException('Token refresh failed: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error during token refresh: $e');
-    }
-  }
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       return TokenRefreshResponse.fromJson(data);
+  //     } else if (response.statusCode == 401) {
+  //       throw AuthException('Invalid or expired refresh token');
+  //     } else {
+  //       throw ApiException('Token refresh failed: ${response.statusCode}');
+  //     }
+  //   } on AuthException {
+  //     rethrow;
+  //   } on ApiException {
+  //     rethrow;
+  //   } catch (e) {
+  //     throw NetworkException('Network error during token refresh: $e');
+  //     }
+  //   }
+  // }
 
   /// Logout user
   static Future<bool> logout(String accessToken) async {
@@ -747,6 +754,87 @@ class AuthService {
       rethrow;
     } catch (e) {
       throw NetworkException('Network error while completing registration: $e');
+    }
+  }
+
+  /// Send login code to email (for passwordless login)
+  static Future<bool> sendLoginCode(String email, String deviceName) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.login)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'device_name': deviceName,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] as bool? ?? false;
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid email address',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 429) {
+        throw RateLimitException('Too many login attempts. Please wait before trying again.');
+      } else {
+        throw ApiException('Failed to send login code: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on RateLimitException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending login code: $e');
+    }
+  }
+
+  /// Verify login code and get access token
+  static Future<LoginResponse> verifyLoginCodeWithDevice(String email, String code, String deviceName) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.verifyLoginCode)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'code': code,
+          'device_name': deviceName,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return LoginResponse.fromJson(data);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid login code',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 401) {
+        throw AuthException('Invalid or expired login code');
+      } else {
+        throw ApiException('Login code verification failed: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error during login code verification: $e');
     }
   }
 } 

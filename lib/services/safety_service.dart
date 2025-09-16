@@ -669,4 +669,387 @@ class SafetyService {
       throw NetworkException('Network error while stopping location sharing: $e');
     }
   }
+
+  /// Get safety tips
+  static Future<List<Map<String, dynamic>>> getSafetyTips({
+    String? accessToken,
+    String? category, // 'dating', 'meeting', 'online', 'general'
+    String? language,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.safetyGuidelines) + '/tips');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (category != null) queryParams['category'] = category;
+      if (language != null) queryParams['language'] = language;
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch safety tips: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching safety tips: $e');
+    }
+  }
+
+  /// Get safety check-in status
+  static Future<Map<String, dynamic>> getSafetyCheckInStatus({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyEmergencyAlert) + '/checkin'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch safety check-in status: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching safety check-in status: $e');
+    }
+  }
+
+  /// Send safety check-in
+  static Future<Map<String, dynamic>> sendSafetyCheckIn({
+    required String checkInType, // 'safe', 'unsafe', 'help_needed'
+    String? accessToken,
+    String? message,
+    Map<String, double>? location,
+    Map<String, dynamic>? additionalInfo,
+  }) async {
+    try {
+      final requestBody = {'check_in_type': checkInType};
+
+      if (message != null) requestBody['message'] = message;
+      if (location != null) requestBody['location'] = location;
+      if (additionalInfo != null) requestBody['additional_info'] = additionalInfo;
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyEmergencyAlert) + '/checkin'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to send safety check-in: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending safety check-in: $e');
+    }
+  }
+
+  /// Get safety report by ID
+  static Future<Map<String, dynamic>> getSafetyReportById(String reportId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyReportHistory) + '/$reportId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Safety report not found');
+      } else {
+        throw ApiException('Failed to fetch safety report: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching safety report: $e');
+    }
+  }
+
+  /// Update safety report
+  static Future<Map<String, dynamic>> updateSafetyReport(String reportId, {
+    required Map<String, dynamic> updates,
+    String? accessToken,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyReportHistory) + '/$reportId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(updates),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Safety report not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to update safety report: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while updating safety report: $e');
+    }
+  }
+
+  /// Get safety alerts history
+  static Future<List<Map<String, dynamic>>> getSafetyAlertsHistory({
+    String? accessToken,
+    int? page,
+    int? limit,
+    String? alertType,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.safetyEmergencyAlert) + '/history');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      if (alertType != null) queryParams['alert_type'] = alertType;
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch safety alerts history: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching safety alerts history: $e');
+    }
+  }
+
+  /// Get location sharing history
+  static Future<List<Map<String, dynamic>>> getLocationSharingHistory({
+    String? accessToken,
+    int? page,
+    int? limit,
+    String? status, // 'active', 'expired', 'stopped'
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.safetyShareLocation) + '/history');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      if (status != null) queryParams['status'] = status;
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch location sharing history: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching location sharing history: $e');
+    }
+  }
+
+  /// Get safety resources
+  static Future<List<Map<String, dynamic>>> getSafetyResources({
+    String? accessToken,
+    String? resourceType, // 'helpline', 'website', 'app', 'organization'
+    String? category,
+    String? language,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.safetyGuidelines) + '/resources');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (resourceType != null) queryParams['resource_type'] = resourceType;
+      if (category != null) queryParams['category'] = category;
+      if (language != null) queryParams['language'] = language;
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch safety resources: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching safety resources: $e');
+    }
+  }
+
+  /// Report false emergency alert
+  static Future<bool> reportFalseEmergencyAlert(String alertId, {
+    required String reason,
+    String? accessToken,
+    String? additionalInfo,
+  }) async {
+    try {
+      final requestBody = {
+        'alert_id': alertId,
+        'reason': reason,
+      };
+
+      if (additionalInfo != null) requestBody['additional_info'] = additionalInfo;
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyEmergencyAlert) + '/false-report'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Emergency alert not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid false report data',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to report false emergency alert: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while reporting false emergency alert: $e');
+    }
+  }
 }

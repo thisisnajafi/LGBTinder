@@ -583,4 +583,285 @@ class FeedsService {
       throw NetworkException('Network error while deleting comment: $e');
     }
   }
+
+  /// Get feed reactions
+  static Future<List<Map<String, dynamic>>> getFeedReactions(String feedId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.feedsReactions, {'feedId': feedId})),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Feed not found');
+      } else {
+        throw ApiException('Failed to fetch feed reactions: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching feed reactions: $e');
+    }
+  }
+
+  /// Get feed statistics
+  static Future<Map<String, dynamic>> getFeedStatistics(String feedId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.feedsById, {'id': feedId}) + '/statistics'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Feed not found');
+      } else {
+        throw ApiException('Failed to fetch feed statistics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching feed statistics: $e');
+    }
+  }
+
+  /// Share feed
+  static Future<Map<String, dynamic>> shareFeed(String feedId, {String? accessToken, String? message}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.feedsById, {'id': feedId}) + '/share'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          if (message != null) 'message': message,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Feed not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to share feed: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sharing feed: $e');
+    }
+  }
+
+  /// Report feed
+  static Future<bool> reportFeed(String feedId, String reason, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.feedsById, {'id': feedId}) + '/report'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'reason': reason,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Feed not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to report feed: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while reporting feed: $e');
+    }
+  }
+
+  /// Get user's feeds
+  static Future<List<Map<String, dynamic>>> getUserFeeds(String userId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.feedsUser, {'userId': userId}));
+      
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('User not found');
+      } else {
+        throw ApiException('Failed to fetch user feeds: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching user feeds: $e');
+    }
+  }
+
+  /// Get feed by ID with full details
+  static Future<Map<String, dynamic>> getFeedDetails(String feedId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.feedsById, {'id': feedId}) + '/details'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Feed not found');
+      } else {
+        throw ApiException('Failed to fetch feed details: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching feed details: $e');
+    }
+  }
+
+  /// Pin/unpin feed
+  static Future<bool> togglePinFeed(String feedId, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.feedsById, {'id': feedId}) + '/pin'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Feed not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Not authorized to pin this feed');
+      } else {
+        throw ApiException('Failed to toggle pin feed: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while toggling pin feed: $e');
+    }
+  }
+
+  /// Get pinned feeds
+  static Future<List<Map<String, dynamic>>> getPinnedFeeds({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.feedsPinned)),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch pinned feeds: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching pinned feeds: $e');
+    }
+  }
 }

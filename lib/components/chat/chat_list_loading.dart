@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/skeleton_loader_service.dart';
 
 class ChatListLoading extends StatelessWidget {
   const ChatListLoading({Key? key}) : super(key: key);
@@ -20,14 +21,7 @@ class ChatListLoading extends StatelessWidget {
       child: Row(
         children: [
           // Avatar skeleton
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-          ),
+          SkeletonLoaderService().createSkeletonAvatar(size: 48),
           
           const SizedBox(width: 12),
           
@@ -37,13 +31,9 @@ class ChatListLoading extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Name skeleton
-                Container(
+                SkeletonLoaderService().createSkeletonText(
                   width: double.infinity,
                   height: 16,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
                 ),
                 
                 const SizedBox(height: 8),
@@ -52,25 +42,18 @@ class ChatListLoading extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Container(
+                      child: SkeletonLoaderService().createSkeletonText(
+                        width: double.infinity,
                         height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
                       ),
                     ),
                     
                     const SizedBox(width: 8),
                     
                     // Time skeleton
-                    Container(
+                    SkeletonLoaderService().createSkeletonText(
                       width: 40,
                       height: 14,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
                     ),
                   ],
                 ),

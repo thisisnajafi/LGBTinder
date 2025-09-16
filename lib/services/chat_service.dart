@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/models.dart';
 import '../utils/error_handler.dart';
+import 'haptic_feedback_service.dart';
+import 'image_compression_service.dart';
 
 class ChatService {
   /// Send a message
@@ -33,7 +35,9 @@ class ChatService {
           'type': messageType,
         });
 
-        request.files.add(await http.MultipartFile.fromPath('attachment', attachment.path));
+        // Compress image before upload
+        final compressedFile = await ImageCompressionService().compressChatImage(attachment);
+        request.files.add(await http.MultipartFile.fromPath('attachment', compressedFile?.path ?? attachment.path));
 
         final streamResponse = await request.send();
         final responseBody = await streamResponse.stream.bytesToString();
@@ -57,6 +61,8 @@ class ChatService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        // Haptic feedback for successful message send
+        await HapticFeedbackService().messageSent();
         return Message.fromJson(data['data'] ?? data);
       } else if (response.statusCode == 401) {
         throw AuthException('Authentication required');
@@ -74,12 +80,16 @@ class ChatService {
         throw ApiException('Failed to send message: ${response.statusCode}');
       }
     } on AuthException {
+      await HapticFeedbackService().error();
       rethrow;
     } on ValidationException {
+      await HapticFeedbackService().error();
       rethrow;
     } on ApiException {
+      await HapticFeedbackService().error();
       rethrow;
     } catch (e) {
+      await HapticFeedbackService().error();
       throw NetworkException('Network error while sending message: $e');
     }
   }
@@ -625,6 +635,298 @@ class ChatService {
       return true;
     } catch (e) {
       throw NetworkException('Network error while removing reaction: $e');
+    }
+  }
+
+  /// Send typing indicator to specific user
+  static Future<bool> sendTypingIndicatorToUser(String receiverId, bool isTyping, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatTyping)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'receiver_id': receiverId,
+          'is_typing': isTyping,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Receiver not found');
+      } else {
+        throw ApiException('Failed to send typing indicator: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending typing indicator: $e');
+    }
+  }
+
+  /// Mark messages as read with specific message IDs
+  static Future<bool> markMessagesAsReadWithIds(String senderId, List<String> messageIds, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatRead)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'sender_id': senderId,
+          'message_ids': messageIds,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Sender not found');
+      } else {
+        throw ApiException('Failed to mark messages as read: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while marking messages as read: $e');
+    }
+  }
+
+  /// Set online status
+  static Future<bool> setOnlineStatus(bool isOnline, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatOnline)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'is_online': isOnline,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to set online status: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while setting online status: $e');
+    }
+  }
+
+  /// Send message with media
+  static Future<Message> sendMessageWithMedia({
+    required String receiverId,
+    required String message,
+    required String messageType,
+    File? media,
+    String? accessToken,
+  }) async {
+    try {
+      http.Response response;
+
+      if (media != null) {
+        // Send multipart request for messages with media
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConfig.getUrl(ApiConfig.chatSend)),
+        );
+
+        request.headers.addAll({
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        });
+
+        request.fields.addAll({
+          'receiver_id': receiverId,
+          'message': message,
+          'message_type': messageType,
+        });
+
+        // Compress image before upload if it's an image
+        if (messageType == 'image') {
+          final compressedFile = await ImageCompressionService().compressChatImage(media);
+          request.files.add(await http.MultipartFile.fromPath('media', compressedFile?.path ?? media.path));
+        } else {
+          request.files.add(await http.MultipartFile.fromPath('media', media.path));
+        }
+
+        final streamResponse = await request.send();
+        final responseBody = await streamResponse.stream.bytesToString();
+        response = http.Response(responseBody, streamResponse.statusCode);
+      } else {
+        // Send regular JSON request for text messages
+        response = await http.post(
+          Uri.parse(ApiConfig.getUrl(ApiConfig.chatSend)),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+          },
+          body: jsonEncode({
+            'receiver_id': receiverId,
+            'message': message,
+            'message_type': messageType,
+          }),
+        );
+      }
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // Haptic feedback for successful message send
+        await HapticFeedbackService().messageSent();
+        return Message.fromJson(data['data'] ?? data);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 404) {
+        throw ApiException('Receiver not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Cannot send message to this user');
+      } else {
+        throw ApiException('Failed to send message: ${response.statusCode}');
+      }
+    } on AuthException {
+      await HapticFeedbackService().error();
+      rethrow;
+    } on ValidationException {
+      await HapticFeedbackService().error();
+      rethrow;
+    } on ApiException {
+      await HapticFeedbackService().error();
+      rethrow;
+    } catch (e) {
+      await HapticFeedbackService().error();
+      throw NetworkException('Network error while sending message: $e');
+    }
+  }
+
+  /// Get chat history with user
+  static Future<List<Message>> getChatHistoryWithUser(String userId, {
+    String? accessToken,
+    int? page,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.chatHistory));
+      
+      final queryParams = <String, String>{'user_id': userId};
+      if (page != null) queryParams['page'] = page.toString();
+      
+      uri = uri.replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => Message.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Chat not found');
+      } else {
+        throw ApiException('Failed to fetch chat history: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching chat history: $e');
+    }
+  }
+
+  /// Get users with chat access
+  static Future<List<User>> getUsersWithChatAccess({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatAccessUsers)),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch users with chat access: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching users with chat access: $e');
+    }
+  }
+
+  /// Delete own message
+  static Future<bool> deleteOwnMessage(String messageId, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.chatMessage) + '?message_id=$messageId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Message not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Cannot delete this message');
+      } else {
+        throw ApiException('Failed to delete message: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while deleting message: $e');
     }
   }
 }

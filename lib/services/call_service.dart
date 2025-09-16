@@ -388,4 +388,228 @@ class CallService {
       rethrow;
     }
   }
+
+  /// Initiate call with receiver ID and call type
+  Future<Call> initiateCallWithType(String receiverId, String callType, {String? accessToken}) async {
+    try {
+      final response = await _apiService.post('/calls/initiate', {
+        'receiver_id': receiverId,
+        'call_type': callType,
+      });
+      return Call.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error initiating call to $receiverId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Accept incoming call
+  Future<Call> acceptIncomingCall(String callId, {String? accessToken}) async {
+    try {
+      final response = await _apiService.post('/calls/accept', {
+        'call_id': callId,
+      });
+      return Call.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error accepting call $callId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Reject incoming call
+  Future<Call> rejectIncomingCall(String callId, {String? accessToken}) async {
+    try {
+      final response = await _apiService.post('/calls/reject', {
+        'call_id': callId,
+      });
+      return Call.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error rejecting call $callId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// End active call
+  Future<Call> endActiveCall(String callId, {String? accessToken}) async {
+    try {
+      final response = await _apiService.post('/calls/end', {
+        'call_id': callId,
+      });
+      return Call.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error ending call $callId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get call history with pagination
+  Future<List<Call>> getCallHistoryWithPagination({
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+
+      final response = await _apiService.get('/calls/history', queryParameters: queryParams);
+      
+      final List<dynamic> callsData = response['data'] ?? response['calls'] ?? [];
+      return callsData.map((json) => Call.fromJson(json)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching call history: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get active call
+  Future<Call?> getActiveCall({String? accessToken}) async {
+    try {
+      final response = await _apiService.get('/calls/active');
+      
+      if (response['data'] != null) {
+        return Call.fromJson(response['data']);
+      } else if (response['call'] != null) {
+        return Call.fromJson(response['call']);
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching active call: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get call by ID
+  Future<Call> getCallById(String callId, {String? accessToken}) async {
+    try {
+      final response = await _apiService.get('/calls/$callId');
+      return Call.fromJson(response['data'] ?? response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching call $callId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get call statistics
+  Future<Map<String, dynamic>> getCallStatistics({String? accessToken}) async {
+    try {
+      final response = await _apiService.get('/calls/statistics');
+      return response['data'] ?? response;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching call statistics: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get call quality metrics for specific call
+  Future<Map<String, dynamic>> getCallQualityMetrics(String callId, {String? accessToken}) async {
+    try {
+      final response = await _apiService.get('/calls/$callId/quality');
+      return response['data'] ?? response;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching call quality for $callId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Send call signal for WebRTC
+  Future<void> sendCallSignal(String callId, Map<String, dynamic> signal, {String? accessToken}) async {
+    try {
+      await _apiService.post('/calls/$callId/signals', signal);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error sending call signal for $callId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get call signals for WebRTC
+  Future<List<Map<String, dynamic>>> getCallSignals(String callId, {String? accessToken}) async {
+    try {
+      final response = await _apiService.get('/calls/$callId/signals');
+      final List<dynamic> signalsData = response['data'] ?? response['signals'] ?? [];
+      return signalsData.cast<Map<String, dynamic>>();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching call signals for $callId: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Block user from calling
+  Future<void> blockUserFromCalling(String userId, {String? accessToken}) async {
+    try {
+      await _apiService.post('/calls/block', {
+        'user_id': userId,
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error blocking user $userId from calling: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Unblock user from calling
+  Future<void> unblockUserFromCalling(String userId, {String? accessToken}) async {
+    try {
+      await _apiService.post('/calls/unblock', {
+        'user_id': userId,
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error unblocking user $userId from calling: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get blocked users for calling
+  Future<List<String>> getBlockedUsersForCalling({String? accessToken}) async {
+    try {
+      final response = await _apiService.get('/calls/blocked');
+      final List<dynamic> blockedData = response['data'] ?? response['blocked_users'] ?? [];
+      return blockedData.cast<String>();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching blocked users for calling: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Report call with reason
+  Future<void> reportCallWithReason(String callId, String reason, {String? accessToken}) async {
+    try {
+      await _apiService.post('/calls/$callId/report', {
+        'reason': reason,
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error reporting call $callId: $e');
+      }
+      rethrow;
+    }
+  }
 }

@@ -224,6 +224,41 @@ class NotificationsService {
     }
   }
 
+  /// Update a single notification setting
+  static Future<bool> updateNotificationSetting({
+    required String key,
+    required bool value,
+    String? accessToken,
+  }) async {
+    try {
+      final response = await http.patch(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsSettings)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          key: value,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to update notification setting: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while updating notification setting: $e');
+    }
+  }
+
   /// Update notification settings
   static Future<Map<String, dynamic>> updateNotificationSettings(Map<String, dynamic> settings, {String? accessToken}) async {
     try {
@@ -259,6 +294,340 @@ class NotificationsService {
       rethrow;
     } catch (e) {
       throw NetworkException('Network error while updating notification settings: $e');
+    }
+  }
+
+  /// Register device for push notifications
+  static Future<bool> registerDevice({
+    required String fcmToken,
+    required String platform,
+    String? accessToken,
+    Map<String, dynamic>? deviceInfo,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsRegister)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'fcm_token': fcmToken,
+          'platform': platform,
+          if (deviceInfo != null) 'device_info': deviceInfo,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid device registration data',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to register device: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while registering device: $e');
+    }
+  }
+
+  /// Unregister device from push notifications
+  static Future<bool> unregisterDevice({
+    required String fcmToken,
+    String? accessToken,
+  }) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsRegister)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'fcm_token': fcmToken,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to unregister device: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while unregistering device: $e');
+    }
+  }
+
+  /// Send notification to specific user
+  static Future<bool> sendNotificationToUser({
+    required String userId,
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+    String? accessToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsSend)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'title': title,
+          'body': body,
+          'data': data ?? {},
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('User not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid notification data',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to send notification: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending notification: $e');
+    }
+  }
+
+  /// Get notification statistics
+  static Future<Map<String, dynamic>> getNotificationStats({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notifications) + '/statistics'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch notification statistics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching notification statistics: $e');
+    }
+  }
+
+  /// Mark multiple notifications as read
+  static Future<bool> markMultipleAsRead(List<String> notificationIds, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsReadMultiple)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'notification_ids': notificationIds,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid notification IDs',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to mark notifications as read: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while marking notifications as read: $e');
+    }
+  }
+
+  /// Get notification by ID
+  static Future<Map<String, dynamic>> getNotificationById(String notificationId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.notificationsById, {'id': notificationId})),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Notification not found');
+      } else {
+        throw ApiException('Failed to fetch notification: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching notification: $e');
+    }
+  }
+
+  /// Subscribe to notification topics
+  static Future<bool> subscribeToTopics(List<String> topics, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsTopics)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'topics': topics,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid topics',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to subscribe to topics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while subscribing to topics: $e');
+    }
+  }
+
+  /// Unsubscribe from notification topics
+  static Future<bool> unsubscribeFromTopics(List<String> topics, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsTopics)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'topics': topics,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid topics',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to unsubscribe from topics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while unsubscribing from topics: $e');
+    }
+  }
+
+  /// Get subscribed topics
+  static Future<List<String>> getSubscribedTopics({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationsTopics)),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> topics = data['data'] ?? data['topics'] ?? [];
+        return topics.cast<String>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch subscribed topics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching subscribed topics: $e');
     }
   }
 }

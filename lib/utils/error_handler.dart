@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:async';
+import 'dart:convert';
 
 /// Custom exception classes for different types of errors
 class AppException implements Exception {
@@ -442,5 +443,320 @@ class ErrorHandler {
         backgroundColor: Colors.blue,
       ),
     );
+  }
+
+  /// Handles API response errors with detailed error information
+  static Map<String, dynamic> parseApiErrorResponse(String responseBody) {
+    try {
+      final Map<String, dynamic> errorData = jsonDecode(responseBody);
+      return errorData;
+    } catch (e) {
+      return {
+        'message': 'Failed to parse error response',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Creates a standardized error response for API calls
+  static Map<String, dynamic> createErrorResponse({
+    required String message,
+    String? code,
+    Map<String, String>? fieldErrors,
+    dynamic originalError,
+  }) {
+    return {
+      'success': false,
+      'message': message,
+      'code': code,
+      'errors': fieldErrors,
+      'timestamp': DateTime.now().toIso8601String(),
+      'original_error': originalError?.toString(),
+    };
+  }
+
+  /// Handles timeout errors with specific timeout types
+  static String handleTimeoutError(Duration timeout) {
+    if (timeout.inSeconds < 10) {
+      return 'Request timed out quickly. Please check your connection.';
+    } else if (timeout.inSeconds < 30) {
+      return 'Request timed out. The server may be slow.';
+    } else {
+      return 'Request timed out after ${timeout.inSeconds} seconds. Please try again.';
+    }
+  }
+
+  /// Handles specific HTTP status codes with detailed messages
+  static String getDetailedErrorMessage(int statusCode, Map<String, dynamic>? responseData) {
+    switch (statusCode) {
+      case 400:
+        return _getBadRequestMessage(responseData);
+      case 401:
+        return _getUnauthorizedMessage(responseData);
+      case 403:
+        return _getForbiddenMessage(responseData);
+      case 404:
+        return _getNotFoundMessage(responseData);
+      case 409:
+        return _getConflictMessage(responseData);
+      case 422:
+        return _getValidationErrorMessage(responseData);
+      case 429:
+        return _getRateLimitMessage(responseData);
+      case 500:
+        return _getServerErrorMessage(responseData);
+      case 502:
+        return 'Bad Gateway: The server received an invalid response from an upstream server.';
+      case 503:
+        return 'Service Unavailable: The server is temporarily unable to handle requests.';
+      case 504:
+        return 'Gateway Timeout: The server did not receive a timely response from an upstream server.';
+      default:
+        return 'HTTP Error $statusCode: An unexpected error occurred.';
+    }
+  }
+
+  static String _getBadRequestMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['message'] != null) {
+      return 'Bad Request: ${responseData!['message']}';
+    }
+    return 'Bad Request: The request was invalid or malformed.';
+  }
+
+  static String _getUnauthorizedMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['message'] != null) {
+      return 'Unauthorized: ${responseData!['message']}';
+    }
+    return 'Unauthorized: Authentication is required to access this resource.';
+  }
+
+  static String _getForbiddenMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['message'] != null) {
+      return 'Forbidden: ${responseData!['message']}';
+    }
+    return 'Forbidden: You do not have permission to access this resource.';
+  }
+
+  static String _getNotFoundMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['message'] != null) {
+      return 'Not Found: ${responseData!['message']}';
+    }
+    return 'Not Found: The requested resource could not be found.';
+  }
+
+  static String _getConflictMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['message'] != null) {
+      return 'Conflict: ${responseData!['message']}';
+    }
+    return 'Conflict: The request conflicts with the current state of the resource.';
+  }
+
+  static String _getValidationErrorMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['errors'] != null) {
+      final errors = responseData!['errors'] as Map<String, dynamic>;
+      if (errors.isNotEmpty) {
+        final firstError = errors.values.first;
+        if (firstError is List && firstError.isNotEmpty) {
+          return 'Validation Error: ${firstError.first}';
+        } else if (firstError is String) {
+          return 'Validation Error: $firstError';
+        }
+      }
+    }
+    return 'Validation Error: The provided data is invalid.';
+  }
+
+  static String _getRateLimitMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['retry_after'] != null) {
+      final retryAfter = responseData!['retry_after'];
+      return 'Rate Limited: Too many requests. Please wait $retryAfter seconds before trying again.';
+    }
+    return 'Rate Limited: Too many requests. Please wait a moment before trying again.';
+  }
+
+  static String _getServerErrorMessage(Map<String, dynamic>? responseData) {
+    if (responseData?['message'] != null) {
+      return 'Server Error: ${responseData!['message']}';
+    }
+    return 'Server Error: An internal server error occurred. Please try again later.';
+  }
+
+  /// Handles network connectivity errors with specific messages
+  static String handleNetworkError(dynamic error) {
+    if (error is SocketException) {
+      if (error.osError?.errorCode == 7) {
+        return 'No internet connection. Please check your network settings.';
+      } else if (error.osError?.errorCode == 111) {
+        return 'Connection refused. The server may be down.';
+      } else {
+        return 'Network error: ${error.message}';
+      }
+    }
+    
+    if (error is HttpException) {
+      return 'HTTP error: ${error.message}';
+    }
+    
+    if (error is FormatException) {
+      return 'Data format error: ${error.message}';
+    }
+    
+    return 'Network error occurred. Please try again.';
+  }
+
+  /// Creates a retry mechanism with exponential backoff
+  static Future<T> retryWithExponentialBackoff<T>({
+    required Future<T> Function() operation,
+    int maxRetries = 3,
+    Duration initialDelay = const Duration(seconds: 1),
+    double backoffMultiplier = 2.0,
+    Duration maxDelay = const Duration(seconds: 30),
+    bool Function(dynamic error)? shouldRetry,
+  }) async {
+    int attempts = 0;
+    Duration delay = initialDelay;
+    
+    while (attempts < maxRetries) {
+      try {
+        return await operation();
+      } catch (error) {
+        attempts++;
+        
+        // Check if we should retry this error
+        if (shouldRetry != null && !shouldRetry(error)) {
+          rethrow;
+        }
+        
+        // If this is the last attempt, throw the error
+        if (attempts >= maxRetries) {
+          rethrow;
+        }
+        
+        // Wait before retrying with exponential backoff
+        await Future.delayed(delay);
+        delay = Duration(
+          milliseconds: (delay.inMilliseconds * backoffMultiplier).clamp(
+            initialDelay.inMilliseconds,
+            maxDelay.inMilliseconds,
+          ),
+        );
+      }
+    }
+    
+    throw Exception('Operation failed after $maxRetries attempts');
+  }
+
+  /// Handles authentication errors with specific actions
+  static Future<void> handleAuthError(BuildContext context, AuthException error) async {
+    if (error.code == 'TOKEN_EXPIRED') {
+      // Show dialog to re-authenticate
+      await showErrorDialog(
+        context,
+        title: 'Session Expired',
+        message: 'Your session has expired. Please log in again.',
+        actionText: 'Login',
+        onAction: () {
+          // Navigate to login screen
+          Navigator.of(context).pushReplacementNamed('/login');
+        },
+      );
+    } else if (error.code == 'INVALID_CREDENTIALS') {
+      showErrorSnackBar(
+        context,
+        message: 'Invalid email or password. Please try again.',
+      );
+    } else {
+      showErrorSnackBar(
+        context,
+        message: error.message,
+      );
+    }
+  }
+
+  /// Handles validation errors with field-specific messages
+  static void handleValidationError(BuildContext context, ValidationException error) {
+    if (error.fieldErrors.isNotEmpty) {
+      final firstError = error.fieldErrors.values.first;
+      showErrorSnackBar(
+        context,
+        message: firstError,
+      );
+    } else {
+      showErrorSnackBar(
+        context,
+        message: error.message,
+      );
+    }
+  }
+
+  /// Handles rate limit errors with cooldown information
+  static void handleRateLimitError(BuildContext context, RateLimitException error) {
+    final cooldownMinutes = (error.cooldownSeconds / 60).ceil();
+    showErrorSnackBar(
+      context,
+      message: 'Rate limit exceeded. Please wait $cooldownMinutes minutes before trying again.',
+      duration: const Duration(seconds: 6),
+    );
+  }
+
+  /// Creates a comprehensive error report for debugging
+  static Map<String, dynamic> createErrorReport({
+    required dynamic error,
+    StackTrace? stackTrace,
+    Map<String, dynamic>? context,
+    String? userId,
+    String? sessionId,
+  }) {
+    return {
+      'error': {
+        'type': error.runtimeType.toString(),
+        'message': error.toString(),
+        'stack_trace': stackTrace?.toString(),
+      },
+      'context': context ?? {},
+      'user_id': userId,
+      'session_id': sessionId,
+      'timestamp': DateTime.now().toIso8601String(),
+      'app_version': '1.0.0', // This should come from app config
+      'platform': Platform.operatingSystem,
+    };
+  }
+
+  /// Handles errors in background operations
+  static void handleBackgroundError(dynamic error, StackTrace stackTrace) {
+    // Log error for debugging
+    logError(error, stackTrace);
+    
+    // In production, send to crash reporting service
+    // FirebaseCrashlytics.instance.recordError(error, stackTrace);
+  }
+
+  /// Validates error response format
+  static bool isValidErrorResponse(Map<String, dynamic> response) {
+    return response.containsKey('message') && 
+           response['message'] is String &&
+           response['message'].isNotEmpty;
+  }
+
+  /// Extracts error code from response
+  static String? extractErrorCode(Map<String, dynamic> response) {
+    return response['code'] as String?;
+  }
+
+  /// Extracts field errors from validation response
+  static Map<String, String> extractFieldErrors(Map<String, dynamic> response) {
+    final errors = response['errors'] as Map<String, dynamic>?;
+    if (errors == null) return {};
+    
+    final fieldErrors = <String, String>{};
+    errors.forEach((key, value) {
+      if (value is List && value.isNotEmpty) {
+        fieldErrors[key] = value.first.toString();
+      } else if (value is String) {
+        fieldErrors[key] = value;
+      }
+    });
+    
+    return fieldErrors;
   }
 } 

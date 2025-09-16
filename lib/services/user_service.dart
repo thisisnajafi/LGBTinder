@@ -1,7 +1,9 @@
-import 'api_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
+import '../utils/error_handler.dart';
 
 class UserService {
-  final ApiService _apiService = ApiService();
 
   // Get current user profile
   Future<Map<String, dynamic>> getCurrentUser() async {

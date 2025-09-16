@@ -1,0 +1,1045 @@
+# LGBTinder API Complete Documentation
+
+## Overview
+LGBTinder is a comprehensive dating application API built with Laravel, featuring user authentication, matching system, chat functionality, payment processing, and content management.
+
+## Base URL
+- API Base: `/api`
+- Admin Panel: `/admin`
+
+## Authentication
+- **Type**: Bearer Token (Laravel Sanctum)
+- **Token Types**: 
+  - Full Access Token: Complete API access
+  - Profile Completion Token: Limited to profile completion only
+
+## Core Features
+1. User Registration & Authentication
+2. Profile Management & Completion
+3. Matching Algorithm & Discovery
+4. Chat & Messaging System
+5. Payment & Subscription Management
+6. Content Feeds & Stories
+7. Notification System
+8. Admin Panel Management
+
+---
+
+## AUTHENTICATION ENDPOINTS
+
+### Task: User Registration System
+**POST** `/api/auth/register`
+- **Purpose**: Register new user account
+- **Body**: `first_name`, `last_name`, `email`, `password`, `password_confirmation`
+- **Response**: User ID, email verification required
+- **Rate Limit**: 10 requests/minute
+
+### Task: Email Verification System
+**POST** `/api/auth/send-verification`
+- **Purpose**: Verify email with 6-digit code
+- **Body**: `email`, `code`
+- **Response**: Profile completion token
+
+### Task: Login System
+**POST** `/api/auth/login`
+- **Purpose**: Send login code to email
+- **Body**: `email`, `device_name`
+- **Response**: Login code sent confirmation
+
+### Task: Login Code Verification
+**POST** `/api/auth/verify-login-code`
+- **Purpose**: Verify login code and get access token
+- **Body**: `email`, `code`, `device_name`
+- **Response**: Access token or profile completion required
+
+### Task: Profile Completion
+**POST** `/api/complete-registration`
+- **Purpose**: Complete user profile setup
+- **Body**: Phone, location, preferences, bio, etc.
+- **Response**: Full access token
+- **Middleware**: `profile.complete.ability`
+
+### Task: Password Management
+**POST** `/api/auth/change-password`
+- **Purpose**: Change user password
+- **Body**: `old_password`, `new_password`, `new_password_confirmation`
+
+**POST** `/api/auth/send-otp`
+- **Purpose**: Send OTP for password reset
+- **Body**: `email`
+
+**POST** `/api/auth/verify-otp`
+- **Purpose**: Verify OTP for password reset
+- **Body**: `email`, `code`
+
+**POST** `/api/auth/reset-password`
+- **Purpose**: Reset password with OTP
+- **Body**: `email`, `code`, `password`, `password_confirmation`
+
+### Task: Account Management
+**POST** `/api/auth/logout`
+- **Purpose**: Logout and revoke token
+
+**DELETE** `/api/auth/delete-account`
+- **Purpose**: Permanently delete user account
+- **Body**: `password`
+
+---
+
+## USER PROFILE ENDPOINTS
+
+### Task: Profile Information
+**GET** `/api/user`
+- **Purpose**: Get current user profile
+- **Response**: Complete user data with relationships
+
+### Task: Profile Management
+**GET** `/api/profile/`
+- **Purpose**: Get own profile with subscription info
+
+**POST** `/api/profile/update`
+- **Purpose**: Update profile information
+- **Body**: All profile fields (optional)
+
+**GET** `/api/profile/{id}`
+- **Purpose**: View other user's profile
+- **Response**: Profile data with badge (like/match/superlike)
+
+### Task: Profile Discovery
+**GET** `/api/profile/by-job/{jobId}`
+- **Purpose**: Find users by job
+
+**GET** `/api/profile/by-language/{languageId}`
+- **Purpose**: Find users by language
+
+**GET** `/api/profile/by-relation-goal/{relationGoalId}`
+- **Purpose**: Find users by relationship goal
+
+**GET** `/api/profile/by-interest/{interestId}`
+- **Purpose**: Find users by interest
+
+**GET** `/api/profile/by-music-genre/{musicGenreId}`
+- **Purpose**: Find users by music genre
+
+**GET** `/api/profile/by-education/{educationId}`
+- **Purpose**: Find users by education
+
+**GET** `/api/profile/by-preferred-gender/{preferredGenderId}`
+- **Purpose**: Find users by preferred gender
+
+**GET** `/api/profile/by-gender/{genderId}`
+- **Purpose**: Find users by gender
+
+### Task: Profile Images
+**POST** `/api/images/upload`
+- **Purpose**: Upload gallery photos
+
+**POST** `/api/profile-pictures/upload`
+- **Purpose**: Upload profile pictures
+
+**DELETE** `/api/images/{id}`
+- **Purpose**: Delete image
+
+**POST** `/api/images/{id}/set-primary`
+- **Purpose**: Set primary image
+
+**POST** `/api/images/reorder`
+- **Purpose**: Reorder images
+
+---
+
+## MATCHING SYSTEM ENDPOINTS
+
+### Task: Discovery & Matching
+**GET** `/api/matching/matches`
+- **Purpose**: Get potential matches based on preferences
+- **Features**: Compatibility scoring, plan-based filtering
+- **Rate Limit**: Daily profile view limits by plan
+
+**GET** `/api/matching/nearby-suggestions`
+- **Purpose**: Get location-based matches
+- **Body**: `latitude`, `longitude`
+
+**GET** `/api/matching/advanced`
+- **Purpose**: Advanced matching algorithm
+
+**GET** `/api/matching/compatibility-score`
+- **Purpose**: Get compatibility score with specific user
+- **Body**: `target_user_id`
+
+**GET** `/api/matching/ai-suggestions`
+- **Purpose**: AI-powered match suggestions
+
+**GET** `/api/matching/location-based`
+- **Purpose**: Location-based matching
+- **Body**: `radius`, `limit`
+
+### Task: Like/Dislike System
+**POST** `/api/likes/like`
+- **Purpose**: Send like to user
+- **Body**: `target_user_id`
+- **Rate Limit**: 30 requests/minute
+
+**POST** `/api/likes/dislike`
+- **Purpose**: Send dislike to user
+- **Body**: `target_user_id`
+
+**POST** `/api/likes/superlike`
+- **Purpose**: Send superlike (allows immediate chat)
+- **Body**: `target_user_id`
+- **Features**: Daily limits, pack purchases
+
+**POST** `/api/likes/respond`
+- **Purpose**: Respond to received like
+- **Body**: `like_id`, `response` (like/dislike)
+
+**GET** `/api/likes/matches`
+- **Purpose**: Get user's matches
+
+**GET** `/api/likes/pending`
+- **Purpose**: Get pending likes waiting for response
+
+**GET** `/api/likes/superlike-history`
+- **Purpose**: Get superlike usage history
+
+---
+
+## CHAT & MESSAGING ENDPOINTS
+
+### Task: Chat Management
+**POST** `/api/chat/send`
+- **Purpose**: Send message to matched user
+- **Body**: `receiver_id`, `message`, `message_type`, `media`
+- **Types**: text, image, video, voice
+
+**GET** `/api/chat/history`
+- **Purpose**: Get chat history with user
+- **Body**: `user_id`, `page`
+
+**GET** `/api/chat/users`
+- **Purpose**: Get users with chat access
+- **Response**: Matches and superlikes
+
+**GET** `/api/chat/access-users`
+- **Purpose**: Get detailed chat access users
+
+**DELETE** `/api/chat/message`
+- **Purpose**: Delete own message
+- **Body**: `message_id`
+
+**GET** `/api/chat/unread-count`
+- **Purpose**: Get unread message count
+
+### Task: Chat Features
+**POST** `/api/chat/typing`
+- **Purpose**: Send typing indicator
+- **Body**: `receiver_id`, `is_typing`
+
+**POST** `/api/chat/read`
+- **Purpose**: Mark messages as read
+- **Body**: `sender_id`, `message_ids`
+
+**POST** `/api/chat/online`
+- **Purpose**: Set online status
+- **Body**: `is_online`
+
+---
+
+## CALL SYSTEM ENDPOINTS
+
+### Task: Voice/Video Calls
+**POST** `/api/calls/initiate`
+- **Purpose**: Start call with matched user
+- **Body**: `receiver_id`, `call_type`
+
+**POST** `/api/calls/accept`
+- **Purpose**: Accept incoming call
+- **Body**: `call_id`
+
+**POST** `/api/calls/reject`
+- **Purpose**: Reject incoming call
+- **Body**: `call_id`
+
+**POST** `/api/calls/end`
+- **Purpose**: End active call
+- **Body**: `call_id`
+
+**GET** `/api/calls/history`
+- **Purpose**: Get call history
+
+**GET** `/api/calls/active`
+- **Purpose**: Get active call
+
+---
+
+## GROUP CHAT ENDPOINTS
+
+### Task: Group Management
+**POST** `/api/group-chat/create`
+- **Purpose**: Create group chat
+- **Body**: `name`, `description`, `member_ids`
+
+**GET** `/api/group-chat/groups`
+- **Purpose**: Get user's groups
+
+**GET** `/api/group-chat/groups/{groupId}`
+- **Purpose**: Get group details
+
+**POST** `/api/group-chat/send-message`
+- **Purpose**: Send group message
+- **Body**: `group_id`, `message`, `message_type`
+
+**GET** `/api/group-chat/groups/{groupId}/messages`
+- **Purpose**: Get group chat history
+
+**POST** `/api/group-chat/groups/{groupId}/add-members`
+- **Purpose**: Add members to group
+
+**DELETE** `/api/group-chat/groups/{groupId}/remove-member`
+- **Purpose**: Remove member from group
+
+**POST** `/api/group-chat/groups/{groupId}/leave`
+- **Purpose**: Leave group
+
+---
+
+## CONTENT FEEDS ENDPOINTS
+
+### Task: Feed Management
+**GET** `/api/feeds/`
+- **Purpose**: Get feeds from matched users
+- **Features**: Adult content filtering, muted users
+
+**POST** `/api/feeds/create`
+- **Purpose**: Create new feed post
+- **Body**: `text`, `image`, `tags`
+
+**GET** `/api/feeds/{id}`
+- **Purpose**: Get specific feed
+
+**PUT** `/api/feeds/update/{id}`
+- **Purpose**: Update own feed
+- **Body**: `text`, `image`, `tags`
+
+**DELETE** `/api/feeds/{id}`
+- **Purpose**: Delete own feed
+
+### Task: Feed Interactions
+**GET** `/api/feeds/{feedId}/comments`
+- **Purpose**: Get feed comments
+
+**POST** `/api/feeds/{feedId}/comments`
+- **Purpose**: Add comment to feed
+
+**POST** `/api/feeds/{feedId}/comments/{commentId}/like`
+- **Purpose**: Like comment
+
+**POST** `/api/feeds/{feedId}/comments/{commentId}/dislike`
+- **Purpose**: Dislike comment
+
+**PUT** `/api/feeds/{feedId}/comments/{commentId}`
+- **Purpose**: Update comment
+
+**DELETE** `/api/feeds/{feedId}/comments/{commentId}`
+- **Purpose**: Delete comment
+
+**POST** `/api/feeds/{feedId}/reactions`
+- **Purpose**: React to feed
+
+**DELETE** `/api/feeds/{feedId}/reactions`
+- **Purpose**: Remove reaction
+
+---
+
+## STORIES ENDPOINTS
+
+### Task: Story Management
+**GET** `/api/stories/`
+- **Purpose**: Get user stories
+
+**POST** `/api/stories/upload`
+- **Purpose**: Upload story
+- **Body**: `image`, `text`
+
+**GET** `/api/stories/{id}`
+- **Purpose**: Get specific story
+
+**POST** `/api/stories/{id}/like`
+- **Purpose**: Like story
+
+**DELETE** `/api/stories/{id}`
+- **Purpose**: Delete own story
+
+### Task: Story Interactions
+**GET** `/api/stories/{storyId}/replies`
+- **Purpose**: Get story replies
+
+**POST** `/api/stories/{storyId}/reply`
+- **Purpose**: Reply to story
+
+---
+
+## PAYMENT & SUBSCRIPTION ENDPOINTS
+
+### Task: Payment Processing
+**POST** `/api/stripe/payment-intent`
+- **Purpose**: Create payment intent
+- **Body**: `sub_plan_id`, `currency`
+
+**POST** `/api/stripe/checkout`
+- **Purpose**: Create checkout session
+- **Body**: `sub_plan_id`, `success_url`, `cancel_url`
+
+**POST** `/api/stripe/subscription`
+- **Purpose**: Create subscription
+- **Body**: `sub_plan_id`, `currency`
+
+**DELETE** `/api/stripe/subscription/{subscriptionId}`
+- **Purpose**: Cancel subscription
+
+**POST** `/api/stripe/refund`
+- **Purpose**: Create refund
+- **Body**: `payment_intent_id`, `amount`, `reason`
+
+**GET** `/api/stripe/analytics`
+- **Purpose**: Get payment analytics
+
+**POST** `/api/stripe/webhook`
+- **Purpose**: Handle Stripe webhooks
+
+### Task: Plan Management
+**GET** `/api/plans/`
+- **Purpose**: Get available plans
+
+**GET** `/api/plans/{id}`
+- **Purpose**: Get specific plan
+
+**GET** `/api/sub-plans/`
+- **Purpose**: Get sub-plans
+
+**GET** `/api/sub-plans/{subPlan}`
+- **Purpose**: Get specific sub-plan
+
+**POST** `/api/sub-plans/compare`
+- **Purpose**: Compare sub-plans
+
+**GET** `/api/sub-plans/upgrade-options`
+- **Purpose**: Get upgrade options
+
+**POST** `/api/sub-plans/upgrade`
+- **Purpose**: Upgrade plan
+
+### Task: Purchase History
+**GET** `/api/plan-purchases/`
+- **Purpose**: Get purchase history
+
+**GET** `/api/plan-purchases/history`
+- **Purpose**: Get user purchase history
+
+**GET** `/api/plan-purchases/active`
+- **Purpose**: Get active plans
+
+**GET** `/api/plan-purchases/expired`
+- **Purpose**: Get expired plans
+
+**GET** `/api/plan-purchases/{id}`
+- **Purpose**: Get specific purchase
+
+---
+
+## SUPERLIKE PACKS ENDPOINTS
+
+### Task: Superlike Management
+**GET** `/api/superlike-packs/available`
+- **Purpose**: Get available superlike packs
+
+**POST** `/api/superlike-packs/purchase`
+- **Purpose**: Purchase superlike pack
+
+**GET** `/api/superlike-packs/user-packs`
+- **Purpose**: Get user's superlike packs
+
+**GET** `/api/superlike-packs/purchase-history`
+- **Purpose**: Get superlike purchase history
+
+**POST** `/api/superlike-packs/activate-pending`
+- **Purpose**: Activate pending pack
+
+**POST** `/api/superlike-packs/stripe-checkout`
+- **Purpose**: Create Stripe checkout for superlikes
+
+**POST** `/api/superlike-packs/stripe-webhook`
+- **Purpose**: Handle superlike webhooks
+
+---
+
+## NOTIFICATION ENDPOINTS
+
+### Task: Notification Management
+**GET** `/api/notifications/`
+- **Purpose**: Get user notifications
+- **Features**: Plan-based restrictions, anonymous notifications
+
+**GET** `/api/notifications/unread-count`
+- **Purpose**: Get unread notification count
+
+**POST** `/api/notifications/{id}/read`
+- **Purpose**: Mark notification as read
+
+**POST** `/api/notifications/read-all`
+- **Purpose**: Mark all notifications as read
+
+**DELETE** `/api/notifications/{id}`
+- **Purpose**: Delete notification
+
+**DELETE** `/api/notifications/`
+- **Purpose**: Delete all notifications
+
+**GET** `/api/notifications/permissions`
+- **Purpose**: Get notification permissions
+
+### Task: OneSignal Integration
+**POST** `/api/onesignal/update-player-id`
+- **Purpose**: Update OneSignal player ID
+
+**POST** `/api/onesignal/remove-player-id`
+- **Purpose**: Remove OneSignal player ID
+
+**GET** `/api/onesignal/notification-info`
+- **Purpose**: Get notification info
+
+**POST** `/api/onesignal/update-preferences`
+- **Purpose**: Update notification preferences
+
+**POST** `/api/onesignal/reset-preferences`
+- **Purpose**: Reset notification preferences
+
+**POST** `/api/onesignal/test-notification`
+- **Purpose**: Send test notification
+
+**GET** `/api/onesignal/delivery-status`
+- **Purpose**: Get delivery status
+
+---
+
+## USER MANAGEMENT ENDPOINTS
+
+### Task: User Preferences
+**PUT** `/api/preferences/age/`
+- **Purpose**: Update age preferences
+- **Body**: `min_age`, `max_age`
+
+**GET** `/api/preferences/age/`
+- **Purpose**: Get age preferences
+
+**DELETE** `/api/preferences/age/`
+- **Purpose**: Reset age preferences
+
+### Task: User Actions
+**POST** `/api/favorites/add`
+- **Purpose**: Add user to favorites
+- **Body**: `user_id`
+
+**DELETE** `/api/favorites/remove`
+- **Purpose**: Remove from favorites
+- **Body**: `user_id`
+
+**GET** `/api/favorites/list`
+- **Purpose**: Get favorites list
+
+**GET** `/api/favorites/check`
+- **Purpose**: Check if user is favorited
+
+**PUT** `/api/favorites/note`
+- **Purpose**: Update favorite note
+
+### Task: Blocking System
+**POST** `/api/block/user`
+- **Purpose**: Block user
+- **Body**: `user_id`
+
+**DELETE** `/api/block/user`
+- **Purpose**: Unblock user
+- **Body**: `user_id`
+
+**GET** `/api/block/list`
+- **Purpose**: Get blocked users list
+
+**GET** `/api/block/check`
+- **Purpose**: Check if user is blocked
+
+### Task: Muting System
+**POST** `/api/mutes/mute`
+- **Purpose**: Mute user
+- **Body**: `user_id`, `mute_type`
+
+**DELETE** `/api/mutes/unmute`
+- **Purpose**: Unmute user
+- **Body**: `user_id`
+
+**GET** `/api/mutes/list`
+- **Purpose**: Get muted users
+
+**PUT** `/api/mutes/settings`
+- **Purpose**: Update mute settings
+
+**GET** `/api/mutes/check`
+- **Purpose**: Check mute status
+
+---
+
+## REPORTING ENDPOINTS
+
+### Task: Content Reporting
+**GET** `/api/reports/`
+- **Purpose**: Get user's reports
+
+**POST** `/api/reports/`
+- **Purpose**: Report user or content
+- **Body**: `reportable_type`, `reportable_id`, `reason`, `description`
+
+**GET** `/api/reports/{id}`
+- **Purpose**: Get specific report
+
+---
+
+## VERIFICATION ENDPOINTS
+
+### Task: Profile Verification
+**GET** `/api/verification/status`
+- **Purpose**: Get verification status
+
+**GET** `/api/verification/guidelines`
+- **Purpose**: Get verification guidelines
+
+**GET** `/api/verification/history`
+- **Purpose**: Get verification history
+
+**POST** `/api/verification/submit-photo`
+- **Purpose**: Submit verification photo
+
+**POST** `/api/verification/submit-id`
+- **Purpose**: Submit ID document
+
+**POST** `/api/verification/submit-video`
+- **Purpose**: Submit verification video
+
+**DELETE** `/api/verification/cancel/{verificationId}`
+- **Purpose**: Cancel verification
+
+---
+
+## ANALYTICS ENDPOINTS
+
+### Task: User Analytics
+**GET** `/api/analytics/my-analytics`
+- **Purpose**: Get user analytics
+
+**GET** `/api/analytics/engagement`
+- **Purpose**: Get engagement metrics
+
+**GET** `/api/analytics/retention`
+- **Purpose**: Get retention data
+
+**GET** `/api/analytics/interactions`
+- **Purpose**: Get interaction data
+
+**GET** `/api/analytics/profile-metrics`
+- **Purpose**: Get profile metrics
+
+**POST** `/api/analytics/track-activity`
+- **Purpose**: Track user activity
+
+---
+
+## SAFETY ENDPOINTS
+
+### Task: Safety Features
+**GET** `/api/safety/guidelines`
+- **Purpose**: Get safety guidelines
+
+**GET** `/api/safety/emergency-contacts`
+- **Purpose**: Get emergency contacts
+
+**POST** `/api/safety/emergency-contacts`
+- **Purpose**: Add emergency contact
+
+**POST** `/api/safety/emergency-alert`
+- **Purpose**: Send emergency alert
+
+**POST** `/api/safety/share-location`
+- **Purpose**: Share location
+
+**GET** `/api/safety/nearby-safe-places`
+- **Purpose**: Get nearby safe places
+
+**POST** `/api/safety/report`
+- **Purpose**: Create safety report
+
+**GET** `/api/safety/report-categories`
+- **Purpose**: Get report categories
+
+**GET** `/api/safety/report-history`
+- **Purpose**: Get report history
+
+**POST** `/api/safety/moderate-content`
+- **Purpose**: Moderate content
+
+**GET** `/api/safety/statistics`
+- **Purpose**: Get safety statistics
+
+---
+
+## REFERENCE DATA ENDPOINTS
+
+### Task: Static Data
+**GET** `/api/jobs`
+- **Purpose**: Get available jobs
+
+**GET** `/api/education`
+- **Purpose**: Get education options
+
+**GET** `/api/genders`
+- **Purpose**: Get gender options
+
+**GET** `/api/preferred-genders`
+- **Purpose**: Get preferred gender options
+
+**GET** `/api/interests`
+- **Purpose**: Get interest options
+
+**GET** `/api/languages`
+- **Purpose**: Get language options
+
+**GET** `/api/relation-goals`
+- **Purpose**: Get relationship goal options
+
+**GET** `/api/music-genres`
+- **Purpose**: Get music genre options
+
+**GET** `/api/payment-methods/`
+- **Purpose**: Get payment methods
+
+**GET** `/api/payment-methods/{id}`
+- **Purpose**: Get specific payment method
+
+**GET** `/api/payment-methods/currency/{currency}`
+- **Purpose**: Get payment methods by currency
+
+**GET** `/api/payment-methods/type/{type}`
+- **Purpose**: Get payment methods by type
+
+**POST** `/api/payment-methods/validate-amount`
+- **Purpose**: Validate payment amount
+
+---
+
+## PROFILE WIZARD ENDPOINTS
+
+### Task: Profile Setup
+**GET** `/api/profile-wizard/current-step`
+- **Purpose**: Get current wizard step
+
+**GET** `/api/profile-wizard/step-options/{step}`
+- **Purpose**: Get options for wizard step
+
+**POST** `/api/profile-wizard/save-step/{step}`
+- **Purpose**: Save wizard step data
+
+---
+
+## SUBSCRIPTION ENDPOINTS
+
+### Task: Subscription Management
+**GET** `/api/subscriptions/status`
+- **Purpose**: Get subscription status
+
+**POST** `/api/subscriptions/subscribe`
+- **Purpose**: Subscribe to plan
+
+**POST** `/api/subscriptions/cancel`
+- **Purpose**: Cancel subscription
+
+**POST** `/api/subscriptions/upgrade`
+- **Purpose**: Upgrade subscription
+
+**GET** `/api/subscriptions/history`
+- **Purpose**: Get subscription history
+
+**POST** `/api/subscriptions/check-feature`
+- **Purpose**: Check feature access
+
+---
+
+## BROADCAST CHANNELS
+
+### Task: Real-time Communication
+**Private Channel**: `chat.{receiverId}`
+- **Purpose**: Private chat messages
+- **Authorization**: Only receiver can listen
+
+**Private Channel**: `user.status.{userId}`
+- **Purpose**: User online status
+- **Authorization**: Only matched users
+
+**Private Channel**: `user.{userId}`
+- **Purpose**: User notifications
+- **Authorization**: Only the user
+
+**Private Channel**: `group.{groupId}`
+- **Purpose**: Group chat messages
+- **Authorization**: Only group members
+
+**Private Channel**: `call.{callId}`
+- **Purpose**: Call events
+- **Authorization**: Only call participants
+
+---
+
+## ADMIN PANEL ENDPOINTS
+
+### Task: Admin Authentication
+**GET** `/admin/login`
+- **Purpose**: Admin login form
+
+**POST** `/admin/login`
+- **Purpose**: Admin login
+
+**POST** `/admin/logout`
+- **Purpose**: Admin logout
+
+### Task: Dashboard Management
+**GET** `/admin/`
+- **Purpose**: Admin dashboard
+
+### Task: User Management
+**GET** `/admin/users/`
+- **Purpose**: List all users
+
+**GET** `/admin/users/fake`
+- **Purpose**: List fake users
+
+**GET** `/admin/users/blocked`
+- **Purpose**: List blocked users
+
+**GET** `/admin/users/iranian`
+- **Purpose**: List Iranian users
+
+**GET** `/admin/users/banned`
+- **Purpose**: List banned users
+
+**POST** `/admin/users/bulk-actions`
+- **Purpose**: Bulk user actions
+
+**GET** `/admin/users/{user}`
+- **Purpose**: View user details
+
+**POST** `/admin/users/{user}/toggle-ban`
+- **Purpose**: Toggle user ban
+
+**POST** `/admin/users/{user}/toggle-fake`
+- **Purpose**: Toggle fake status
+
+**DELETE** `/admin/users/{user}/images/{image}`
+- **Purpose**: Delete user image
+
+### Task: Content Management
+**GET** `/admin/moderation/feeds`
+- **Purpose**: Moderate feeds
+
+**GET** `/admin/moderation/stories`
+- **Purpose**: Moderate stories
+
+**POST** `/admin/feeds/{feed}/toggle-18`
+- **Purpose**: Toggle 18+ content
+
+**POST** `/admin/stories/{story}/toggle-18`
+- **Purpose**: Toggle 18+ story
+
+### Task: Plan Management
+**GET** `/admin/plans/`
+- **Purpose**: Manage plans
+
+**GET** `/admin/plans/plan-purchase-history`
+- **Purpose**: View purchase history
+
+**GET** `/admin/plans/plan-purchase-history/export/csv`
+- **Purpose**: Export purchase history
+
+**GET** `/admin/plans/plan-purchase-history/api/statistics`
+- **Purpose**: Get purchase statistics
+
+### Task: Chat Management
+**GET** `/admin/chat-management/`
+- **Purpose**: Manage chat messages
+
+**GET** `/admin/chat-management/images`
+- **Purpose**: Manage chat images
+
+**GET** `/admin/chat-management/voice-messages`
+- **Purpose**: Manage voice messages
+
+**GET** `/admin/chat-management/conversation/{userId1}/{userId2}`
+- **Purpose**: View conversation
+
+**PUT** `/admin/chat-management/{message}/toggle-read`
+- **Purpose**: Toggle message read status
+
+**DELETE** `/admin/chat-management/{message}`
+- **Purpose**: Delete message
+
+**POST** `/admin/chat-management/bulk-delete`
+- **Purpose**: Bulk delete messages
+
+### Task: Analytics & Reports
+**GET** `/admin/analytics/`
+- **Purpose**: User analytics
+
+**GET** `/admin/revenue/`
+- **Purpose**: Revenue analytics
+
+**GET** `/admin/system-health/`
+- **Purpose**: System health monitoring
+
+**GET** `/admin/activity-logs/`
+- **Purpose**: Admin activity logs
+
+### Task: Verification Management
+**GET** `/admin/verifications/`
+- **Purpose**: Manage verifications
+
+**POST** `/admin/verifications/{verificationId}/approve`
+- **Purpose**: Approve verification
+
+**POST** `/admin/verifications/{verificationId}/reject`
+- **Purpose**: Reject verification
+
+**POST** `/admin/verifications/bulk-approve`
+- **Purpose**: Bulk approve
+
+**POST** `/admin/verifications/bulk-reject`
+- **Purpose**: Bulk reject
+
+### Task: Fake Account Detection
+**GET** `/admin/fake-accounts/`
+- **Purpose**: Manage fake accounts
+
+**POST** `/admin/fake-accounts/mark-fake/{userId}`
+- **Purpose**: Mark as fake
+
+**POST** `/admin/fake-accounts/clear-flag/{userId}`
+- **Purpose**: Clear fake flag
+
+**POST** `/admin/fake-accounts/bulk-analyze`
+- **Purpose**: Bulk analyze
+
+**POST** `/admin/fake-accounts/run-automated`
+- **Purpose**: Run automated detection
+
+---
+
+## MIDDLEWARE
+
+### Authentication Middleware
+- `auth:sanctum` - Require authentication
+- `check.permanent.token` - Require full access token
+- `profile.complete.ability` - Require profile completion token
+
+### Rate Limiting
+- `throttle:10,1` - 10 requests per minute
+- `throttle:30,1` - 30 requests per minute
+
+### Admin Middleware
+- `admin` - Require admin role
+- `super_admin` - Require super admin
+- `user_admin` - Require user admin
+- `sales_admin` - Require sales admin
+- `report_admin` - Require report admin
+- `kos_khar_admin` - Require Kos Khar admin
+
+### Activity Logging
+- `log_admin_activity` - Log admin actions
+
+---
+
+## RESPONSE FORMATS
+
+### Success Response
+```json
+{
+  "status": "success",
+  "message": "Operation completed successfully",
+  "data": { ... }
+}
+```
+
+### Error Response
+```json
+{
+  "status": "error",
+  "message": "Error description",
+  "errors": { ... }
+}
+```
+
+### Validation Error
+```json
+{
+  "status": false,
+  "message": "Validation error",
+  "errors": {
+    "field": ["Error message"]
+  }
+}
+```
+
+---
+
+## RATE LIMITS
+
+- **Authentication**: 10 requests/minute
+- **Likes**: 30 requests/minute
+- **General API**: No specific limit (handled by server)
+- **Email Verification**: 3 codes/hour, 2 minutes between requests
+- **Password Reset**: 3 attempts per 5 minutes
+
+---
+
+## SECURITY FEATURES
+
+1. **Authentication**: Laravel Sanctum tokens
+2. **Rate Limiting**: Prevents abuse
+3. **Input Validation**: Comprehensive validation rules
+4. **CSRF Protection**: Enabled for web routes
+5. **SQL Injection Prevention**: Eloquent ORM
+6. **XSS Protection**: Input sanitization
+7. **File Upload Security**: Type and size validation
+8. **Admin Activity Logging**: Track all admin actions
+9. **Content Moderation**: Report and moderation system
+10. **Fake Account Detection**: Automated detection system
+
+---
+
+## DEPLOYMENT NOTES
+
+- **Environment**: Laravel 10.x
+- **Database**: MySQL/PostgreSQL
+- **Cache**: Redis recommended
+- **Queue**: Redis/Database
+- **Storage**: Local/S3 compatible
+- **CDN**: CloudFlare compatible
+- **Load Balancer**: Nginx compatible
+- **Monitoring**: System health endpoints available
+
+---
+
+## API VERSIONING
+
+- Current Version: v1
+- Base URL: `/api`
+- No versioning in URL (single version)
+- Backward compatibility maintained
+
+---
+
+This documentation covers all major endpoints and features of the LGBTinder API system. Each endpoint includes its purpose, required parameters, and expected responses. The system is designed for scalability, security, and comprehensive dating app functionality.

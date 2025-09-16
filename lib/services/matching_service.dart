@@ -34,6 +34,152 @@ class MatchingService {
     }
   }
 
+  /// Get potential matches for discovery
+  static Future<List<User>> getPotentialMatches({
+    String? accessToken,
+    int? limit,
+    int? page,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.matchingSuggestions));
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (limit != null) queryParams['limit'] = limit.toString();
+      if (page != null) queryParams['page'] = page.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch potential matches: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching potential matches: $e');
+    }
+  }
+
+  /// Like a user
+  static Future<bool> likeUser({
+    required String userId,
+    required String accessToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.matchingLike)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to like user: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while liking user: $e');
+    }
+  }
+
+  /// Dislike a user
+  static Future<bool> dislikeUser({
+    required String userId,
+    required String accessToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.matchingDislike)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to dislike user: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while disliking user: $e');
+    }
+  }
+
+  /// Super like a user
+  static Future<bool> superLikeUser({
+    required String userId,
+    required String accessToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.matchingSuperLike)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to super like user: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while super liking user: $e');
+    }
+  }
+
   /// Get nearby suggestions
   static Future<List<User>> getNearbyUsers({String? accessToken, double? latitude, double? longitude, int? radius}) async {
     try {
@@ -261,6 +407,168 @@ class MatchingService {
       rethrow;
     } catch (e) {
       throw NetworkException('Network error while testing matching: $e');
+    }
+  }
+
+  /// Get compatibility score with specific user
+  static Future<Map<String, dynamic>> getCompatibilityScoreWithUser(String targetUserId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.matchingCompatibility) + '?target_user_id=$targetUserId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Target user not found');
+      } else {
+        throw ApiException('Failed to get compatibility score: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while getting compatibility score: $e');
+    }
+  }
+
+  /// Get location-based matches with radius and limit
+  static Future<List<User>> getLocationBasedMatchesWithRadius({
+    String? accessToken,
+    required double latitude,
+    required double longitude,
+    double? radius,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.matchingLocation));
+      
+      final queryParams = <String, String>{
+        'latitude': latitude.toString(),
+        'longitude': longitude.toString(),
+      };
+      
+      if (radius != null) queryParams['radius'] = radius.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      uri = uri.replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch location-based matches: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching location-based matches: $e');
+    }
+  }
+
+  /// Get nearby suggestions with location data
+  static Future<List<User>> getNearbySuggestions({
+    String? accessToken,
+    required double latitude,
+    required double longitude,
+    double? radius,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.matchingNearby));
+      
+      final queryParams = <String, String>{
+        'latitude': latitude.toString(),
+        'longitude': longitude.toString(),
+      };
+      
+      if (radius != null) queryParams['radius'] = radius.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      uri = uri.replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch nearby suggestions: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching nearby suggestions: $e');
+    }
+  }
+
+  /// Get AI-powered match suggestions with preferences
+  static Future<List<User>> getAISuggestionsWithPreferences({
+    String? accessToken,
+    Map<String, dynamic>? preferences,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.matchingAi));
+      
+      if (preferences != null && preferences.isNotEmpty) {
+        uri = uri.replace(queryParameters: preferences.map((key, value) => MapEntry(key, value.toString())));
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.map((item) => User.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch AI suggestions: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching AI suggestions: $e');
     }
   }
 }

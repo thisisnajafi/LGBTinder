@@ -19,8 +19,36 @@ import 'screens/auth/auth_wrapper.dart';
 import 'screens/auth/forgot_password_screen.dart';
 import 'screens/auth/profile_completion_welcome_screen.dart';
 import 'screens/auth/profile_wizard_screen.dart';
+import 'pages/api_test_page.dart';
+import 'pages/discovery_page.dart';
+import 'screens/story_creation_screen.dart';
+import 'screens/notification_settings_screen.dart';
+import 'screens/safety_settings_screen.dart';
+import 'screens/premium_features_screen.dart';
+import 'screens/subscription_management_screen.dart';
+import 'screens/payment_screen.dart';
+import 'screens/video_call_screen.dart';
+import 'screens/voice_call_screen.dart';
+import 'screens/legal/terms_of_service_screen.dart';
+import 'screens/legal/privacy_policy_screen.dart';
+import 'screens/accessibility_settings_screen.dart';
+import 'screens/rainbow_theme_settings_screen.dart';
+import 'screens/haptic_feedback_settings_screen.dart';
+import 'screens/animation_settings_screen.dart';
+import 'screens/pull_to_refresh_settings_screen.dart';
+import 'screens/skeleton_loader_settings_screen.dart';
+import 'screens/image_compression_settings_screen.dart';
+import 'screens/media_picker_settings_screen.dart';
+import 'screens/audio_recorder_settings_screen.dart';
+import 'services/firebase_notification_service.dart';
+import 'pages/feed_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase notifications
+  await FirebaseNotificationService.initialize();
+  
   runApp(const LGBTinderApp());
 }
 
@@ -61,7 +89,29 @@ class LGBTinderApp extends StatelessWidget {
           '/profile-completion': (context) => const ProfileCompletionWelcomeScreen(userName: ''),
           '/profile-wizard': (context) => const ProfileWizardScreen(),
           '/home': (context) => const HomePage(),
+          '/discovery': (context) => const DiscoveryPage(),
+          '/story-creation': (context) => const StoryCreationScreen(),
+          '/notification-settings': (context) => const NotificationSettingsScreen(),
+          '/safety-settings': (context) => const SafetySettingsScreen(),
+          '/premium-features': (context) => const PremiumFeaturesScreen(),
+          '/subscription-management': (context) => const SubscriptionManagementScreen(),
+          '/payment': (context) => PaymentScreen(plan: PremiumPlan.fromJson({})),
+          '/video-call': (context) => VideoCallScreen(otherUser: User.fromJson({})),
+          '/voice-call': (context) => VoiceCallScreen(otherUser: User.fromJson({})),
+          '/terms-of-service': (context) => const TermsOfServiceScreen(),
+          '/privacy-policy': (context) => const PrivacyPolicyScreen(),
+          '/accessibility-settings': (context) => const AccessibilitySettingsScreen(),
+          '/rainbow-theme-settings': (context) => const RainbowThemeSettingsScreen(),
+          '/haptic-feedback-settings': (context) => const HapticFeedbackSettingsScreen(),
+          '/animation-settings': (context) => const AnimationSettingsScreen(),
+          '/pull-to-refresh-settings': (context) => const PullToRefreshSettingsScreen(),
+          '/skeleton-loader-settings': (context) => const SkeletonLoaderSettingsScreen(),
+          '/image-compression-settings': (context) => const ImageCompressionSettingsScreen(),
+          '/media-picker-settings': (context) => const MediaPickerSettingsScreen(),
+          '/audio-recorder-settings': (context) => const AudioRecorderSettingsScreen(),
+          '/feed': (context) => const FeedPage(),
           '/main': (context) => const MainScreen(),
+          '/api-test': (context) => const ApiTestPage(),
         },
       ),
     );

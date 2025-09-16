@@ -10,6 +10,7 @@ import '../providers/profile_provider.dart';
 import '../models/models.dart';
 import '../utils/error_handler.dart';
 import '../utils/success_feedback.dart';
+import '../services/skeleton_loader_service.dart';
 import 'profile_edit_page.dart';
 import 'profile_wizard_page.dart';
 
@@ -58,20 +59,39 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          // Profile header skeleton
+          SkeletonLoaderService().createSkeletonCard(
+            width: double.infinity,
+            height: 200,
+            padding: const EdgeInsets.all(20),
           ),
-          SizedBox(height: 16),
-          Text(
-            'Loading your profile...',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
+          const SizedBox(height: 20),
+          
+          // Profile info sections skeleton
+          SkeletonLoaderService().createSkeletonCard(
+            width: double.infinity,
+            height: 150,
+            padding: const EdgeInsets.all(20),
+          ),
+          const SizedBox(height: 20),
+          
+          // Photo gallery skeleton
+          SkeletonLoaderService().createSkeletonCard(
+            width: double.infinity,
+            height: 120,
+            padding: const EdgeInsets.all(20),
+          ),
+          const SizedBox(height: 20),
+          
+          // Safety verification skeleton
+          SkeletonLoaderService().createSkeletonCard(
+            width: double.infinity,
+            height: 100,
+            padding: const EdgeInsets.all(20),
           ),
         ],
       ),

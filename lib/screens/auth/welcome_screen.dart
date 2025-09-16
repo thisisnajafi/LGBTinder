@@ -300,6 +300,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                        ),
                                      ),
                                    ),
+                                   // Debug: API Test Button
+                                   TextButton(
+                                     onPressed: () {
+                                       Navigator.pushNamed(context, '/api-test');
+                                     },
+                                     child: Text(
+                                       'API Test',
+                                       style: AppTypography.caption.copyWith(
+                                         color: Colors.orange,
+                                         decoration: TextDecoration.underline,
+                                         fontSize: 13,
+                                       ),
+                                     ),
+                                   ),
                                  ],
                                ),
                             ],

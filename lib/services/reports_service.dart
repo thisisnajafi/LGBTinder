@@ -504,4 +504,354 @@ class ReportsService {
       throw NetworkException('Network error while fetching report template: $e');
     }
   }
+
+  /// Report content (feed, story, message, etc.)
+  static Future<Map<String, dynamic>> reportContent({
+    required String contentId,
+    required String contentType,
+    required String category,
+    required String reason,
+    String? accessToken,
+    String? description,
+    List<String>? evidenceUrls,
+    File? evidenceFile,
+  }) async {
+    try {
+      if (evidenceFile != null) {
+        // Create report with evidence file
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConfig.getUrl(ApiConfig.reportsContent)),
+        );
+
+        request.headers.addAll({
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        });
+
+        request.fields.addAll({
+          'content_id': contentId,
+          'content_type': contentType,
+          'category': category,
+          'reason': reason,
+          if (description != null) 'description': description,
+          if (evidenceUrls != null) 'evidence_urls': jsonEncode(evidenceUrls),
+        });
+
+        request.files.add(await http.MultipartFile.fromPath('evidence_file', evidenceFile.path));
+
+        final streamResponse = await request.send();
+        final responseBody = await streamResponse.stream.bytesToString();
+        final response = http.Response(responseBody, streamResponse.statusCode);
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          return data['data'] ?? data;
+        } else if (response.statusCode == 401) {
+          throw AuthException('Authentication required');
+        } else if (response.statusCode == 422) {
+          final data = jsonDecode(response.body);
+          throw ValidationException(
+            data['message'] ?? 'Validation failed',
+            data['errors'] ?? <String, String>{},
+          );
+        } else if (response.statusCode == 404) {
+          throw ApiException('Content not found');
+        } else {
+          throw ApiException('Failed to create content report: ${response.statusCode}');
+        }
+      } else {
+        // Create report without evidence file
+        final requestBody = {
+          'content_id': contentId,
+          'content_type': contentType,
+          'category': category,
+          'reason': reason,
+        };
+
+        if (description != null) requestBody['description'] = description;
+        if (evidenceUrls != null) requestBody['evidence_urls'] = evidenceUrls;
+
+        final response = await http.post(
+          Uri.parse(ApiConfig.getUrl(ApiConfig.reportsContent)),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+          },
+          body: jsonEncode(requestBody),
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          return data['data'] ?? data;
+        } else if (response.statusCode == 401) {
+          throw AuthException('Authentication required');
+        } else if (response.statusCode == 422) {
+          final data = jsonDecode(response.body);
+          throw ValidationException(
+            data['message'] ?? 'Validation failed',
+            data['errors'] ?? <String, String>{},
+          );
+        } else if (response.statusCode == 404) {
+          throw ApiException('Content not found');
+        } else {
+          throw ApiException('Failed to create content report: ${response.statusCode}');
+        }
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while creating content report: $e');
+    }
+  }
+
+  /// Get moderation queue (for moderators)
+  static Future<List<Map<String, dynamic>>> getModerationQueue({
+    String? accessToken,
+    int? page,
+    int? limit,
+    String? priority,
+    String? category,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.reportsModerationQueue));
+      
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      if (priority != null) queryParams['priority'] = priority;
+      if (category != null) queryParams['category'] = category;
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied - insufficient permissions');
+      } else {
+        throw ApiException('Failed to fetch moderation queue: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching moderation queue: $e');
+    }
+  }
+
+  /// Escalate report (for moderators)
+  static Future<Map<String, dynamic>> escalateReport(String reportId, {
+    String? accessToken,
+    String? reason,
+    String? priority,
+  }) async {
+    try {
+      final requestBody = <String, dynamic>{};
+      if (reason != null) requestBody['reason'] = reason;
+      if (priority != null) requestBody['priority'] = priority;
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.reportsById, {'id': reportId}) + '/escalate'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied - insufficient permissions');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Report not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Cannot escalate this report',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to escalate report: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while escalating report: $e');
+    }
+  }
+
+  /// Get report history for a user
+  static Future<List<Map<String, dynamic>>> getUserReportHistory(String userId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.reportsUserHistory, {'userId': userId}));
+      
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied - insufficient permissions');
+      } else if (response.statusCode == 404) {
+        throw ApiException('User not found');
+      } else {
+        throw ApiException('Failed to fetch user report history: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching user report history: $e');
+    }
+  }
+
+  /// Bulk update report status
+  static Future<Map<String, dynamic>> bulkUpdateReportStatus(List<String> reportIds, {
+    required String status,
+    String? accessToken,
+    String? moderatorNotes,
+    String? resolution,
+  }) async {
+    try {
+      final requestBody = {
+        'report_ids': reportIds,
+        'status': status,
+      };
+
+      if (moderatorNotes != null) requestBody['moderator_notes'] = moderatorNotes;
+      if (resolution != null) requestBody['resolution'] = resolution;
+
+      final response = await http.put(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.reportsBulkUpdate)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied - insufficient permissions');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid bulk update data',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to bulk update reports: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while bulk updating reports: $e');
+    }
+  }
+
+  /// Get report analytics (for admin users)
+  static Future<Map<String, dynamic>> getReportAnalytics({
+    String? accessToken,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? category,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.reportsAnalytics));
+      
+      final queryParams = <String, String>{};
+      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+      if (category != null) queryParams['category'] = category;
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied - insufficient permissions');
+      } else {
+        throw ApiException('Failed to fetch report analytics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching report analytics: $e');
+    }
+  }
 }

@@ -6,6 +6,8 @@ import '../../providers/auth_provider.dart';
 import '../../models/auth_requests.dart';
 import '../../utils/validation.dart';
 import '../../utils/registration_validator.dart';
+import '../../components/auth/social_login_buttons.dart';
+import '../../utils/api_error_handler.dart';
 import 'email_verification_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -545,6 +547,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 32),
                   
+                  // Terms and Privacy (Moved above button)
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isTermsAccepted,
+                        onChanged: _isLoading ? null : (value) {
+                          setState(() {
+                            _isTermsAccepted = value ?? false;
+                          });
+                        },
+                        activeColor: AppColors.primary,
+                        checkColor: Colors.white,
+                        side: const BorderSide(color: Colors.white30),
+                      ),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: AppTypography.body2.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                            children: [
+                              const TextSpan(text: 'I agree to the '),
+                              TextSpan(
+                                text: 'Terms of Service',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
                   // Register Button
                   SizedBox(
                     width: double.infinity,
@@ -593,51 +640,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Terms and Privacy
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isTermsAccepted,
-                        onChanged: _isLoading ? null : (value) {
-                          setState(() {
-                            _isTermsAccepted = value ?? false;
-                          });
-                        },
-                        activeColor: AppColors.primary,
-                        checkColor: Colors.white,
-                        side: const BorderSide(color: Colors.white30),
-                      ),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: AppTypography.body2.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                            children: [
-                              const TextSpan(text: 'I agree to the '),
-                              TextSpan(
-                                text: 'Terms of Service',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const TextSpan(text: ' and '),
-                              TextSpan(
-                                text: 'Privacy Policy',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                   const SizedBox(height: 32),
                   

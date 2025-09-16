@@ -256,6 +256,118 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: AppColors.navbarBackground, // Dark navy background
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/audio-recorder-settings');
+            },
+            backgroundColor: AppColors.warning,
+            heroTag: "audio_recorder",
+            child: const Icon(
+              Icons.mic,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/media-picker-settings');
+            },
+            backgroundColor: AppColors.success,
+            heroTag: "media_picker",
+            child: const Icon(
+              Icons.add_photo_alternate,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/image-compression-settings');
+            },
+            backgroundColor: AppColors.accent,
+            heroTag: "image_compression",
+            child: const Icon(
+              Icons.compress,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/skeleton-loader-settings');
+            },
+            backgroundColor: AppColors.info,
+            heroTag: "skeleton_loader",
+            child: const Icon(
+              Icons.view_stream,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/pull-to-refresh-settings');
+            },
+            backgroundColor: AppColors.error,
+            heroTag: "pull_to_refresh",
+            child: const Icon(
+              Icons.refresh,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/animation-settings');
+            },
+            backgroundColor: AppColors.warning,
+            heroTag: "animation_settings",
+            child: const Icon(
+              Icons.animation,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/haptic-feedback-settings');
+            },
+            backgroundColor: AppColors.success,
+            heroTag: "haptic_feedback",
+            child: const Icon(
+              Icons.vibration,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/rainbow-theme-settings');
+            },
+            backgroundColor: AppColors.secondaryLight,
+            heroTag: "rainbow_theme",
+            child: const Icon(
+              Icons.palette,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/discovery');
+            },
+            backgroundColor: AppColors.primary,
+            heroTag: "discovery",
+            child: const Icon(
+              Icons.favorite,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           // Animated background lines

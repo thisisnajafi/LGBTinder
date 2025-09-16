@@ -4,7 +4,69 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../utils/error_handler.dart';
 
+enum StoryType {
+  text,
+  image,
+  video,
+}
+
 class StoriesService {
+  /// Create a new story
+  static Future<bool> createStory({
+    required StoryType type,
+    required String content,
+    File? imageFile,
+    File? videoFile,
+    String? accessToken,
+  }) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(ApiConfig.getUrl(ApiConfig.storiesCreate)),
+      );
+
+      // Add headers
+      request.headers.addAll({
+        'Accept': 'application/json',
+        if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+      });
+
+      // Add fields
+      request.fields['type'] = type.toString().split('.').last;
+      request.fields['content'] = content;
+
+      // Add files
+      if (imageFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('image', imageFile.path),
+        );
+      }
+
+      if (videoFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('video', videoFile.path),
+        );
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to create story: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while creating story: $e');
+    }
+  }
+
   /// Get stories feed
   static Future<List<Map<String, dynamic>>> getStories({
     String? accessToken,
@@ -497,6 +559,364 @@ class StoriesService {
       rethrow;
     } catch (e) {
       throw NetworkException('Network error while archiving story: $e');
+    }
+  }
+
+  /// Get archived stories
+  static Future<List<Map<String, dynamic>>> getArchivedStories({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.stories) + '/archived'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch archived stories: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching archived stories: $e');
+    }
+  }
+
+  /// Unarchive story
+  static Future<bool> unarchiveStory(String storyId, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.storiesById, {'id': storyId}) + '/unarchive'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Story not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Not authorized to unarchive this story');
+      } else {
+        throw ApiException('Failed to unarchive story: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while unarchiving story: $e');
+    }
+  }
+
+  /// Get story statistics
+  static Future<Map<String, dynamic>> getStoryStatistics(String storyId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.storiesById, {'id': storyId}) + '/statistics'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Story not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Not authorized to view story statistics');
+      } else {
+        throw ApiException('Failed to fetch story statistics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching story statistics: $e');
+    }
+  }
+
+  /// Report story
+  static Future<bool> reportStory(String storyId, String reason, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.storiesById, {'id': storyId}) + '/report'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'reason': reason,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Story not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to report story: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while reporting story: $e');
+    }
+  }
+
+  /// Share story
+  static Future<Map<String, dynamic>> shareStory(String storyId, {String? accessToken, String? message}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.storiesById, {'id': storyId}) + '/share'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          if (message != null) 'message': message,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Story not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to share story: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sharing story: $e');
+    }
+  }
+
+  /// Get story likes
+  static Future<List<Map<String, dynamic>>> getStoryLikes(String storyId, {
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.storiesById, {'id': storyId}) + '/likes');
+      
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Story not found');
+      } else {
+        throw ApiException('Failed to fetch story likes: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching story likes: $e');
+    }
+  }
+
+  /// Delete story reply
+  static Future<bool> deleteStoryReply(String storyId, String replyId, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.storiesReply, {'storyId': storyId}) + '/$replyId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Story or reply not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Not authorized to delete this reply');
+      } else {
+        throw ApiException('Failed to delete story reply: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while deleting story reply: $e');
+    }
+  }
+
+  /// Get story highlights
+  static Future<List<Map<String, dynamic>>> getStoryHighlights({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.stories) + '/highlights'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch story highlights: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching story highlights: $e');
+    }
+  }
+
+  /// Create story highlight
+  static Future<Map<String, dynamic>> createStoryHighlight({
+    required String title,
+    required List<String> storyIds,
+    String? accessToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.stories) + '/highlights'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'title': title,
+          'story_ids': storyIds,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to create story highlight: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while creating story highlight: $e');
+    }
+  }
+
+  /// Delete story highlight
+  static Future<bool> deleteStoryHighlight(String highlightId, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.stories) + '/highlights/$highlightId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Story highlight not found');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Not authorized to delete this highlight');
+      } else {
+        throw ApiException('Failed to delete story highlight: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while deleting story highlight: $e');
     }
   }
 }

@@ -14,12 +14,25 @@ class ApiConfig {
   // static const String baseUrl = _physicalDeviceUrl;     // For Physical Device
   // static const String baseUrl = _productionUrl;         // For Production
   
+  // WebSocket URLs
+  static const String _androidEmulatorWsUrl = 'ws://10.0.2.2:8000';
+  static const String _iosSimulatorWsUrl = 'ws://127.0.0.1:8000';
+  static const String _physicalDeviceWsUrl = 'ws://YOUR_COMPUTER_IP:8000'; // Replace with your computer's IP
+  static const String _productionWsUrl = 'wss://your-production-domain.com';
+  
+  static const String wsBaseUrl = _androidEmulatorWsUrl; // <-- Change this line for different environments
+  
+  /// Get WebSocket URL
+  static String getWebSocketUrl() {
+    return wsBaseUrl;
+  }
+  
   // Auth endpoints
   static const String login = '/auth/login';
   static const String register = '/auth/register';
-  static const String verifyCode = '/auth/verify-code';
+  static const String verifyCode = '/auth/send-verification';
   static const String verifyLoginCode = '/auth/verify-login-code';
-  static const String refreshToken = '/auth/refresh-token';
+  // static const String refreshToken = '/auth/refresh-token'; // Not implemented in backend
   static const String checkEmail = '/auth/check-email';
   static const String checkPhone = '/auth/check-phone';
   static const String forgotPassword = '/auth/forgot-password';

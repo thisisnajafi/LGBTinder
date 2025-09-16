@@ -5,45 +5,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/auth_user.dart';
 import '../models/auth_requests.dart';
+import '../models/auth_responses.dart';
 import '../services/auth_service.dart';
+import '../services/jwt_token_service.dart';
 import '../utils/error_handler.dart';
 
 class AuthProvider extends ChangeNotifier {
-  // Secure storage for tokens
+  // Enhanced JWT token service
+  final JWTTokenService _tokenService = JWTTokenService();
+  
+  // Secure storage for user data
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   
   // Storage keys
-  static const String _accessTokenKey = 'access_token';
-  static const String _refreshTokenKey = 'refresh_token';
   static const String _userKey = 'user_data';
-  static const String _tokenExpiryKey = 'token_expiry';
   
   // Authentication state
   bool _isAuthenticated = false;
   bool _isLoading = false;
   AuthUser? _user;
-  String? _accessToken;
-  String? _refreshToken;
   String? _authError;
-  DateTime? _tokenExpiry;
-  
-  // Token refresh timer
-  Timer? _tokenRefreshTimer;
   
   // Getters
   bool get isAuthenticated => _isAuthenticated;
   bool get isLoading => _isLoading;
   AuthUser? get user => _user;
-  String? get accessToken => _accessToken;
-  String? get refreshToken => _refreshToken;
   String? get authError => _authError;
-  DateTime? get tokenExpiry => _tokenExpiry;
   
-  // Check if token is expired or will expire soon (within 5 minutes)
-  bool get isTokenExpired {
-    if (_tokenExpiry == null) return true;
-    return DateTime.now().isAfter(_tokenExpiry!.subtract(const Duration(minutes: 5)));
-  }
+  // Token getters using JWT service
+  Future<String?> get accessToken => _tokenService.getAccessToken();
+  Future<String?> get refreshToken => _tokenService.getRefreshToken();
+  Future<DateTime?> get tokenExpiry => _tokenService.getTokenExpiry();
+  
+  // Check if token is expired
+  Future<bool> get isTokenExpired => _tokenService.isAccessTokenExpired();
   
   // Check if user profile is completed
   bool get isProfileCompleted => _user?.profileCompleted ?? false;
@@ -84,7 +79,7 @@ class AuthProvider extends ChangeNotifier {
         // Check if token is expired
         if (isTokenExpired) {
           // Try to refresh token
-          await _refreshAccessToken();
+          // await _refreshAccessToken(); // Not implemented in backend
         } else {
           _isAuthenticated = true;
           _startTokenRefreshTimer();
@@ -118,7 +113,6 @@ class AuthProvider extends ChangeNotifier {
       );
       
       _isAuthenticated = true;
-      _startTokenRefreshTimer();
       
       print('✅ Login successful in AuthProvider');
       notifyListeners();
@@ -252,62 +246,83 @@ class AuthProvider extends ChangeNotifier {
   /// Send verification code to email
   Future<bool> sendVerification(String email) async {
     try {
+      print('🏁 AuthProvider.sendVerification() started');
+      print('📧 Email: $email');
       _setLoading(true);
       _clearError();
       
+      print('📡 Calling AuthService.sendVerification()...');
       final success = await AuthService.sendVerification(email);
+      print('📡 AuthService.sendVerification() result: $success');
       
       if (success) {
+        print('✅ Send verification successful in AuthProvider');
         _clearError();
         return true;
       } else {
-        _setError('Failed to send verification code');
+        print('❌ Send verification failed but no exception thrown');
+        _setError('Unable to send verification code. Please try again.');
         return false;
       }
     } on AppException catch (e) {
-      _setError(e.message);
+      print('💥 AuthProvider sendVerification AppException: ${e.message}');
+      _setError('Unable to send verification code. Please try again.');
       return false;
     } catch (e) {
-      _setError('Failed to send verification: $e');
+      print('💥 AuthProvider sendVerification Exception: $e');
+      _setError('Network error. Please check your internet connection.');
       return false;
     } finally {
+      print('🏁 AuthProvider.sendVerification() completed');
       _setLoading(false);
     }
   }
 
   /// Verify email verification code
-  Future<bool> verifyCode(VerificationRequest request) async {
+  Future<VerificationResponse> verifyCode(VerificationRequest request) async {
     try {
+      print('🏁 AuthProvider.verifyCode() started');
+      print('📧 Email: ${request.email}');
+      print('🔢 Code: ${request.code}');
       _setLoading(true);
       _clearError();
       
+      print('📡 Calling AuthService.verifyCode()...');
       final response = await AuthService.verifyCode(request);
+      print('📡 AuthService.verifyCode() response: $response');
       
-      if (response.success && response.accessToken != null && response.refreshToken != null) {
-        // Store authentication data
-        await _storeAuthData(
-          accessToken: response.accessToken!,
-          refreshToken: response.refreshToken!,
-          user: response.user,
-          expiresIn: 3600, // Default 1 hour
-        );
-        
-        _isAuthenticated = true;
-        _startTokenRefreshTimer();
+      if (response.status) {
+        print('✅ Verification successful in AuthProvider');
+        // Store authentication data if available
+        if (response.data?.token != null) {
+          await _storeAuthData(
+            accessToken: response.data!.token,
+            refreshToken: response.data!.token, // Use same token for now
+            user: null, // User data not available in this response
+            expiresIn: 3600, // Default 1 hour
+          );
+          
+          _isAuthenticated = true;
+          _startTokenRefreshTimer();
+        }
         
         notifyListeners();
-        return true;
+        return response;
       } else {
+        print('❌ Verification failed: ${response.message}');
         _setError(response.message);
-        return false;
+        return response;
       }
     } on AppException catch (e) {
+      print('💥 AuthProvider verifyCode AppException: ${e.message}');
       _setError(e.message);
-      return false;
+      rethrow;
     } catch (e) {
-      _setError('Verification failed: $e');
-      return false;
+      print('💥 AuthProvider verifyCode Exception: $e');
+      _setError('Network error. Please check your internet connection.');
+      rethrow;
     } finally {
+      print('🏁 AuthProvider.verifyCode() completed');
       _setLoading(false);
     }
   }
@@ -338,33 +353,34 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Refresh access token
-  Future<bool> _refreshAccessToken() async {
-    try {
-      if (_refreshToken == null) {
-        throw AuthException('No refresh token available');
-      }
-      
-      final response = await AuthService.refreshToken(_refreshToken!);
-      
-      // Update tokens
-      _accessToken = response.accessToken;
-      _refreshToken = response.refreshToken;
-      _tokenExpiry = DateTime.now().add(Duration(seconds: response.expiresIn));
-      
-      // Store updated tokens
-      await _secureStorage.write(key: _accessTokenKey, value: _accessToken);
-      await _secureStorage.write(key: _refreshTokenKey, value: _refreshToken);
-      await _secureStorage.write(key: _tokenExpiryKey, value: _tokenExpiry!.toIso8601String());
-      
-      _startTokenRefreshTimer();
-      return true;
-    } catch (e) {
-      // Refresh failed, user needs to login again
-      await logout();
-      return false;
-    }
-  }
+  /// Refresh access token - Not implemented in backend
+  // Future<bool> _refreshAccessToken() async {
+  //   try {
+  //     if (_refreshToken == null) {
+  //       throw AuthException('No refresh token available');
+  //     }
+  //     
+  //     final response = await AuthService.refreshToken(_refreshToken!);
+  //     
+  //     // Update tokens
+  //     _accessToken = response.accessToken;
+  //     _refreshToken = response.refreshToken;
+  //     _tokenExpiry = DateTime.now().add(Duration(seconds: response.expiresIn));
+  //     
+  //     // Store updated tokens
+  //     await _secureStorage.write(key: _accessTokenKey, value: _accessToken);
+  //     await _secureStorage.write(key: _refreshTokenKey, value: _refreshToken);
+  //     await _secureStorage.write(key: _tokenExpiryKey, value: _tokenExpiry!.toIso8601String());
+  //     
+  //     _startTokenRefreshTimer();
+  //     return true;
+  //   } catch (e) {
+  //     // Refresh failed, user needs to login again
+  //     await logout();
+  //     return false;
+  //     }
+  //   }
+  // }
 
   /// Logout user
   Future<void> logout() async {
@@ -402,41 +418,39 @@ class AuthProvider extends ChangeNotifier {
     required AuthUser? user,
     required int expiresIn,
   }) async {
-    _accessToken = accessToken;
-    _refreshToken = refreshToken;
     _user = user;
-    _tokenExpiry = DateTime.now().add(Duration(seconds: expiresIn));
     
-    // Store in secure storage
-    await _secureStorage.write(key: _accessTokenKey, value: accessToken);
-    await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+    // Store tokens using JWT service
+    await _tokenService.storeTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      accessTokenExpiresIn: expiresIn,
+    );
+    
+    // Store user data
     if (user != null) {
       await _secureStorage.write(key: _userKey, value: jsonEncode(user.toJson()));
     }
-    await _secureStorage.write(key: _tokenExpiryKey, value: _tokenExpiry!.toIso8601String());
   }
 
   /// Clear all authentication data from secure storage
   Future<void> _clearAuthData() async {
-    await _secureStorage.delete(key: _accessTokenKey);
-    await _secureStorage.delete(key: _refreshTokenKey);
+    await _tokenService.clearTokens();
     await _secureStorage.delete(key: _userKey);
-    await _secureStorage.delete(key: _tokenExpiryKey);
   }
 
-  /// Start token refresh timer
-  void _startTokenRefreshTimer() {
-    _tokenRefreshTimer?.cancel();
-    
-    if (_tokenExpiry != null) {
-      final timeUntilRefresh = _tokenExpiry!.difference(DateTime.now()).inSeconds - 300; // 5 minutes before expiry
-      
-      if (timeUntilRefresh > 0) {
-        _tokenRefreshTimer = Timer(Duration(seconds: timeUntilRefresh), () {
-          _refreshAccessToken();
-        });
-      }
-    }
+  /// Initialize token service
+  Future<void> initializeTokenService() async {
+    await _tokenService.initialize(
+      onTokenRefreshed: (newAccessToken, newRefreshToken) {
+        debugPrint('Token refreshed successfully');
+        notifyListeners();
+      },
+      onTokenRefreshFailed: () {
+        debugPrint('Token refresh failed - user needs to re-authenticate');
+        logout();
+      },
+    );
   }
 
   /// Set loading state
@@ -498,14 +512,7 @@ class AuthProvider extends ChangeNotifier {
 
   /// Get valid access token (refresh if needed)
   Future<String?> getValidAccessToken() async {
-    if (_accessToken == null) return null;
-    
-    if (isTokenExpired) {
-      final refreshed = await _refreshAccessToken();
-      if (!refreshed) return null;
-    }
-    
-    return _accessToken;
+    return await _tokenService.getValidAccessToken();
   }
 
   /// Send password reset email
@@ -532,7 +539,7 @@ class AuthProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _tokenRefreshTimer?.cancel();
+    _tokenService.dispose();
     super.dispose();
   }
 } 

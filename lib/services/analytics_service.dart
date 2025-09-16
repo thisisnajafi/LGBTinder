@@ -610,4 +610,339 @@ class AnalyticsService {
       throw NetworkException('Network error while tracking custom event: $e');
     }
   }
+
+  /// Get user journey analytics
+  static Future<Map<String, dynamic>> getUserJourneyAnalytics({
+    String? accessToken,
+    String? period,
+    DateTime? startDate,
+    DateTime? endDate,
+    List<String>? journeySteps,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.analyticsEngagement) + '/journey');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (period != null) queryParams['period'] = period;
+      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+      if (journeySteps != null) queryParams['journey_steps'] = journeySteps.join(',');
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch user journey analytics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching user journey analytics: $e');
+    }
+  }
+
+  /// Get conversion analytics
+  static Future<Map<String, dynamic>> getConversionAnalytics({
+    String? accessToken,
+    String? conversionType, // 'signup', 'premium', 'match', 'message'
+    String? period,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.analyticsEngagement) + '/conversion');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (conversionType != null) queryParams['conversion_type'] = conversionType;
+      if (period != null) queryParams['period'] = period;
+      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch conversion analytics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching conversion analytics: $e');
+    }
+  }
+
+  /// Get cohort analytics
+  static Future<Map<String, dynamic>> getCohortAnalytics({
+    String? accessToken,
+    String? cohortType, // 'signup', 'first_match', 'premium_purchase'
+    String? period,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.analyticsRetention) + '/cohort');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (cohortType != null) queryParams['cohort_type'] = cohortType;
+      if (period != null) queryParams['period'] = period;
+      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch cohort analytics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching cohort analytics: $e');
+    }
+  }
+
+  /// Get session analytics
+  static Future<Map<String, dynamic>> getSessionAnalytics({
+    String? accessToken,
+    String? period,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? sessionType, // 'mobile', 'web', 'all'
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.analyticsEngagement) + '/sessions');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (period != null) queryParams['period'] = period;
+      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+      if (sessionType != null) queryParams['session_type'] = sessionType;
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch session analytics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching session analytics: $e');
+    }
+  }
+
+  /// Track user session
+  static Future<bool> trackUserSession({
+    required String sessionId,
+    required DateTime startTime,
+    String? accessToken,
+    DateTime? endTime,
+    Map<String, dynamic>? sessionData,
+    String? deviceInfo,
+  }) async {
+    try {
+      final requestBody = {
+        'session_id': sessionId,
+        'start_time': startTime.toIso8601String(),
+      };
+
+      if (endTime != null) requestBody['end_time'] = endTime.toIso8601String();
+      if (sessionData != null) requestBody['session_data'] = sessionData;
+      if (deviceInfo != null) requestBody['device_info'] = deviceInfo;
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.analyticsTrackActivity) + '/session'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid session data',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to track user session: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while tracking user session: $e');
+    }
+  }
+
+  /// Get performance metrics
+  static Future<Map<String, dynamic>> getPerformanceMetrics({
+    String? accessToken,
+    String? period,
+    DateTime? startDate,
+    DateTime? endDate,
+    List<String>? metrics, // 'response_time', 'error_rate', 'throughput'
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.analyticsEngagement) + '/performance');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (period != null) queryParams['period'] = period;
+      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+      if (metrics != null) queryParams['metrics'] = metrics.join(',');
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch performance metrics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching performance metrics: $e');
+    }
+  }
+
+  /// Get user segmentation analytics
+  static Future<Map<String, dynamic>> getUserSegmentationAnalytics({
+    String? accessToken,
+    String? segmentType, // 'demographic', 'behavioral', 'engagement'
+    String? period,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.analyticsMyAnalytics) + '/segmentation');
+      
+      // Add query parameters
+      final queryParams = <String, String>{};
+      if (segmentType != null) queryParams['segment_type'] = segmentType;
+      if (period != null) queryParams['period'] = period;
+      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch user segmentation analytics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching user segmentation analytics: $e');
+    }
+  }
 }

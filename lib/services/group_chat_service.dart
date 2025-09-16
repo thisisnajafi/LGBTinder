@@ -538,4 +538,282 @@ class GroupChatService {
       throw NetworkException('Network error while removing admin privileges: $e');
     }
   }
+
+  /// Delete group message
+  static Future<bool> deleteMessage(String groupId, String messageId, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.groupChatMessages, {'groupId': groupId}) + '?message_id=$messageId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied or insufficient permissions');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group or message not found');
+      } else {
+        throw ApiException('Failed to delete message: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while deleting message: $e');
+    }
+  }
+
+  /// Mark group messages as read
+  static Future<bool> markMessagesAsRead(String groupId, {String? accessToken, List<String>? messageIds}) async {
+    try {
+      final requestBody = <String, dynamic>{'group_id': groupId};
+      if (messageIds != null && messageIds.isNotEmpty) {
+        requestBody['message_ids'] = messageIds;
+      }
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.groupChatMessages) + '/mark-read'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group not found');
+      } else {
+        throw ApiException('Failed to mark messages as read: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while marking messages as read: $e');
+    }
+  }
+
+  /// Send typing indicator to group
+  static Future<bool> sendTypingIndicator(String groupId, bool isTyping, {String? accessToken}) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.groupChatMessages) + '/typing'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'group_id': groupId,
+          'is_typing': isTyping,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group not found');
+      } else {
+        throw ApiException('Failed to send typing indicator: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending typing indicator: $e');
+    }
+  }
+
+  /// Get group members
+  static Future<List<Map<String, dynamic>>> getGroupMembers(String groupId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.groupChatGroupById, {'groupId': groupId}) + '/members'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw AuthException('Access denied to this group');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group not found');
+      } else {
+        throw ApiException('Failed to fetch group members: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching group members: $e');
+    }
+  }
+
+  /// Get group admins
+  static Future<List<Map<String, dynamic>>> getGroupAdmins(String groupId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.groupChatGroupById, {'groupId': groupId}) + '/admins'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw AuthException('Access denied to this group');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group not found');
+      } else {
+        throw ApiException('Failed to fetch group admins: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching group admins: $e');
+    }
+  }
+
+  /// Update group image
+  static Future<Map<String, dynamic>> updateGroupImage(String groupId, File groupImage, {String? accessToken}) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.groupChatGroupById, {'groupId': groupId}) + '/image'),
+      );
+
+      request.headers.addAll({
+        'Accept': 'application/json',
+        if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+      });
+
+      request.files.add(await http.MultipartFile.fromPath('group_image', groupImage.path));
+
+      final streamResponse = await request.send();
+      final responseBody = await streamResponse.stream.bytesToString();
+      final response = http.Response(responseBody, streamResponse.statusCode);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied or insufficient permissions');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group not found');
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Validation failed',
+          data['errors'] ?? <String, String>{},
+        );
+      } else {
+        throw ApiException('Failed to update group image: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ValidationException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while updating group image: $e');
+    }
+  }
+
+  /// Delete group
+  static Future<bool> deleteGroup(String groupId, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.groupChatGroupById, {'groupId': groupId})),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw ApiException('Access denied or insufficient permissions');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group not found');
+      } else {
+        throw ApiException('Failed to delete group: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while deleting group: $e');
+    }
+  }
+
+  /// Get group statistics
+  static Future<Map<String, dynamic>> getGroupStatistics(String groupId, {String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrlWithParams(ApiConfig.groupChatGroupById, {'groupId': groupId}) + '/statistics'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? data;
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else if (response.statusCode == 403) {
+        throw AuthException('Access denied to this group');
+      } else if (response.statusCode == 404) {
+        throw ApiException('Group not found');
+      } else {
+        throw ApiException('Failed to fetch group statistics: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching group statistics: $e');
+    }
+  }
 }

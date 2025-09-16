@@ -10,6 +10,8 @@ import '../components/chat/chat_list_empty.dart';
 import '../components/chat/chat_list_loading.dart';
 import '../utils/error_handler.dart';
 import '../utils/success_feedback.dart';
+import '../services/pull_to_refresh_service.dart';
+import '../services/skeleton_loader_service.dart';
 
 class ChatListPage extends StatefulWidget {
   const ChatListPage({Key? key}) : super(key: key);
@@ -136,8 +138,10 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.navbarBackground,
-      body: SafeArea(
-        child: Column(
+      body: PullToRefreshService().createRefreshIndicator(
+        onRefresh: () => _loadChats(refresh: true),
+        child: SafeArea(
+          child: Column(
           children: [
             // Header
             ChatListHeader(

@@ -125,12 +125,22 @@ class RegisterResponseData {
   });
 
   factory RegisterResponseData.fromJson(Map<String, dynamic> json) {
-    return RegisterResponseData(
-      userId: json['user_id'].toString(), // Convert int or String to String
-      email: json['email'] as String,
-      resendAvailableAt: json['resend_available_at'] as String,
-      hourlyAttemptsRemaining: json['hourly_attempts_remaining'] as int,
-    );
+    print('🔍 RegisterResponseData.fromJson called with: $json');
+    try {
+      final result = RegisterResponseData(
+        userId: json['user_id'].toString(), // Convert int or String to String
+        email: json['email'] as String,
+        resendAvailableAt: json['resend_available_at'] as String,
+        hourlyAttemptsRemaining: json['hourly_attempts_remaining'] as int,
+      );
+      print('🔍 RegisterResponseData created successfully');
+      return result;
+    } catch (e) {
+      print('💥 Error in RegisterResponseData.fromJson: $e');
+      print('💥 JSON data: $json');
+      print('💥 user_id value: ${json['user_id']} (type: ${json['user_id'].runtimeType})');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -144,39 +154,31 @@ class RegisterResponseData {
 }
 
 class VerificationResponse {
-  final bool success;
+  final bool status;
   final String message;
-  final AuthUser? user;
-  final String? accessToken;
-  final String? refreshToken;
+  final VerificationData? data;
 
   const VerificationResponse({
-    required this.success,
+    required this.status,
     required this.message,
-    this.user,
-    this.accessToken,
-    this.refreshToken,
+    this.data,
   });
 
   factory VerificationResponse.fromJson(Map<String, dynamic> json) {
     return VerificationResponse(
-      success: json['success'] as bool,
+      status: json['status'] as bool,
       message: json['message'] as String,
-      user: json['user'] != null
-          ? AuthUser.fromJson(json['user'] as Map<String, dynamic>)
+      data: json['data'] != null
+          ? VerificationData.fromJson(json['data'] as Map<String, dynamic>)
           : null,
-      accessToken: json['access_token'] as String?,
-      refreshToken: json['refresh_token'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'success': success,
+      'status': status,
       'message': message,
-      'user': user?.toJson(),
-      'access_token': accessToken,
-      'refresh_token': refreshToken,
+      'data': data?.toJson(),
     };
   }
 
@@ -184,25 +186,82 @@ class VerificationResponse {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is VerificationResponse &&
-        other.success == success &&
+        other.status == status &&
         other.message == message &&
-        other.user == user &&
-        other.accessToken == accessToken &&
-        other.refreshToken == refreshToken;
+        other.data == data;
   }
 
   @override
   int get hashCode {
-    return success.hashCode ^
+    return status.hashCode ^
         message.hashCode ^
-        user.hashCode ^
-        accessToken.hashCode ^
-        refreshToken.hashCode;
+        data.hashCode;
   }
 
   @override
   String toString() {
-    return 'VerificationResponse(success: $success, message: $message, user: $user, accessToken: $accessToken, refreshToken: $refreshToken)';
+    return 'VerificationResponse(status: $status, message: $message, data: $data)';
+  }
+}
+
+class VerificationData {
+  final String user;
+  final String token;
+  final String tokenType;
+  final bool needsProfileCompletion;
+  final String profileCompletionStatus;
+
+  const VerificationData({
+    required this.user,
+    required this.token,
+    required this.tokenType,
+    required this.needsProfileCompletion,
+    required this.profileCompletionStatus,
+  });
+
+  factory VerificationData.fromJson(Map<String, dynamic> json) {
+    return VerificationData(
+      user: json['user'] as String,
+      token: json['token'] as String,
+      tokenType: json['token_type'] as String,
+      needsProfileCompletion: json['needs_profile_completion'] as bool,
+      profileCompletionStatus: json['profile_completion_status'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user': user,
+      'token': token,
+      'token_type': tokenType,
+      'needs_profile_completion': needsProfileCompletion,
+      'profile_completion_status': profileCompletionStatus,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is VerificationData &&
+        other.user == user &&
+        other.token == token &&
+        other.tokenType == tokenType &&
+        other.needsProfileCompletion == needsProfileCompletion &&
+        other.profileCompletionStatus == profileCompletionStatus;
+  }
+
+  @override
+  int get hashCode {
+    return user.hashCode ^
+        token.hashCode ^
+        tokenType.hashCode ^
+        needsProfileCompletion.hashCode ^
+        profileCompletionStatus.hashCode;
+  }
+
+  @override
+  String toString() {
+    return 'VerificationData(user: $user, token: $token, tokenType: $tokenType, needsProfileCompletion: $needsProfileCompletion, profileCompletionStatus: $profileCompletionStatus)';
   }
 }
 
