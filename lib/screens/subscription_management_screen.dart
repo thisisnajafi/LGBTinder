@@ -541,7 +541,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken != null) {
         final success = await PremiumService.cancelSubscription(

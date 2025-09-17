@@ -254,11 +254,11 @@ class _AnimationSettingsScreenState extends State<AnimationSettingsScreen>
             spacing: 12,
             runSpacing: 12,
             children: [
-              _buildAnimationTypeButton('Scale', AnimationType.scale),
-              _buildAnimationTypeButton('Fade', AnimationType.fade),
-              _buildAnimationTypeButton('Bounce', AnimationType.bounce),
-              _buildAnimationTypeButton('Rotate', AnimationType.rotate),
-              _buildAnimationTypeButton('Slide', AnimationType.slide),
+              _buildAnimationTypeButton('Scale', custom.AnimationType.scale),
+              _buildAnimationTypeButton('Fade', custom.AnimationType.fade),
+              _buildAnimationTypeButton('Bounce', custom.AnimationType.bounce),
+              _buildAnimationTypeButton('Rotate', custom.AnimationType.rotate),
+              _buildAnimationTypeButton('Slide', custom.AnimationType.slide),
             ],
           ),
         ],
@@ -384,12 +384,12 @@ class _AnimationSettingsScreenState extends State<AnimationSettingsScreen>
               return Column(
                 children: [
                   // Animated Button Preview
-                  AnimatedButton(
+                  custom.AnimatedButton(
                     onPressed: () {
                       _previewController.reset();
                       _previewController.forward();
                     },
-                    animationType: AnimationType.scale,
+                    animationType: custom.AnimationType.scale,
                     child: Text(
                       'Animated Button',
                       style: AppTypography.body1.copyWith(
@@ -400,8 +400,8 @@ class _AnimationSettingsScreenState extends State<AnimationSettingsScreen>
                   ),
                   const SizedBox(height: 16),
                   // Animated Card Preview
-                  AnimatedCard(
-                    animationType: AnimationType.fade,
+                  custom.AnimatedCard(
+                    animationType: custom.AnimationType.fade,
                     child: Column(
                       children: [
                         Text(
@@ -428,19 +428,19 @@ class _AnimationSettingsScreenState extends State<AnimationSettingsScreen>
                     children: [
                       custom.AnimatedIcon(
                         Icons.favorite,
-                        animationType: AnimationType.bounce,
+                        animationType: custom.AnimationType.bounce,
                         color: Colors.red,
                         size: 32,
                       ),
                       custom.AnimatedIcon(
                         Icons.star,
-                        animationType: AnimationType.rotate,
+                        animationType: custom.AnimationType.rotate,
                         color: Colors.yellow,
                         size: 32,
                       ),
                       custom.AnimatedIcon(
                         Icons.thumb_up,
-                        animationType: AnimationType.scale,
+                        animationType: custom.AnimationType.scale,
                         color: Colors.green,
                         size: 32,
                       ),
@@ -492,8 +492,8 @@ class _AnimationSettingsScreenState extends State<AnimationSettingsScreen>
     );
   }
 
-  Widget _buildAnimationTypeButton(String label, AnimationType type) {
-    return AnimatedButton(
+  Widget _buildAnimationTypeButton(String label, custom.AnimationType type) {
+    return custom.AnimatedButton(
       onPressed: () {
         _previewController.reset();
         _previewController.forward();

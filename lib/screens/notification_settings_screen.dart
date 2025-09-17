@@ -15,7 +15,7 @@ class NotificationSettingsScreen extends StatefulWidget {
 
 class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
   bool _isLoading = true;
-  Map<String, bool> _notificationSettings = {};
+  Map<String, dynamic> _notificationSettings = {};
   bool _pushNotificationsEnabled = true;
   bool _emailNotificationsEnabled = true;
   bool _smsNotificationsEnabled = false;

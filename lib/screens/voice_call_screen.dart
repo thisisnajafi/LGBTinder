@@ -1,3 +1,5 @@
+// Temporarily disabled due to flutter_webrtc compatibility issues
+/*
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -215,7 +217,7 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> {
                 
                 // User name
                 Text(
-                  widget.otherUser.name,
+                  widget.otherUser.name ?? 'Unknown',
                   style: AppTypography.h2.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -295,9 +297,9 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> {
         ],
       ),
       child: ClipOval(
-        child: widget.otherUser.images.isNotEmpty
+        child: widget.otherUser.images?.isNotEmpty == true
             ? Image.network(
-                widget.otherUser.images.first,
+                widget.otherUser.images!.first.url,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.person,
@@ -446,3 +448,4 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> {
     super.dispose();
   }
 }
+*/

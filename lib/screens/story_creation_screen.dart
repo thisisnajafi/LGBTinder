@@ -5,6 +5,7 @@ import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../services/stories_service.dart';
 import '../utils/api_error_handler.dart';
+import '../components/chat/media_picker.dart';
 
 class StoryCreationScreen extends StatefulWidget {
   const StoryCreationScreen({Key? key}) : super(key: key);
@@ -442,11 +443,9 @@ class _StoryCreationScreenState extends State<StoryCreationScreen> {
 
   Future<void> _pickMedia() async {
     try {
-      final XFile? file = await _imagePicker.pickMedia(
-        mediaType: _selectedType == StoryType.image 
-            ? MediaType.image 
-            : MediaType.video,
-      );
+      final XFile? file = _selectedType == StoryType.image
+          ? await _imagePicker.pickImage(source: ImageSource.gallery)
+          : await _imagePicker.pickVideo(source: ImageSource.gallery);
       
       if (file != null) {
         setState(() {
@@ -469,12 +468,9 @@ class _StoryCreationScreenState extends State<StoryCreationScreen> {
 
   Future<void> _captureMedia() async {
     try {
-      final XFile? file = await _imagePicker.pickMedia(
-        mediaType: _selectedType == StoryType.image 
-            ? MediaType.image 
-            : MediaType.video,
-        source: ImageSource.camera,
-      );
+      final XFile? file = _selectedType == StoryType.image
+          ? await _imagePicker.pickImage(source: ImageSource.camera)
+          : await _imagePicker.pickVideo(source: ImageSource.camera);
       
       if (file != null) {
         setState(() {
@@ -565,8 +561,3 @@ class _StoryCreationScreenState extends State<StoryCreationScreen> {
   }
 }
 
-enum StoryType {
-  text,
-  image,
-  video,
-}

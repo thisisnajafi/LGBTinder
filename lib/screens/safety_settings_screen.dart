@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../services/safety_service.dart';
@@ -38,7 +39,7 @@ class _SafetySettingsScreenState extends State<SafetySettingsScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken != null) {
         final settings = await SafetyService.getSafetySettings(
@@ -70,7 +71,7 @@ class _SafetySettingsScreenState extends State<SafetySettingsScreen> {
   Future<void> _updateSafetySetting(String key, dynamic value) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken != null) {
         await SafetyService.updateSafetySetting(
@@ -106,11 +107,13 @@ class _SafetySettingsScreenState extends State<SafetySettingsScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken != null) {
         await SafetyService.addEmergencyContact(
-          contact: contact,
+          name: contact,
+          phoneNumber: contact,
+          relationship: 'Emergency Contact',
           accessToken: accessToken,
         );
 
@@ -139,11 +142,11 @@ class _SafetySettingsScreenState extends State<SafetySettingsScreen> {
   Future<void> _removeEmergencyContact(String contact) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken != null) {
         await SafetyService.removeEmergencyContact(
-          contact: contact,
+          contact, // contactId
           accessToken: accessToken,
         );
 

@@ -98,8 +98,8 @@ class LGBTinderApp extends StatelessWidget {
           '/premium-features': (context) => const PremiumFeaturesScreen(),
           '/subscription-management': (context) => const SubscriptionManagementScreen(),
           '/payment': (context) => PaymentScreen(plan: PremiumPlan.fromJson({})),
-          '/video-call': (context) => VideoCallScreen(otherUser: User.fromJson({})),
-          '/voice-call': (context) => VoiceCallScreen(otherUser: User.fromJson({})),
+          // '/video-call': (context) => VideoCallScreen(otherUser: User.fromJson({})),  // Temporarily disabled
+          // '/voice-call': (context) => VoiceCallScreen(otherUser: User.fromJson({})),  // Temporarily disabled
           '/terms-of-service': (context) => const TermsOfServiceScreen(),
           '/privacy-policy': (context) => const PrivacyPolicyScreen(),
           '/accessibility-settings': (context) => const AccessibilitySettingsScreen(),

@@ -195,8 +195,9 @@ class _ChatListPageState extends State<ChatListPage> {
             ),
           ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
   Widget _buildErrorState(String error) {
     return Center(

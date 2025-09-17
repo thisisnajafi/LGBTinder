@@ -96,7 +96,7 @@ class _FeedPageState extends State<FeedPage> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken == null) return;
 

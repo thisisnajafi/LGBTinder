@@ -1,3 +1,5 @@
+// Temporarily disabled due to flutter_webrtc compatibility issues
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -24,6 +26,8 @@ class VideoCallScreen extends StatefulWidget {
 
 class _VideoCallScreenState extends State<VideoCallScreen> {
   final WebRTCService _webrtcService = WebRTCService();
+  late RTCVideoRenderer _localRenderer;
+  late RTCVideoRenderer _remoteRenderer;
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
   bool _isSpeakerEnabled = false;
@@ -34,8 +38,16 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   @override
   void initState() {
     super.initState();
+    _localRenderer = RTCVideoRenderer();
+    _remoteRenderer = RTCVideoRenderer();
+    _initializeRenderers();
     _initializeCall();
     _setupStreams();
+  }
+
+  Future<void> _initializeRenderers() async {
+    await _localRenderer.initialize();
+    await _remoteRenderer.initialize();
   }
 
   Future<void> _initializeCall() async {
@@ -70,6 +82,15 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         _connectionState = state;
       });
     });
+
+    _webrtcService.remoteStream.listen((stream) {
+      _remoteRenderer.srcObject = stream;
+    });
+
+    // Set local stream
+    if (_webrtcService.localStream != null) {
+      _localRenderer.srcObject = _webrtcService.localStream!;
+    }
   }
 
   Future<void> _startOutgoingCall() async {
@@ -176,7 +197,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             // Remote video (full screen)
             if (_isCallActive)
               RTCVideoView(
-                _webrtcService.remoteStream,
+                _remoteRenderer,
                 objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
               )
             else
@@ -197,7 +218,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: RTCVideoView(
-                      _webrtcService._localStream,
+                      _localRenderer,
                       objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                     ),
                   ),
@@ -241,9 +262,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               border: Border.all(color: Colors.white, width: 4),
             ),
             child: ClipOval(
-              child: widget.otherUser.images.isNotEmpty
+              child: widget.otherUser.images?.isNotEmpty == true
                   ? Image.network(
-                      widget.otherUser.images.first,
+                      widget.otherUser.images!.first.url,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Icon(
                         Icons.person,
@@ -260,7 +281,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            widget.otherUser.name,
+            widget.otherUser.name ?? 'Unknown',
             style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -474,7 +495,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   @override
   void dispose() {
+    _localRenderer.dispose();
+    _remoteRenderer.dispose();
     _webrtcService.dispose();
     super.dispose();
   }
 }
+*/

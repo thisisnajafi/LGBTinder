@@ -134,7 +134,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   Future<void> _handleLike(User user) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
       
       if (accessToken == null) return;
       
@@ -169,7 +169,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   Future<void> _handleDislike(User user) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
       
       if (accessToken == null) return;
       
@@ -191,7 +191,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   Future<void> _handleSuperLike(User user) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
       
       if (accessToken == null) return;
       

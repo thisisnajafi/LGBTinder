@@ -490,7 +490,7 @@ class VerificationService {
     int? rating,
   }) async {
     try {
-      final requestBody = {'feedback': feedback};
+      final requestBody = <String, dynamic>{'feedback': feedback};
       if (rating != null) requestBody['rating'] = rating;
 
       final response = await http.post(

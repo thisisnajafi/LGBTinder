@@ -1,3 +1,5 @@
+// Temporarily disabled due to flutter_webrtc compatibility issues
+/*
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -24,6 +26,7 @@ class WebRTCService {
   Stream<MediaStream> get remoteStream => _remoteStreamController.stream;
   Stream<String> get connectionState => _connectionStateController.stream;
   Stream<String> get callState => _callStateController.stream;
+  MediaStream? get localStream => _localStream;
 
   bool get isConnected => _peerConnection?.connectionState == RTCPeerConnectionState.RTCPeerConnectionStateConnected;
   bool get isCallActive => _localStream != null && _remoteStream != null;
@@ -402,3 +405,4 @@ class CallState {
     );
   }
 }
+*/

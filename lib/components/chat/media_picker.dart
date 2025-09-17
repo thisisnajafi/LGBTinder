@@ -284,9 +284,9 @@ class _MediaPickerState extends State<MediaPicker> {
 
   Future<void> _pickFromGallery(MediaType type) async {
     try {
-      final XFile? file = await _imagePicker.pickMedia(
-        mediaType: type == MediaType.image ? MediaType.image : MediaType.video,
-      );
+      final XFile? file = type == MediaType.image
+          ? await _imagePicker.pickImage(source: ImageSource.gallery)
+          : await _imagePicker.pickVideo(source: ImageSource.gallery);
       
       if (file != null) {
         final selectedFile = File(file.path);
@@ -299,8 +299,7 @@ class _MediaPickerState extends State<MediaPicker> {
 
   Future<void> _captureFromCamera(MediaType type) async {
     try {
-      final XFile? file = await _imagePicker.pickMedia(
-        mediaType: MediaType.image,
+      final XFile? file = await _imagePicker.pickImage(
         source: ImageSource.camera,
       );
       

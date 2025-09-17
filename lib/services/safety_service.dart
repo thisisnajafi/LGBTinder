@@ -72,7 +72,7 @@ class SafetyService {
     bool? isPrimary,
   }) async {
     try {
-      final requestBody = {
+      final requestBody = <String, dynamic>{
         'name': name,
         'phone_number': phoneNumber,
         'relationship': relationship,
@@ -195,7 +195,7 @@ class SafetyService {
     Map<String, dynamic>? additionalInfo,
   }) async {
     try {
-      final requestBody = {'alert_type': alertType};
+      final requestBody = <String, dynamic>{'alert_type': alertType};
 
       if (message != null) requestBody['message'] = message;
       if (location != null) requestBody['location'] = location;
@@ -246,7 +246,7 @@ class SafetyService {
     String? message,
   }) async {
     try {
-      final requestBody = {'location': location};
+      final requestBody = <String, dynamic>{'location': location};
 
       if (duration != null) requestBody['duration_minutes'] = duration.inMinutes;
       if (recipientIds != null) requestBody['recipient_ids'] = recipientIds;
@@ -399,7 +399,7 @@ class SafetyService {
         }
       } else {
         // Submit report without evidence file
-        final requestBody = {
+        final requestBody = <String, dynamic>{
           'incident_type': incidentType,
           'description': description,
         };
@@ -531,7 +531,7 @@ class SafetyService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final requestBody = {
+      final requestBody = <String, dynamic>{
         'content_id': contentId,
         'content_type': contentType,
         'action': action,
@@ -751,7 +751,7 @@ class SafetyService {
     Map<String, dynamic>? additionalInfo,
   }) async {
     try {
-      final requestBody = {'check_in_type': checkInType};
+      final requestBody = <String, dynamic>{'check_in_type': checkInType};
 
       if (message != null) requestBody['message'] = message;
       if (location != null) requestBody['location'] = location;
@@ -1010,7 +1010,7 @@ class SafetyService {
     String? additionalInfo,
   }) async {
     try {
-      final requestBody = {
+      final requestBody = <String, dynamic>{
         'alert_id': alertId,
         'reason': reason,
       };
@@ -1050,6 +1050,92 @@ class SafetyService {
       rethrow;
     } catch (e) {
       throw NetworkException('Network error while reporting false emergency alert: $e');
+    }
+  }
+
+  /// Get safety settings
+  static Future<Map<String, dynamic>> getSafetySettings({String? accessToken}) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyGuidelines) + '/settings'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['data'] ?? {};
+      } else {
+        throw ApiException('Failed to get safety settings: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ApiException) {
+        rethrow;
+      } else {
+        throw NetworkException('Network error while getting safety settings: $e');
+      }
+    }
+  }
+
+  /// Update safety setting
+  static Future<bool> updateSafetySetting({
+    required String key,
+    required dynamic value,
+    String? accessToken,
+  }) async {
+    try {
+      final requestBody = <String, dynamic>{
+        key: value,
+      };
+
+      final response = await http.put(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyGuidelines) + '/settings'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+        body: json.encode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw ApiException('Failed to update safety setting: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ApiException) {
+        rethrow;
+      } else {
+        throw NetworkException('Network error while updating safety setting: $e');
+      }
+    }
+  }
+
+  /// Remove emergency contact
+  static Future<bool> removeEmergencyContact(String contactId, {String? accessToken}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.safetyEmergencyContacts) + '/$contactId'),
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw ApiException('Failed to remove emergency contact: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ApiException) {
+        rethrow;
+      } else {
+        throw NetworkException('Network error while removing emergency contact: $e');
+      }
     }
   }
 }
