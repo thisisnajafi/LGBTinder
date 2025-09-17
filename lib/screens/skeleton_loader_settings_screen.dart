@@ -81,7 +81,7 @@ class _SkeletonLoaderSettingsScreenState extends State<SkeletonLoaderSettingsScr
           const SizedBox(height: 12),
           Text(
             'Skeleton Loaders',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

@@ -169,7 +169,7 @@ If you have any questions about these Terms of Service, please contact us at:
           const SizedBox(height: 12),
           Text(
             'Terms of Service',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

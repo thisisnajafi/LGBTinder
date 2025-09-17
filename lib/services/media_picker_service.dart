@@ -273,11 +273,10 @@ class MediaPickerService {
       }
 
       // Pick multiple images from gallery
-      final List<XFile> images = await _imagePicker.pickMultipleImages(
+      final List<XFile> images = await _imagePicker.pickMultiImage(
         imageQuality: quality?.value ?? _imageQuality,
         maxWidth: maxWidth?.toDouble() ?? _maxImageWidth.toDouble(),
         maxHeight: maxHeight?.toDouble() ?? _maxImageHeight.toDouble(),
-        limit: limit ?? 10,
       );
 
       if (images.isEmpty) return null;

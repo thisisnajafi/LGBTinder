@@ -201,6 +201,14 @@ class AppTypography {
     letterSpacing: 0,
   );
 
+
+  static const TextStyle h5 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 18.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+  );
+
   static const TextStyle subtitle1 = TextStyle(
     fontFamily: primaryFont,
     fontSize: 16.0,

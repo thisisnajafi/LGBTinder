@@ -83,7 +83,7 @@ class _PullToRefreshSettingsScreenState extends State<PullToRefreshSettingsScree
           const SizedBox(height: 12),
           Text(
             'Pull-to-Refresh',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

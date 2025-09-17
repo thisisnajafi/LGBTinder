@@ -4,7 +4,6 @@ import '../../providers/auth_provider.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../models/auth_requests.dart';
-import '../../components/auth/social_login_buttons.dart';
 import '../../components/animations/animated_components.dart';
 import '../../utils/api_error_handler.dart';
 import 'register_screen.dart';
@@ -101,44 +100,10 @@ class _LoginScreenState extends State<LoginScreen> {
             duration: Duration(seconds: 4),
           ),
         );
+      }
     }
   }
 
-  void _handleSocialLoginSuccess(Map<String, dynamic> result) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    // Handle successful social login
-    if (result['access_token'] != null) {
-      authProvider.setAuthData(
-        accessToken: result['access_token'],
-        refreshToken: result['refresh_token'],
-        user: result['user'],
-      );
-      
-      // Navigate to main app
-      Navigator.pushReplacementNamed(context, '/main');
-    } else {
-      // Show success message but user needs to complete profile
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Social login successful! Please complete your profile.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
-      // Navigate to profile completion
-      Navigator.pushReplacementNamed(context, '/profile-wizard');
-    }
-  }
-
-  void _handleSocialLoginError(String error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(error),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -368,43 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 24),
-                  
-                  // Divider with "OR"
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          color: Colors.white30,
-                          thickness: 1,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'OR',
-                          style: AppTypography.body2.copyWith(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          color: Colors.white30,
-                          thickness: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Social Login Buttons
-                  SocialLoginButtons(
-                    onSuccess: _handleSocialLoginSuccess,
-                    onError: _handleSocialLoginError,
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                    
                    // Sign Up Link
                   Row(

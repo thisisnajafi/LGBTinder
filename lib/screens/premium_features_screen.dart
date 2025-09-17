@@ -5,6 +5,7 @@ import '../theme/typography.dart';
 import '../services/premium_service.dart';
 import '../providers/auth_provider.dart';
 import '../utils/api_error_handler.dart';
+import '../models/premium_plan.dart';
 
 class PremiumFeaturesScreen extends StatefulWidget {
   const PremiumFeaturesScreen({Key? key}) : super(key: key);
@@ -33,7 +34,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken == null) {
         throw Exception('No access token available');
@@ -183,7 +184,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                   const SizedBox(height: 24),
                   _buildPremiumPlans(),
                   const SizedBox(height: 24),
-                  _buildPremiumFeatures(),
+                  _buildPremiumFeaturesWidget(),
                   const SizedBox(height: 24),
                   _buildUsageStats(),
                   const SizedBox(height: 20),
@@ -225,7 +226,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
           const SizedBox(height: 12),
           Text(
             isPremium ? 'Premium Member' : 'Free Member',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -335,7 +336,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                 children: [
                   Text(
                     plan.formattedPrice,
-                    style: AppTypography.h3.copyWith(
+                    style: AppTypography.h4.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -399,7 +400,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
     );
   }
 
-  Widget _buildPremiumFeatures() {
+  Widget _buildPremiumFeaturesWidget() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -133,8 +133,6 @@ class ImageCompressionService {
         quality: quality ?? _quality,
         minWidth: _minWidth,
         minHeight: _minHeight,
-        maxWidth: maxWidth ?? _maxWidth,
-        maxHeight: maxHeight ?? _maxHeight,
         format: format ?? _format,
         keepExif: preserveExif ?? _preserveExif,
         autoCorrectionAngle: autoRotate ?? _autoRotate,
@@ -150,7 +148,7 @@ class ImageCompressionService {
           await HapticFeedbackService().success();
         }
 
-        return compressedFile;
+        return File(compressedFile.path);
       }
 
       return imageFile;
@@ -196,8 +194,6 @@ class ImageCompressionService {
         quality: quality ?? _quality,
         minWidth: _minWidth,
         minHeight: _minHeight,
-        maxWidth: maxWidth ?? _maxWidth,
-        maxHeight: maxHeight ?? _maxHeight,
         format: format ?? _format,
         keepExif: preserveExif ?? _preserveExif,
         autoCorrectionAngle: autoRotate ?? _autoRotate,

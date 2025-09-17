@@ -72,7 +72,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
     
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
       
       if (accessToken == null) {
         throw Exception('No access token available');
@@ -543,7 +543,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
             const SizedBox(height: 16),
             Text(
               'No more matches',
-              style: AppTypography.h3.copyWith(
+              style: AppTypography.h4.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),

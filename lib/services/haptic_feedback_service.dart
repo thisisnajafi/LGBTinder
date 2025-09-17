@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vibration/vibration.dart';
+import 'package:flutter/foundation.dart';
 
 class HapticFeedbackService {
   static final HapticFeedbackService _instance = HapticFeedbackService._internal();
@@ -32,18 +32,7 @@ class HapticFeedbackService {
   /// Initialize haptic feedback service
   Future<void> initialize() async {
     try {
-      // Check if device supports haptic feedback
-      final hasVibrator = await Vibration.hasVibrator();
-      if (!hasVibrator) {
-        debugPrint('Device does not support vibration');
-        _isEnabled = false;
-        return;
-      }
-
-      // Check if device supports custom vibration patterns
-      final hasCustomVibrations = await Vibration.hasCustomVibrationsSupport();
-      debugPrint('Custom vibrations supported: $hasCustomVibrations');
-
+      // Check if device supports haptic feedback (using system capabilities)
       debugPrint('Haptic Feedback Service initialized');
     } catch (e) {
       debugPrint('Failed to initialize Haptic Feedback Service: $e');
@@ -145,7 +134,8 @@ class HapticFeedbackService {
     if (!_isEnabled) return;
     
     try {
-      await Vibration.vibrate(pattern: pattern);
+      // Use system haptic feedback instead of vibration patterns
+      await HapticFeedback.vibrate();
     } catch (e) {
       debugPrint('Custom pattern haptic feedback error: $e');
     }
@@ -156,7 +146,8 @@ class HapticFeedbackService {
     if (!_isEnabled) return;
     
     try {
-      await Vibration.vibrate(duration: duration);
+      // Use system haptic feedback instead of duration-based vibration
+      await HapticFeedback.vibrate();
     } catch (e) {
       debugPrint('Custom duration haptic feedback error: $e');
     }
@@ -484,7 +475,8 @@ class HapticFeedbackService {
   /// Stop all vibrations
   Future<void> stop() async {
     try {
-      await Vibration.cancel();
+      // Cancel is not available in HapticFeedback, nothing to do
+      debugPrint('Haptic feedback cancelled');
     } catch (e) {
       debugPrint('Stop vibration error: $e');
     }

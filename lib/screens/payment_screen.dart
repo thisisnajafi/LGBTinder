@@ -6,6 +6,7 @@ import '../services/stripe_payment_service.dart';
 import '../services/premium_service.dart';
 import '../providers/auth_provider.dart';
 import '../utils/api_error_handler.dart';
+import '../models/premium_plan.dart';
 
 class PaymentScreen extends StatefulWidget {
   final PremiumPlan plan;
@@ -39,7 +40,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken == null) {
         throw Exception('No access token available');
@@ -142,7 +143,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           const SizedBox(height: 12),
           Text(
             widget.plan.name,
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -434,7 +435,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken == null) {
         throw Exception('No access token available');

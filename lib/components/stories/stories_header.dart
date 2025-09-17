@@ -27,17 +27,17 @@ class StoriesHeader extends StatelessWidget {
         itemCount: usersWithStories.length + 1, // +1 for create story button
         itemBuilder: (context, index) {
           if (index == 0) {
-            return _buildCreateStoryButton();
+            return _buildCreateStoryButton(context);
           }
           
           final user = usersWithStories[index - 1];
-          return _buildStoryCircle(user);
+          return _buildStoryCircle(user, context);
         },
       ),
     );
   }
 
-  Widget _buildCreateStoryButton() {
+  Widget _buildCreateStoryButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
         if (onCreateStory != null) {
@@ -85,7 +85,7 @@ class StoriesHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildStoryCircle(User user) {
+  Widget _buildStoryCircle(User user, BuildContext context) {
     final hasUnviewedStories = _hasUnviewedStories(user);
     
     return GestureDetector(
@@ -118,7 +118,7 @@ class StoriesHeader extends StatelessWidget {
                     ? LinearGradient(
                         colors: [
                           AppColors.primary,
-                          AppColors.secondary,
+                          AppColors.secondaryLight,
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,

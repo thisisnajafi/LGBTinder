@@ -37,7 +37,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
       if (accessToken != null) {
         final settings = await NotificationsService.getNotificationSettings(
-          accessToken: accessToken,
+          accessToken: await accessToken,
         );
         
         setState(() {
@@ -70,7 +70,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         await NotificationsService.updateNotificationSetting(
           key: key,
           value: value,
-          accessToken: accessToken,
+          accessToken: await accessToken,
         );
 
         setState(() {
@@ -462,7 +462,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           userId: authProvider.user?.id.toString() ?? '',
           title: 'Test Notification',
           body: 'This is a test notification from LGBTinder!',
-          accessToken: accessToken,
+          accessToken: await accessToken,
         );
 
         if (success) {

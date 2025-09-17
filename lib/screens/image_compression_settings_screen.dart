@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../services/image_compression_service.dart';
@@ -87,7 +88,7 @@ class _ImageCompressionSettingsScreenState extends State<ImageCompressionSetting
           const SizedBox(height: 12),
           Text(
             'Image Compression',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -621,7 +622,7 @@ class _ImageCompressionSettingsScreenState extends State<ImageCompressionSetting
           _buildPresetCard(
             title: 'Story',
             subtitle: '1080x1920px, 85% quality',
-            icon: Icons.story,
+            icon: Icons.auto_stories,
             onTap: () => _applyPreset('story'),
           ),
           const SizedBox(height: 12),

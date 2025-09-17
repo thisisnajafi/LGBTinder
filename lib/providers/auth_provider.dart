@@ -19,12 +19,19 @@ class AuthProvider extends ChangeNotifier {
   
   // Storage keys
   static const String _userKey = 'user_data';
+  static const String _accessTokenKey = 'access_token';
+  static const String _refreshTokenKey = 'refresh_token';
+  static const String _tokenExpiryKey = 'token_expiry';
   
   // Authentication state
   bool _isAuthenticated = false;
   bool _isLoading = false;
   AuthUser? _user;
   String? _authError;
+  String? _accessToken;
+  String? _refreshToken;
+  DateTime? _tokenExpiry;
+  Timer? _tokenRefreshTimer;
   
   // Getters
   bool get isAuthenticated => _isAuthenticated;
@@ -77,7 +84,7 @@ class AuthProvider extends ChangeNotifier {
         }
         
         // Check if token is expired
-        if (isTokenExpired) {
+        if (await isTokenExpired) {
           // Try to refresh token
           // await _refreshAccessToken(); // Not implemented in backend
         } else {
@@ -490,6 +497,18 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _setError('Failed to update profile: $e');
     }
+  }
+
+  /// Start token refresh timer
+  void _startTokenRefreshTimer() {
+    _tokenRefreshTimer?.cancel();
+    // Set timer to refresh token 5 minutes before expiry
+    _tokenRefreshTimer = Timer.periodic(const Duration(minutes: 1), (timer) async {
+      if (_tokenExpiry != null && DateTime.now().isAfter(_tokenExpiry!.subtract(const Duration(minutes: 5)))) {
+        // Token refresh logic would go here if implemented in backend
+        timer.cancel();
+      }
+    });
   }
 
   /// Check if email exists

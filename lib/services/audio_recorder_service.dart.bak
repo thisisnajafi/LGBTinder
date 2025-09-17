@@ -376,7 +376,7 @@ class AudioRecorderService {
   /// Get recording duration
   Future<Duration?> getRecordingDuration() async {
     try {
-      return _recordingDuration;
+      return await _audioRecorder.getAmplitude();
     } catch (e) {
       debugPrint('Get recording duration error: $e');
       return null;

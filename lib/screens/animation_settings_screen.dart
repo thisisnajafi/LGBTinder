@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../services/animation_service.dart';
-import '../components/animations/animated_components.dart';
+import '../components/animations/animated_components.dart' as custom;
 
 class AnimationSettingsScreen extends StatefulWidget {
   const AnimationSettingsScreen({Key? key}) : super(key: key);
@@ -98,7 +98,7 @@ class _AnimationSettingsScreenState extends State<AnimationSettingsScreen>
           const SizedBox(height: 12),
           Text(
             'Animation Settings',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -426,19 +426,19 @@ class _AnimationSettingsScreenState extends State<AnimationSettingsScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      AnimatedIcon(
+                      custom.AnimatedIcon(
                         Icons.favorite,
                         animationType: AnimationType.bounce,
                         color: Colors.red,
                         size: 32,
                       ),
-                      AnimatedIcon(
+                      custom.AnimatedIcon(
                         Icons.star,
                         animationType: AnimationType.rotate,
                         color: Colors.yellow,
                         size: 32,
                       ),
-                      AnimatedIcon(
+                      custom.AnimatedIcon(
                         Icons.thumb_up,
                         animationType: AnimationType.scale,
                         color: Colors.green,

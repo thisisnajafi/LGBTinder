@@ -138,20 +138,18 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.navbarBackground,
-      body: PullToRefreshService().createRefreshIndicator(
-        onRefresh: () => _loadChats(refresh: true),
-        child: SafeArea(
+      body: SafeArea(
           child: Column(
-          children: [
-            // Header
-            ChatListHeader(
-              searchController: _searchController,
-              onSearchChanged: _onSearchChanged,
-              onNewChat: _onNewChat,
-              onFilterChanged: _onFilterChanged,
-              showArchived: _showArchived,
-              showPinned: _showPinned,
-            ),
+            children: [
+              // Header
+              ChatListHeader(
+                searchController: _searchController,
+                onSearchChanged: _onSearchChanged,
+                onNewChat: _onNewChat,
+                onFilterChanged: _onFilterChanged,
+                showArchived: _showArchived,
+                showPinned: _showPinned,
+              ),
             
             // Chat List
             Expanded(
@@ -197,9 +195,8 @@ class _ChatListPageState extends State<ChatListPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildErrorState(String error) {
     return Center(

@@ -14,7 +14,7 @@ class AnimationService {
   Duration _slowDuration = const Duration(milliseconds: 500);
   Curve _defaultCurve = Curves.easeInOut;
   Curve _bounceCurve = Curves.elasticOut;
-  Curve _springCurve = Curves.spring;
+  Curve _springCurve = Curves.elasticOut;
 
   // Getters
   bool get animationsEnabled => _animationsEnabled;
@@ -141,7 +141,7 @@ class AnimationService {
     Duration? duration,
     Curve? curve,
     Axis axis = Axis.vertical,
-    SizeAxis sizeAxis = SizeAxis.height,
+    Axis sizeAxis = Axis.vertical,
   }) {
     if (!_animationsEnabled || _reduceMotionEnabled) {
       return child;
@@ -150,7 +150,6 @@ class AnimationService {
     return SizeTransition(
       sizeFactor: animation,
       axis: axis,
-      sizeAxis: sizeAxis,
       child: child,
     );
   }

@@ -96,7 +96,7 @@ class _AccessibilitySettingsScreenState extends State<AccessibilitySettingsScree
           const SizedBox(height: 12),
           Text(
             'Accessibility Settings',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -143,7 +143,7 @@ class _AccessibilitySettingsScreenState extends State<AccessibilitySettingsScree
               });
               _announceChange('Screen reader support ${value ? 'enabled' : 'disabled'}');
             },
-            icon: Icons.screen_reader_desktop,
+            icon: Icons.accessibility,
           ),
           const SizedBox(height: 12),
           _buildSwitchTile(

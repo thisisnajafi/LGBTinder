@@ -638,7 +638,7 @@ class ErrorHandler {
           milliseconds: (delay.inMilliseconds * backoffMultiplier).clamp(
             initialDelay.inMilliseconds,
             maxDelay.inMilliseconds,
-          ),
+          ).round(),
         );
       }
     }

@@ -81,7 +81,7 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
           const SizedBox(height: 12),
           Text(
             'Haptic Feedback',
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

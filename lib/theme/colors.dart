@@ -7,6 +7,7 @@ class AppColors {
   static const Color primaryDark = Color(0xFFF472B6); // Pink-400
 
   // Secondary Colors
+  static const Color secondary = Color(0xFF8B5CF6); // Purple-500
   static const Color secondaryLight = Color(0xFF8B5CF6); // Purple-500
   static const Color secondaryDark = Color(0xFFA78BFA); // Purple-400
 
@@ -15,8 +16,15 @@ class AppColors {
   static const Color successDark = Color(0xFF34D399); // Emerald-400
 
   // Warning Colors
+  static const Color warning = Color(0xFFF59E0B); // Amber-500
   static const Color warningLight = Color(0xFFF59E0B); // Amber-500
   static const Color warningDark = Color(0xFFFBBF24); // Amber-400
+
+  // Accent Colors
+  static const Color accent = Color(0xFF8B5CF6); // Purple-500
+  
+  // Info Colors
+  static const Color info = Color(0xFF3B82F6); // Blue-500
 
   // Error Colors
   static const Color errorLight = Color(0xFFEF4444); // Red-500

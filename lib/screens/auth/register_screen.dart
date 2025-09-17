@@ -6,7 +6,6 @@ import '../../providers/auth_provider.dart';
 import '../../models/auth_requests.dart';
 import '../../utils/validation.dart';
 import '../../utils/registration_validator.dart';
-import '../../components/auth/social_login_buttons.dart';
 import '../../utils/api_error_handler.dart';
 import 'email_verification_screen.dart';
 

@@ -218,7 +218,7 @@ class _StoryViewingScreenState extends State<StoryViewingScreen>
           end: Alignment.bottomRight,
           colors: [
             AppColors.primary,
-            AppColors.secondary,
+            AppColors.secondaryLight,
           ],
         ),
       ),
@@ -449,7 +449,7 @@ class _StoryViewingScreenState extends State<StoryViewingScreen>
             const SizedBox(height: 16),
             Text(
               user.firstName,
-              style: AppTypography.h3.copyWith(
+              style: AppTypography.h2.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),

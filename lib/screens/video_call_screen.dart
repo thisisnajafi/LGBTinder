@@ -261,7 +261,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           const SizedBox(height: 24),
           Text(
             widget.otherUser.name,
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

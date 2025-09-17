@@ -803,6 +803,64 @@ class FeedsService {
     }
   }
 
+  /// Get feed posts (alias for getFeeds)
+  static Future<List<Map<String, dynamic>>> getFeedPosts({
+    String? accessToken,
+    int? page,
+    int? limit,
+    String? type,
+  }) async {
+    return getFeeds(
+      accessToken: accessToken,
+      page: page,
+      limit: limit,
+      type: type,
+    );
+  }
+
+  /// Get users with stories
+  static Future<List<Map<String, dynamic>>> getUsersWithStories({
+    String? accessToken,
+    int? page,
+    int? limit,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.storiesUsers));
+      
+      final queryParams = <String, String>{};
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List<dynamic> items = data['data'] ?? data;
+        return items.cast<Map<String, dynamic>>();
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to fetch users with stories: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while fetching users with stories: $e');
+    }
+  }
+
   /// Pin/unpin feed
   static Future<bool> togglePinFeed(String feedId, {String? accessToken}) async {
     try {

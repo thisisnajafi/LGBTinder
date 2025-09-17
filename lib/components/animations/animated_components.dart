@@ -112,6 +112,11 @@ class _AnimatedButtonState extends State<AnimatedButton>
                 angle: (1 - _animation.value) * 0.1,
                 child: button,
               );
+            case AnimationType.slide:
+              return Transform.translate(
+                offset: Offset((1 - _animation.value) * 100, 0),
+                child: button,
+              );
           }
         },
       ),
@@ -233,6 +238,11 @@ class _AnimatedCardState extends State<AnimatedCard>
                   angle: (_animation.value - 1.0) * 0.05,
                   child: card,
                 );
+              case AnimationType.slide:
+                return Transform.translate(
+                  offset: Offset((1 - _animation.value) * 100, 0),
+                  child: card,
+                );
             }
           },
         ),
@@ -345,6 +355,11 @@ class _AnimatedIconState extends State<AnimatedIcon>
                 angle: (1 - _animation.value) * 0.2,
                 child: icon,
               );
+            case AnimationType.slide:
+              return Transform.translate(
+                offset: Offset((1 - _animation.value) * 100, 0),
+                child: icon,
+              );
           }
         },
       ),
@@ -454,6 +469,11 @@ class _AnimatedTextState extends State<AnimatedText>
               angle: (1 - _animation.value) * 0.1,
               child: text,
             );
+          case AnimationType.slide:
+            return Transform.translate(
+              offset: Offset((1 - _animation.value) * 100, 0),
+              child: text,
+            );
         }
       },
     );
@@ -557,6 +577,11 @@ class _AnimatedContainerState extends State<AnimatedContainer>
           case AnimationType.rotate:
             return Transform.rotate(
               angle: (1 - _animation.value) * 0.1,
+              child: container,
+            );
+          case AnimationType.slide:
+            return Transform.translate(
+              offset: Offset((1 - _animation.value) * 100, 0),
               child: container,
             );
         }

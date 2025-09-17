@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../utils/api_error_handler.dart';
+import '../utils/error_handler.dart';
 
 class StripePaymentService {
   /// Create a payment intent
@@ -52,7 +53,7 @@ class StripePaymentService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
-        ),
+        },
         body: jsonEncode({
           'payment_intent_id': paymentIntentId,
         }),
@@ -87,7 +88,7 @@ class StripePaymentService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
-        ),
+        },
         body: jsonEncode({
           'email': email,
           'name': name,
@@ -122,7 +123,7 @@ class StripePaymentService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
-        ),
+        },
         body: jsonEncode({
           'customer_id': customerId,
         }),
@@ -220,7 +221,7 @@ class StripePaymentService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
-        ),
+        },
         body: jsonEncode({
           'customer_id': customerId,
           'price_id': priceId,
@@ -257,7 +258,7 @@ class StripePaymentService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
-        ),
+        },
         body: jsonEncode({
           'subscription_id': subscriptionId,
           'immediately': immediately,

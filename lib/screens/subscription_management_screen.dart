@@ -32,7 +32,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+      final accessToken = await authProvider.accessToken;
 
       if (accessToken == null) {
         throw Exception('No access token available');
@@ -131,7 +131,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           const SizedBox(height: 12),
           Text(
             planName,
-            style: AppTypography.h3.copyWith(
+            style: AppTypography.h4.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

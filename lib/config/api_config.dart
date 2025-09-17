@@ -3,16 +3,16 @@ class ApiConfig {
   static const String _androidEmulatorUrl = 'http://10.0.2.2:8000/api';
   static const String _iosSimulatorUrl = 'http://127.0.0.1:8000/api';
   static const String _physicalDeviceUrl = 'http://YOUR_COMPUTER_IP:8000/api'; // Replace with your computer's IP
-  static const String _productionUrl = 'https://your-production-domain.com/api';
+  static const String _productionUrl = 'http://lg.abolfazlnajafi.com/api';
   
   // Current environment - change this based on your setup
-  static const String baseUrl = _androidEmulatorUrl; // <-- Change this line for different environments
+  // static const String baseUrl = _androidEmulatorUrl; // <-- Change this line for different environments
   
   // Easy switching helper - uncomment the one you need:
   // static const String baseUrl = _androidEmulatorUrl;    // For Android Emulator
   // static const String baseUrl = _iosSimulatorUrl;       // For iOS Simulator  
   // static const String baseUrl = _physicalDeviceUrl;     // For Physical Device
-  // static const String baseUrl = _productionUrl;         // For Production
+  static const String baseUrl = _productionUrl;         // For Production
   
   // WebSocket URLs
   static const String _androidEmulatorWsUrl = 'ws://10.0.2.2:8000';
@@ -153,6 +153,7 @@ class ApiConfig {
   static const String storiesLike = '/stories/{id}/like';
   static const String storiesReplies = '/stories/{storyId}/replies';
   static const String storiesReply = '/stories/{storyId}/reply';
+  static const String storiesUsers = '/stories/users';
   
   // Favorites endpoints
   static const String favoritesAdd = '/favorites/add';
@@ -200,6 +201,100 @@ class ApiConfig {
   static const String stripeRefund = '/stripe/refund';
   static const String stripeAnalytics = '/stripe/analytics';
   static const String stripeWebhook = '/stripe/webhook';
+  
+  // Missing Stripe endpoints
+  static const String stripePaymentMethods = '/stripe/payment-methods';
+  static const String stripeCreateSubscription = '/stripe/create-subscription';
+  static const String stripeCancelSubscription = '/stripe/cancel-subscription';
+  static const String stripeUpdateSubscription = '/stripe/update-subscription';
+  static const String stripeGetSubscription = '/stripe/get-subscription';
+  static const String stripeCustomerSubscriptions = '/stripe/customer-subscriptions';
+  static const String stripePaymentStatus = '/stripe/payment-status';
+  
+  // Missing Feeds endpoints
+  static const String feedsDelete = '/feeds/delete';
+  static const String feedsCommentDelete = '/feeds/comment-delete';
+  static const String feedsUser = '/feeds/user';
+  static const String feedsPinned = '/feeds/pinned';
+  
+  // Missing Premium endpoints
+  static const String premiumUpgrade = '/premium/upgrade';
+  static const String premiumDowngrade = '/premium/downgrade';
+  static const String premiumSubscription = '/premium/subscription';
+  static const String premiumPause = '/premium/pause';
+  static const String premiumResume = '/premium/resume';
+  static const String premiumBilling = '/premium/billing';
+  static const String premiumPaymentMethods = '/premium/payment-methods';
+  
+  // Missing Stripe endpoints
+  static const String stripeCreatePaymentIntent = '/stripe/create-payment-intent';
+  static const String stripeConfirmPayment = '/stripe/confirm-payment';
+  static const String stripeCreateCustomer = '/stripe/create-customer';
+  static const String stripeCreateSetupIntent = '/stripe/create-setup-intent';
+  
+  // Missing Premium endpoints
+  static const String premiumStatus = '/premium/status';
+  static const String premiumPlans = '/premium/plans';
+  static const String premiumPurchase = '/premium/purchase';
+  static const String premiumCancel = '/premium/cancel';
+  static const String premiumUsage = '/premium/usage';
+  static const String premiumCheck = '/premium/check';
+  static const String premiumLimits = '/premium/limits';
+  static const String premiumHistory = '/premium/history';
+  
+  // Missing Notification endpoints
+  static const String notificationsRegister = '/notifications/register';
+  static const String notificationsSend = '/notifications/send';
+  static const String notificationsSettings = '/notifications/settings';
+  static const String notificationsReadMultiple = '/notifications/read-multiple';
+  static const String notificationsById = '/notifications/{id}';
+  static const String notificationsTopics = '/notifications/topics';
+  
+  // Missing Reference Data endpoints
+  static const String countries = '/reference-data/countries';
+  static const String cities = '/reference-data/cities';
+  static const String ageRanges = '/reference-data/age-ranges';
+  static const String heightRanges = '/reference-data/height-ranges';
+  static const String bodyTypes = '/reference-data/body-types';
+  static const String zodiacSigns = '/reference-data/zodiac-signs';
+  static const String drinkingHabits = '/reference-data/drinking-habits';
+  static const String smokingHabits = '/reference-data/smoking-habits';
+  static const String exerciseHabits = '/reference-data/exercise-habits';
+  static const String petPreferences = '/reference-data/pet-preferences';
+  static const String childrenPreferences = '/reference-data/children-preferences';
+  static const String reportCategories = '/reference-data/report-categories';
+  static const String notificationTypes = '/reference-data/notification-types';
+  static const String privacySettings = '/reference-data/privacy-settings';
+  static const String appSettings = '/reference-data/app-settings';
+  static const String referenceData = '/reference-data';
+  static const String referenceDataSearch = '/reference-data/search';
+  
+  // Missing Verification endpoints
+  static const String verificationSubmitComplete = '/verification/submit-complete';
+  static const String verificationRequirements = '/verification/requirements';
+  static const String verificationEligibility = '/verification/eligibility';
+  static const String verificationById = '/verification/{id}';
+  static const String verificationResubmit = '/verification/{id}/resubmit';
+  static const String verificationStatistics = '/verification/statistics';
+  static const String verificationFeedback = '/verification/{id}/feedback';
+  static const String verificationTypes = '/verification/types';
+  
+  // Missing Matching endpoints
+  static const String matchingSuggestions = '/matching/suggestions';
+  static const String matchingLike = '/matching/like';
+  static const String matchingDislike = '/matching/dislike';
+  static const String matchingSuperLike = '/matching/super-like';
+  
+  // Missing Stories endpoints
+  static const String storiesCreate = '/stories/create';
+  static const String storiesDelete = '/stories/{id}';
+  
+  // Missing Feeds endpoints
+  static const String feedsGetPosts = '/feeds/posts';
+  static const String feedsUsersWithStories = '/feeds/users-with-stories';
+  
+  // Missing JWT endpoints
+  static const String refreshToken = '/auth/refresh-token';
   
   // Payment methods endpoints
   static const String paymentMethods = '/payment-methods';
