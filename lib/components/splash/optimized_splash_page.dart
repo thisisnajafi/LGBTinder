@@ -81,7 +81,7 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _logoController,
-      curve: const Interval(0.6, 1.0),
+      curve: const Interval(0.6, 1.0, curve: Curves.easeIn),
     ));
 
     // Start logo animation immediately
@@ -218,24 +218,32 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
   }
 
   void _updateProgress(double newProgress, String operation) {
-    if (mounted) {
-      setState(() {
-        _progress = newProgress.clamp(0.0, 1.0);
-        _currentOperation = operation;
-      });
-      
-      _progressController.animateTo(_progress);
+    if (!mounted) return; // Safety check
+    
+    setState(() {
+      _progress = newProgress.clamp(0.0, 1.0);
+      _currentOperation = operation;
+    });
+    
+    try {
+      _progressController.animateTo(_progress.clamp(0.0, 1.0));
+    } catch (e) {
+      print('Animation error: $e');
     }
   }
 
   void _handleTimeout() {
+    if (!mounted) return; // Safety check
+    
     if (!_hasTimedOut && _progress < 1.0) {
       _hasTimedOut = true;
       _updateProgress(1.0, 'Loading completed (timeout reached)');
       
       // Force completion after timeout
       Future.delayed(const Duration(milliseconds: 500), () {
-        _completeInitialization();
+        if (mounted) {
+          _completeInitialization();
+        }
       });
     }
   }
@@ -252,23 +260,39 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
     print('Splash initialization error: $error');
     _updateProgress(1.0, 'Continuing with limited functionality...');
     Future.delayed(const Duration(milliseconds: 500), () {
-      _completeInitialization();
+      if (mounted) {
+        _completeInitialization();
+      }
     });
   }
 
   void _completeInitialization() {
+    if (!mounted) return; // Check if widget is still mounted
+    
     _timeoutTimer?.cancel();
-    final appState = Provider.of<AppStateProvider>(context, listen: false);
-    appState.setLoading(false);
+    try {
+      final appState = Provider.of<AppStateProvider>(context, listen: false);
+      appState.setLoading(false);
+    } catch (e) {
+      print('Error setting app state: $e');
+    }
     
     // No need to navigate manually - AuthWrapper will handle it
   }
 
   @override
   void dispose() {
+    // Cancel all timers
     _timeoutTimer?.cancel();
-    _logoController.dispose();
-    _progressController.dispose();
+    
+    // Dispose controllers
+    try {
+      _logoController.dispose();
+      _progressController.dispose();
+    } catch (e) {
+      print('Error disposing controllers: $e');
+    }
+    
     super.dispose();
   }
 
@@ -302,9 +326,9 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                     animation: _logoAnimation,
                     builder: (context, child) {
                       return Transform.scale(
-                        scale: _logoAnimation.value,
+                        scale: _logoAnimation.value.clamp(0.0, 1.0),
                         child: Opacity(
-                          opacity: _logoAnimation.value,
+                          opacity: _logoAnimation.value.clamp(0.0, 1.0),
                           child: const LGBTinderLogo(
                             size: 120,
                           ),
@@ -326,14 +350,14 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                       AnimatedBuilder(
                         animation: _progressAnimation,
                         builder: (context, child) {
-                          return LinearProgressIndicator(
-                            value: _progressAnimation.value * _progress,
-                            backgroundColor: Colors.white24,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white.withOpacity(0.8),
-                            ),
-                            minHeight: 4,
-                          );
+                        return LinearProgressIndicator(
+                          value: (_progressAnimation.value * _progress).clamp(0.0, 1.0),
+                          backgroundColor: Colors.white24,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white.withOpacity(0.8),
+                          ),
+                          minHeight: 4,
+                        );
                         },
                       ),
                       

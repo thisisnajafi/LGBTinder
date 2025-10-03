@@ -557,9 +557,9 @@ class _ShimmerAnimationState extends State<_ShimmerAnimation>
                 widget.baseColor,
               ],
               stops: [
-                _animation.value - 0.3,
-                _animation.value,
-                _animation.value + 0.3,
+                (_animation.value - 0.3).clamp(0.0, 1.0),
+                _animation.value.clamp(0.0, 1.0),
+                (_animation.value + 0.3).clamp(0.0, 1.0),
               ],
             ).createShader(bounds);
           },
@@ -621,7 +621,7 @@ class _PulseAnimationState extends State<_PulseAnimation>
       animation: _animation,
       builder: (context, child) {
         return Transform.scale(
-          scale: _animation.value,
+          scale: _animation.value.clamp(0.5, 2.0), // Prevent extreme scaling
           child: widget.child,
         );
       },
@@ -849,7 +849,7 @@ class _HeartbeatAnimationState extends State<_HeartbeatAnimation>
       animation: _animation,
       builder: (context, child) {
         return Transform.scale(
-          scale: _animation.value,
+          scale: _animation.value.clamp(0.5, 2.0), // Prevent extreme scaling
           child: widget.child,
         );
       },

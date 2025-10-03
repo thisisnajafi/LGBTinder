@@ -94,12 +94,12 @@ class _AnimatedButtonState extends State<AnimatedButton>
           switch (widget.animationType) {
             case AnimationType.scale:
               return Transform.scale(
-                scale: _animation.value,
+                scale: _animation.value.clamp(0.5, 2.0), // Prevent extreme scaling
                 child: button,
               );
             case AnimationType.fade:
               return Opacity(
-                opacity: _animation.value,
+                opacity: _animation.value.clamp(0.0, 1.0),
                 child: button,
               );
             case AnimationType.bounce:
@@ -224,10 +224,10 @@ class _AnimatedCardState extends State<AnimatedCard>
                   child: card,
                 );
               case AnimationType.fade:
-                return Opacity(
-                  opacity: 0.8 + (_animation.value - 1.0) * 0.2,
-                  child: card,
-                );
+              return Opacity(
+                opacity: (0.8 + (_animation.value - 1.0) * 0.2).clamp(0.0, 1.0),
+                child: card,
+              );
               case AnimationType.bounce:
                 return Transform.translate(
                   offset: Offset(0, (1 - _animation.value) * 5),
@@ -341,10 +341,10 @@ class _AnimatedIconState extends State<AnimatedIcon>
                 child: icon,
               );
             case AnimationType.fade:
-              return Opacity(
-                opacity: _animation.value,
-                child: icon,
-              );
+            return Opacity(
+              opacity: _animation.value.clamp(0.0, 1.0),
+              child: icon,
+            );
             case AnimationType.bounce:
               return Transform.translate(
                 offset: Offset(0, (1 - _animation.value) * 5),
@@ -455,10 +455,10 @@ class _AnimatedTextState extends State<AnimatedText>
               child: text,
             );
           case AnimationType.fade:
-            return Opacity(
-              opacity: _animation.value,
-              child: text,
-            );
+          return Opacity(
+            opacity: _animation.value.clamp(0.0, 1.0),
+            child: text,
+          );
           case AnimationType.bounce:
             return Transform.translate(
               offset: Offset(0, (1 - _animation.value) * 20),
@@ -565,10 +565,10 @@ class _AnimatedContainerState extends State<AnimatedContainer>
               child: container,
             );
           case AnimationType.fade:
-            return Opacity(
-              opacity: _animation.value,
-              child: container,
-            );
+          return Opacity(
+            opacity: _animation.value.clamp(0.0, 1.0),
+            child: container,
+          );
           case AnimationType.bounce:
             return Transform.translate(
               offset: Offset(0, (1 - _animation.value) * 20),
@@ -786,10 +786,10 @@ class _AnimatedFloatingActionButtonState extends State<AnimatedFloatingActionBut
                 child: fab,
               );
             case AnimationType.fade:
-              return Opacity(
-                opacity: _animation.value,
-                child: fab,
-              );
+            return Opacity(
+              opacity: _animation.value.clamp(0.0, 1.0),
+              child: fab,
+            );
             case AnimationType.bounce:
               return Transform.translate(
                 offset: Offset(0, (1 - _animation.value) * 5),

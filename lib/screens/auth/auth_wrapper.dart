@@ -4,6 +4,7 @@ import '../../providers/app_state_provider.dart';
 import '../../models/user_state_models.dart';
 import '../../pages/splash_page.dart';
 import '../../components/splash/optimized_splash_page.dart';
+import '../../components/splash/simple_splash_page.dart';
 import '../../pages/home_page.dart';
 import 'welcome_screen.dart';
 import 'register_screen.dart';
@@ -25,9 +26,9 @@ class AuthWrapper extends StatelessWidget {
           }
         });
         
-        // Show optimized splash screen while initializing
+        // Show simple splash screen while initializing
         if (appState.isLoading) {
-          return const OptimizedSplashPage();
+          return const SimpleSplashPage();
         }
 
         final userState = appState.currentUserState;

@@ -356,9 +356,9 @@ class _ShimmerWidgetState extends State<_ShimmerWidget>
                 widget.baseColor,
               ],
               stops: [
-                math.max(0.0, _animation.value - 0.3),
-                _animation.value,
-                math.min(1.0, _animation.value + 0.3),
+                (_animation.value - 0.3).clamp(0.0, 1.0),
+                _animation.value.clamp(0.0, 1.0),
+                (_animation.value + 0.3).clamp(0.0, 1.0),
               ],
             ).createShader(bounds);
           },
@@ -429,7 +429,7 @@ class _SkeletonBoxState extends State<_SkeletonBox>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             borderRadius: widget.borderRadius,
           ),
         );
@@ -494,7 +494,7 @@ class _SkeletonCircleState extends State<_SkeletonCircle>
           width: widget.diameter,
           height: widget.diameter,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             shape: BoxShape.circle,
           ),
         );
@@ -563,7 +563,7 @@ class _SkeletonTextState extends State<_SkeletonText>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             borderRadius: widget.borderRadius,
           ),
         );
@@ -628,7 +628,7 @@ class _SkeletonAvatarState extends State<_SkeletonAvatar>
           width: widget.size,
           height: widget.size,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             shape: BoxShape.circle,
           ),
         );
@@ -700,7 +700,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
           height: widget.height,
           padding: widget.padding,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             borderRadius: widget.borderRadius,
           ),
           child: Column(
@@ -711,7 +711,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
                 height: 16,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value),
+                  color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value.clamp(0.0, 1.0)),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -721,7 +721,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
                 height: 12,
                 width: double.infinity * 0.7,
                 decoration: BoxDecoration(
-                  color: Color.lerp(widget.color.withOpacity(0.5), widget.highlightColor.withOpacity(0.5), _animation.value),
+                  color: Color.lerp(widget.color.withOpacity(0.5), widget.highlightColor.withOpacity(0.5), _animation.value.clamp(0.0, 1.0)),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -802,7 +802,7 @@ class _SkeletonListItemState extends State<_SkeletonListItem>
           height: widget.height,
           padding: widget.padding,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             borderRadius: widget.borderRadius,
           ),
           child: Row(
@@ -812,7 +812,7 @@ class _SkeletonListItemState extends State<_SkeletonListItem>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value),
+                    color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value.clamp(0.0, 1.0)),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -827,7 +827,7 @@ class _SkeletonListItemState extends State<_SkeletonListItem>
                         height: 16,
                         width: double.infinity * 0.6,
                         decoration: BoxDecoration(
-                          color: Color.lerp(widget.color.withOpacity(0.8), widget.highlightColor.withOpacity(0.8), _animation.value),
+                          color: Color.lerp(widget.color.withOpacity(0.8), widget.highlightColor.withOpacity(0.8), _animation.value.clamp(0.0, 1.0)),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -838,7 +838,7 @@ class _SkeletonListItemState extends State<_SkeletonListItem>
                         height: 12,
                         width: double.infinity * 0.4,
                         decoration: BoxDecoration(
-                          color: Color.lerp(widget.color.withOpacity(0.5), widget.highlightColor.withOpacity(0.5), _animation.value),
+                          color: Color.lerp(widget.color.withOpacity(0.5), widget.highlightColor.withOpacity(0.5), _animation.value.clamp(0.0, 1.0)),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -917,7 +917,7 @@ class _SkeletonProfileCardState extends State<_SkeletonProfileCard>
           height: widget.height,
           padding: widget.padding,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             borderRadius: widget.borderRadius,
           ),
           child: Column(
@@ -927,7 +927,7 @@ class _SkeletonProfileCardState extends State<_SkeletonProfileCard>
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value),
+                  color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value.clamp(0.0, 1.0)),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -937,7 +937,7 @@ class _SkeletonProfileCardState extends State<_SkeletonProfileCard>
                 height: 20,
                 width: double.infinity * 0.6,
                 decoration: BoxDecoration(
-                  color: Color.lerp(widget.color.withOpacity(0.8), widget.highlightColor.withOpacity(0.8), _animation.value),
+                  color: Color.lerp(widget.color.withOpacity(0.8), widget.highlightColor.withOpacity(0.8), _animation.value.clamp(0.0, 1.0)),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -947,7 +947,7 @@ class _SkeletonProfileCardState extends State<_SkeletonProfileCard>
                 height: 16,
                 width: double.infinity * 0.3,
                 decoration: BoxDecoration(
-                  color: Color.lerp(widget.color.withOpacity(0.6), widget.highlightColor.withOpacity(0.6), _animation.value),
+                  color: Color.lerp(widget.color.withOpacity(0.6), widget.highlightColor.withOpacity(0.6), _animation.value.clamp(0.0, 1.0)),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -1026,7 +1026,7 @@ class _SkeletonChatMessageState extends State<_SkeletonChatMessage>
             height: widget.height,
             padding: widget.padding,
             decoration: BoxDecoration(
-              color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+              color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
               borderRadius: widget.borderRadius,
             ),
             child: Column(
@@ -1037,7 +1037,7 @@ class _SkeletonChatMessageState extends State<_SkeletonChatMessage>
                   height: 16,
                   width: double.infinity * 0.8,
                   decoration: BoxDecoration(
-                    color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value),
+                    color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value.clamp(0.0, 1.0)),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -1046,7 +1046,7 @@ class _SkeletonChatMessageState extends State<_SkeletonChatMessage>
                   height: 16,
                   width: double.infinity * 0.5,
                   decoration: BoxDecoration(
-                    color: Color.lerp(widget.color.withOpacity(0.5), widget.highlightColor.withOpacity(0.5), _animation.value),
+                    color: Color.lerp(widget.color.withOpacity(0.5), widget.highlightColor.withOpacity(0.5), _animation.value.clamp(0.0, 1.0)),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -1122,7 +1122,7 @@ class _SkeletonGridItemState extends State<_SkeletonGridItem>
           height: widget.height,
           padding: widget.padding,
           decoration: BoxDecoration(
-            color: Color.lerp(widget.color, widget.highlightColor, _animation.value),
+            color: Color.lerp(widget.color, widget.highlightColor, _animation.value.clamp(0.0, 1.0)),
             borderRadius: widget.borderRadius,
           ),
           child: Column(
@@ -1132,7 +1132,7 @@ class _SkeletonGridItemState extends State<_SkeletonGridItem>
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value),
+                    color: Color.lerp(widget.color.withOpacity(0.7), widget.highlightColor.withOpacity(0.7), _animation.value.clamp(0.0, 1.0)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
@@ -1143,7 +1143,7 @@ class _SkeletonGridItemState extends State<_SkeletonGridItem>
                 height: 16,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Color.lerp(widget.color.withOpacity(0.8), widget.highlightColor.withOpacity(0.8), _animation.value),
+                  color: Color.lerp(widget.color.withOpacity(0.8), widget.highlightColor.withOpacity(0.8), _animation.value.clamp(0.0, 1.0)),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
