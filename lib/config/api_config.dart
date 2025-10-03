@@ -3,24 +3,24 @@ class ApiConfig {
   static const String _androidEmulatorUrl = 'http://10.0.2.2:8000/api';
   static const String _iosSimulatorUrl = 'http://127.0.0.1:8000/api';
   static const String _physicalDeviceUrl = 'http://YOUR_COMPUTER_IP:8000/api'; // Replace with your computer's IP
-  static const String _productionUrl = 'http://lg.abolfazlnajafi.com/api';
+  static const String _productionUrl = 'https://lg.abolfazlnajafi.com/api';
   
   // Current environment - change this based on your setup
   // static const String baseUrl = _androidEmulatorUrl; // <-- Change this line for different environments
   
   // Easy switching helper - uncomment the one you need:
-  static const String baseUrl = _androidEmulatorUrl;    // For Android Emulator
+  // static const String baseUrl = _androidEmulatorUrl;    // For Android Emulator
   // static const String baseUrl = _iosSimulatorUrl;       // For iOS Simulator  
   // static const String baseUrl = _physicalDeviceUrl;     // For Physical Device
-  // static const String baseUrl = _productionUrl;         // For Production
+  static const String baseUrl = _productionUrl;         // For Production
   
   // WebSocket URLs
   static const String _androidEmulatorWsUrl = 'ws://10.0.2.2:8000';
   static const String _iosSimulatorWsUrl = 'ws://127.0.0.1:8000';
   static const String _physicalDeviceWsUrl = 'ws://YOUR_COMPUTER_IP:8000'; // Replace with your computer's IP
-  static const String _productionWsUrl = 'wss://your-production-domain.com';
+  static const String _productionWsUrl = 'wss://lg.abolfazlnajafi.com';
   
-  static const String wsBaseUrl = _androidEmulatorWsUrl; // <-- Change this line for different environments
+  static const String wsBaseUrl = _productionWsUrl; // <-- Change this line for different environments
   
   /// Get WebSocket URL
   static String getWebSocketUrl() {

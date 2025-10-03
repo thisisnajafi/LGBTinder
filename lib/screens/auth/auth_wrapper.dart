@@ -19,12 +19,7 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppStateProvider>(
       builder: (context, appState, child) {
-        // Trigger initialization if not already done
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!appState.isLoading && appState.currentUserState == null) {
-            appState.initializeApp();
-          }
-        });
+        // The SimpleSplashPage will handle initialization, so no need for additional callback
         
         // Show simple splash screen while initializing
         if (appState.isLoading) {

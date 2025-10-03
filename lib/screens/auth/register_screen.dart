@@ -206,6 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        passwordConfirmation: _confirmPasswordController.text,
       );
       print('📡 App state provider result: ${result.success}');
       

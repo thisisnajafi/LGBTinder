@@ -26,21 +26,22 @@ class _SimpleSplashPageState extends State<SimpleSplashPage> {
     _initialized = true;
 
     try {
-      // Simple initialization without complex async operations
-      await Future.delayed(const Duration(seconds: 2)); // Minimum splash time
+      // Minimum splash time for better UX
+      await Future.delayed(const Duration(seconds: 2));
       
       if (mounted) {
-        // Complete initialization
+        // Trigger the actual app initialization
         final appState = Provider.of<AppStateProvider>(context, listen: false);
-        appState.setLoading(false);
+        await appState.initializeApp();
       }
     } catch (e) {
       print('Splash initialization error: $e');
-      // Complete anyway
+      // Complete with error state
       if (mounted) {
         try {
           final appState = Provider.of<AppStateProvider>(context, listen: false);
           appState.setLoading(false);
+          appState.setUserState(null); // Set null to go to welcome screen
         } catch (contextError) {
           print('Context error: $contextError');
         }

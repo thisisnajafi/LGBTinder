@@ -93,6 +93,7 @@ class AppStateProvider extends ChangeNotifier {
     required String lastName,
     required String email,
     required String password,
+    required String passwordConfirmation,
     String? referralCode,
   }) async {
     _isLoading = true;
@@ -105,6 +106,7 @@ class AppStateProvider extends ChangeNotifier {
         lastName: lastName,
         email: email,
         password: password,
+        passwordConfirmation: passwordConfirmation,
         referralCode: referralCode,
       );
 

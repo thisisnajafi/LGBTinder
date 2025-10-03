@@ -15,6 +15,7 @@ class RegisterRequest {
   final String lastName;
   final String email;
   final String password;
+  final String passwordConfirmation;
   final String? referralCode;
 
   const RegisterRequest({
@@ -22,6 +23,7 @@ class RegisterRequest {
     required this.lastName,
     required this.email,
     required this.password,
+    required this.passwordConfirmation,
     this.referralCode,
   });
 
@@ -31,6 +33,7 @@ class RegisterRequest {
       lastName: json['last_name'] as String,
       email: json['email'] as String,
       password: json['password'] as String,
+      passwordConfirmation: json['password_confirmation'] as String,
       referralCode: json['referral_code'] as String?,
     );
   }
@@ -41,6 +44,7 @@ class RegisterRequest {
       'last_name': lastName,
       'email': email,
       'password': password,
+      'password_confirmation': passwordConfirmation,
       if (referralCode != null) 'referral_code': referralCode,
     };
   }
