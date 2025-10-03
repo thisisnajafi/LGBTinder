@@ -66,7 +66,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       }
 
       await BlockingService.unblockUser(
-        userId: user.id.toString(),
+        user.id.toString(),
         accessToken: accessToken,
       );
 

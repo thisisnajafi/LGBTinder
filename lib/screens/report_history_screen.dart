@@ -78,14 +78,14 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
       if (mounted) {
         ErrorSnackBar.showSuccess(
           context,
-          'Report cancelled successfully',
+          message: 'Report cancelled successfully',
         );
       }
     } catch (e) {
       if (mounted) {
         ErrorSnackBar.show(
           context,
-          'Failed to cancel report: ${e.toString().replaceFirst('Exception: ', '')}',
+          error: 'Failed to cancel report: ${e.toString().replaceFirst('Exception: ', '')}',
         );
       }
     }

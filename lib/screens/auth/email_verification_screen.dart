@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -244,7 +245,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       await ErrorMonitoringService.logAuthError(
         errorType: authError.type,
         errorMessage: authError.message,
-        details: authError.details,
+        details: authError.details != null ? json.encode(authError.details) : null,
       );
 
       if (mounted) {
@@ -355,7 +356,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       await ErrorMonitoringService.logAuthError(
         errorType: authError.type,
         errorMessage: authError.message,
-        details: authError.details,
+        details: authError.details != null ? json.encode(authError.details) : null,
       );
 
       if (mounted) {

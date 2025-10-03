@@ -163,13 +163,13 @@ class MatchingStateProvider extends ChangeNotifier {
       _error = AuthError(
         type: AuthErrorType.networkError,
         message: error.message,
-        details: 'Rate limit exceeded. Retry after ${error.retryAfter} seconds.',
+        details: {'retry_after': error.retryAfter, 'message': 'Rate limit exceeded'},
       );
     } else {
       _error = AuthError(
         type: AuthErrorType.unknownError,
         message: 'An unexpected error occurred',
-        details: error.toString(),
+        details: {'error': error.toString()},
       );
     }
     notifyListeners();

@@ -128,7 +128,7 @@ class OfflineService {
         'endpoint': endpoint,
         'data': data,
         'method': method,
-        'headers': headers ?? {},
+        'headers': headers ?? {}},
         'timestamp': DateTime.now().millisecondsSinceEpoch,
       });
       
@@ -178,7 +178,7 @@ class OfflineService {
         } catch (e) {
           ErrorMonitoringService.logError(
             message: e.toString(),
-            context: 'OfflineService.processQueuedRequest',
+            context: {'operation': 'OfflineService.processQueuedRequest'},
           );
         }
       }
@@ -192,7 +192,7 @@ class OfflineService {
     } catch (e) {
       ErrorMonitoringService.logError(
         message: e.toString(),
-        context: 'OfflineService.processQueuedRequests',
+        context: {'operation': 'OfflineService.processQueuedRequests'},
       );
     }
   }
@@ -204,7 +204,7 @@ class OfflineService {
     } catch (e) {
       ErrorMonitoringService.logError(
         message: e.toString(),
-        context: 'OfflineService.getOfflineData',
+        context: {'operation': 'OfflineService.getOfflineData'},
       );
       return null;
     }
@@ -217,7 +217,7 @@ class OfflineService {
     } catch (e) {
       ErrorMonitoringService.logError(
         message: e.toString(),
-        context: 'OfflineService.setOfflineData',
+        context: {'operation': 'OfflineService.setOfflineData'},
       );
     }
   }
@@ -233,7 +233,7 @@ class OfflineService {
     } catch (e) {
       ErrorMonitoringService.logError(
         message: e.toString(),
-        context: 'OfflineService.clearOfflineData',
+        context: {'operation': 'OfflineService.clearOfflineData'},
       );
     }
   }
@@ -258,7 +258,7 @@ class OfflineService {
     } catch (e) {
       ErrorMonitoringService.logError(
         message: e.toString(),
-        context: 'OfflineService.getNetworkStatus',
+        context: {'operation': 'OfflineService.getNetworkStatus'},
       );
       return NetworkStatus.unknown;
     }

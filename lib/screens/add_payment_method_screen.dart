@@ -538,7 +538,7 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
       if (mounted) {
         ErrorSnackBar.showSuccess(
           context,
-          'Payment method added successfully!',
+          message: 'Payment method added successfully!',
         );
         Navigator.pop(context, true);
       }
@@ -549,7 +549,7 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
       
       ErrorSnackBar.show(
         context,
-        'Error adding payment method: ${e.toString().replaceFirst('Exception: ', '')}',
+        error: 'Error adding payment method: ${e.toString().replaceFirst('Exception: ', '')}',
       );
     } finally {
       setState(() {
