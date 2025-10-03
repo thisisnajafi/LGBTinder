@@ -17,6 +17,13 @@ import '../models/user.dart';
 import '../services/analytics_service.dart';
 import '../services/error_monitoring_service.dart';
 import '../screens/safety_settings_screen.dart';
+import '../screens/profile/advanced_profile_customization_screen.dart';
+import '../screens/profile/profile_completion_incentives_screen.dart';
+import '../screens/profile/profile_verification_screen.dart';
+import '../components/profile/customizable_profile_widget.dart';
+import '../services/profile_customization_service.dart';
+import '../services/gamification_service.dart';
+import '../services/profile_verification_service.dart';
 import 'profile_edit_page.dart';
 import 'profile_wizard_page.dart';
 
@@ -452,6 +459,66 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.palette,
+                label: 'Customize',
+                onTap: _showAdvancedCustomization,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.edit,
+                label: 'Edit Profile',
+                onTap: _editProfile,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.emoji_events,
+                label: 'Achievements',
+                onTap: _showProfileIncentives,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.trending_up,
+                label: 'Progress',
+                onTap: _showProfileProgress,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.verified,
+                label: 'Verification',
+                onTap: _showProfileVerification,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.privacy_tip,
+                label: 'Privacy',
+                onTap: _showPrivacySettings,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -738,5 +805,40 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (context) => const SafetySettingsScreen(),
       ),
     );
+  }
+
+  void _showAdvancedCustomization() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdvancedProfileCustomizationScreen(),
+      ),
+    );
+  }
+
+  void _editProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ProfileEditPage(),
+      ),
+    );
+  }
+
+  void _showProfileIncentives() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ProfileCompletionIncentivesScreen(),
+      ),
+    );
+  }
+
+  void _showProfileProgress() {
+    Navigator.pushNamed(context, '/gamification-dashboard');
+  }
+
+  void _showProfileVerification() {
+    Navigator.pushNamed(context, '/profile-verification');
   }
 }

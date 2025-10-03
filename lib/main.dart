@@ -46,7 +46,11 @@ import 'screens/skeleton_loader_settings_screen.dart';
 import 'screens/image_compression_settings_screen.dart';
 import 'screens/media_picker_settings_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/help_support_screen.dart';
+import 'screens/profile/advanced_profile_customization_screen.dart';
+import 'screens/profile/profile_completion_incentives_screen.dart';
+import 'screens/profile/profile_verification_screen.dart';
+import 'components/gamification/gamification_components.dart';
+import 'help_support_screen.dart';
 import 'screens/add_payment_method_screen.dart';
 import 'screens/blocked_users_screen.dart';
 import 'screens/report_history_screen.dart';
@@ -147,6 +151,10 @@ class LGBTinderApp extends StatelessWidget {
           '/image-compression-settings': (context) => const ImageCompressionSettingsScreen(),
           '/media-picker-settings': (context) => const MediaPickerSettingsScreen(),
           '/settings': (context) => const SettingsScreen(),
+          '/advanced-profile-customization': (context) => const AdvancedProfileCustomizationScreen(),
+          '/profile-completion-incentives': (context) => const ProfileCompletionIncentivesScreen(),
+          '/profile-verification': (context) => const ProfileVerificationScreen(),
+          '/gamification-dashboard': (context) => const GamificationDashboard(),
           '/help-support': (context) => const HelpSupportScreen(),
           '/add-payment-method': (context) => const AddPaymentMethodScreen(),
           '/blocked-users': (context) => const BlockedUsersScreen(),
