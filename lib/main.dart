@@ -68,20 +68,39 @@ class LGBTinderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Only create AppStateProvider immediately - others are lazy
         ChangeNotifierProvider(
-          create: (_) => AppStateProvider()..initializeApp(),
+          create: (_) => AppStateProvider(),
         ),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
+        // All other providers are lazy-loaded to improve startup performance
+        ChangeNotifierProvider(
+          lazy: true,
+          create: (_) => AuthProvider(),
+        ),
+        ChangeNotifierProvider(
+          lazy: true,
+          create: (_) => ProfileProvider(),
+        ),
+        ChangeNotifierProvider(
+          lazy: true,
+          create: (_) => ChatProvider(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.dark,
+        // Performance optimizations
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+            child: child!,
+          );
+        },
         theme: ThemeData.dark().copyWith(
           primaryColor: AppColors.primaryLight,
           scaffoldBackgroundColor: AppColors.appBackground,
           bottomAppBarTheme: BottomAppBarThemeData(color: AppColors.appBackground),
+          // Optimized animations
           pageTransitionsTheme: const PageTransitionsTheme(
             builders: {
               TargetPlatform.android: CupertinoPageTransitionsBuilder(),

@@ -21,8 +21,14 @@ class AuthApiService {
   /// 
   /// [request] - Registration request data
   /// Returns [RegisterResponse] with registration result
+
+
   static Future<RegisterResponse> register(RegisterRequest request) async {
     try {
+      print('📡 AuthApiService.register(): Starting registration request');
+      print('📡 URL: $_baseUrl/auth/register');
+      print('📡 Request data: ${jsonEncode(request.toJson())}');
+      
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/register'),
         headers: {
@@ -32,15 +38,20 @@ class AuthApiService {
         body: jsonEncode(request.toJson()),
       );
 
+      print('📡 Response status: ${response.statusCode}');
+      print('📡 Response body: ${response.body}');
+
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
+        print('✅ Registration successful');
         return RegisterResponse.fromJson(responseData);
       } else {
-        // Handle error response
+        print('❌ Registration failed with status: ${response.statusCode}');
         return RegisterResponse.fromJson(responseData);
       }
     } catch (e) {
+      print('💥 AuthApiService.register() exception: $e');
       // Handle network or parsing errors
       return RegisterResponse(
         status: false,

@@ -9,10 +9,10 @@ class ApiConfig {
   // static const String baseUrl = _androidEmulatorUrl; // <-- Change this line for different environments
   
   // Easy switching helper - uncomment the one you need:
-  // static const String baseUrl = _androidEmulatorUrl;    // For Android Emulator
+  static const String baseUrl = _androidEmulatorUrl;    // For Android Emulator
   // static const String baseUrl = _iosSimulatorUrl;       // For iOS Simulator  
   // static const String baseUrl = _physicalDeviceUrl;     // For Physical Device
-  static const String baseUrl = _productionUrl;         // For Production
+  // static const String baseUrl = _productionUrl;         // For Production
   
   // WebSocket URLs
   static const String _androidEmulatorWsUrl = 'ws://10.0.2.2:8000';

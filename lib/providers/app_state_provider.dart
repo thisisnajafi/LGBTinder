@@ -12,6 +12,7 @@ import '../services/api_services/reference_data_api_service.dart';
 import '../services/api_services/user_api_service.dart';
 import '../services/token_management_service.dart';
 import '../services/rate_limiting_service.dart';
+import '../services/cache/reference_data_cache.dart';
 
 class AppStateProvider extends ChangeNotifier {
   UserState? _currentUserState;
@@ -265,28 +266,27 @@ class AppStateProvider extends ChangeNotifier {
     }
   }
 
-  /// Load reference data
+  /// Load reference data with caching optimization
   Future<void> _loadReferenceData() async {
     try {
-      // Load countries
-      final countriesResponse = await ReferenceDataApiService.getCountries();
-      _countries = countriesResponse.data;
+      // Load countries with caching
+      _countries = await ReferenceDataCache.loadCountriesWithCache();
       
-      // Load all reference data - cast to proper type
-      final refData = await ReferenceDataApiService.getAllReferenceData();
-      _referenceData = Map<String, List<ReferenceDataItem>>.from(refData);
+      // Load all reference data with caching
+      _referenceData = await ReferenceDataCache.loadReferenceDataWithCache();
+      
+      print('✅ Reference data loaded successfully (cache: ${await ReferenceDataCache.isCacheValid() ? 'hit' : 'miss'})');
     } catch (e) {
       print('Error loading reference data: $e');
       // Don't fail the app initialization if reference data fails to load
     }
   }
 
-  /// Load cities for a specific country
+  /// Load cities for a specific country with caching
   Future<void> loadCitiesForCountry(int countryId) async {
     try {
       if (!_citiesByCountry.containsKey(countryId)) {
-        final citiesResponse = await ReferenceDataApiService.getCitiesByCountry(countryId);
-        _citiesByCountry[countryId] = citiesResponse.data;
+        _citiesByCountry[countryId] = await ReferenceDataCache.loadCitiesWithCache(countryId);
         notifyListeners();
       }
     } catch (e) {
@@ -333,6 +333,42 @@ class AppStateProvider extends ChangeNotifier {
   /// Clear error
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  /// Set user data
+  void setUser(User? user) {
+    _user = user;
+    notifyListeners();
+  }
+
+  /// Set token
+  void setToken(String? token) {
+    _token = token;
+    notifyListeners();
+  }
+
+  /// Set user state
+  void setUserState(UserState? userState) {
+    _currentUserState = userState;
+    notifyListeners();
+  }
+
+  /// Set countries
+  void setCountries(List<Country> countries) {
+    _countries = countries;
+    notifyListeners();
+  }
+
+  /// Set reference data
+  void setReferenceData(Map<String, List<ReferenceDataItem>> referenceData) {
+    _referenceData = referenceData;
+    notifyListeners();
+  }
+
+  /// Set loading state
+  void setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
   }
 }

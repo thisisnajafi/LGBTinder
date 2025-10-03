@@ -23,7 +23,7 @@ class SkeletonLoaderService {
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           // Name lines
           _ShimmerContainer(
             child: Container(
@@ -35,7 +35,7 @@ class SkeletonLoaderService {
               ),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           _ShimmerContainer(
             child: Container(
               width: 80,

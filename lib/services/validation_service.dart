@@ -9,8 +9,8 @@ class ValidationService {
 
   // Password validation
   static bool isValidPassword(String password) {
-    // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
-    final passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$');
+    // At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
+    final passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[a-zA-Z\d!@#$%^&*(),.?":{}|<>&@]{8,}$');
     return passwordRegex.hasMatch(password);
   }
 
@@ -163,7 +163,7 @@ class ValidationService {
     }
 
     if (!isValidPassword(password)) {
-      errors.add('Password must be at least 8 characters with uppercase, lowercase, and number');
+      errors.add('Password must be at least 8 characters with uppercase, lowercase, number, and special character');
     }
 
     return ValidationResult(

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
 import '../../models/user_state_models.dart';
 import '../../pages/splash_page.dart';
+import '../../components/splash/optimized_splash_page.dart';
 import '../../pages/home_page.dart';
 import 'welcome_screen.dart';
 import 'register_screen.dart';
@@ -17,9 +18,16 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppStateProvider>(
       builder: (context, appState, child) {
-        // Show loading state while initializing
+        // Trigger initialization if not already done
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!appState.isLoading && appState.currentUserState == null) {
+            appState.initializeApp();
+          }
+        });
+        
+        // Show optimized splash screen while initializing
         if (appState.isLoading) {
-          return const SplashPage();
+          return const OptimizedSplashPage();
         }
 
         final userState = appState.currentUserState;
