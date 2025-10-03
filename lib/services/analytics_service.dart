@@ -27,6 +27,31 @@ class AnalyticsService {
     }
   }
 
+  // Track generic event
+  static Future<void> trackEvent({
+    required String name,
+    Map<String, dynamic>? parameters,
+    String? action,
+    String category = 'general',
+  }) async {
+    if (!EnvironmentConfig.enableAnalytics) return;
+
+    final eventParameters = parameters ?? {};
+    if (action != null) {
+      eventParameters['action'] = action;
+    }
+
+    final event = AnalyticsEvent(
+      name: name,
+      category: category,
+      action: action ?? 'general_action',
+      parameters: eventParameters,
+      timestamp: DateTime.now(),
+    );
+
+    await _trackEvent(event);
+  }
+
   // Track API call
   static Future<void> trackApiCall({
     required String endpoint,

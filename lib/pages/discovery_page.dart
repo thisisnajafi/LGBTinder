@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
-import '../models/api_models/user_models.dart';
+import '../models/user.dart';
 import '../components/profile_cards/swipeable_profile_card.dart';
 import '../components/error_handling/error_display_widget.dart';
 import '../components/loading/loading_widgets.dart';
@@ -80,8 +80,8 @@ class _DiscoveryPageState extends State<DiscoveryPage>
     
     try {
       await AnalyticsService.trackEvent(
-        action: 'discovery_load_matches',
-        category: 'matching',
+        name: 'discovery_load_matches',
+        parameters: {'action': 'discovery_load_matches', 'category': 'matching'},
       );
 
       final matchingProvider = context.read<MatchingStateProvider>();
@@ -93,13 +93,15 @@ class _DiscoveryPageState extends State<DiscoveryPage>
       });
     } catch (e) {
       await AnalyticsService.trackEvent(
-        action: 'discovery_load_matches_failed',
-        category: 'matching',
+        name: 'discovery_load_matches_failed',
+        parameters: {'action': 'discovery_load_matches_failed', 'category': 'matching'},
       );
 
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'DiscoveryPage._loadPotentialMatches',
+        message: 'Failed to load discovery matches',
+        errorType: 'API_ERROR',
+        stackTrace: StackTrace.current,
+        context: {'context': 'DiscoveryPage._loadPotentialMatches'},
       );
 
       setState(() {
@@ -135,26 +137,27 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   Future<void> _handleLike(User user) async {
     try {
       await AnalyticsService.trackEvent(
-        action: 'user_like',
-        category: 'matching',
-        properties: {'target_user_id': user.id},
+        name: 'user_like',
+        parameters: {'action': 'user_like', 'category': 'matching', 'target_user_id': user.id},
       );
 
       final matchingProvider = context.read<MatchingStateProvider>();
       final result = await matchingProvider.likeUser(user.id);
       
-      if (result.isMatch) {
+      if (result) { // result is boolean indicating if match occurred
         _showMatchDialog(user);
       }
     } catch (e) {
       await AnalyticsService.trackEvent(
-        action: 'user_like_failed',
-        category: 'matching',
+        name: 'user_like_failed',
+        parameters: {'action': 'user_like_failed', 'category': 'matching'},
       );
 
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'DiscoveryPage._handleLike',
+        message: 'Failed to like user',
+        errorType: 'API_ERROR',
+        stackTrace: StackTrace.current,
+        context: {'context': 'DiscoveryPage._handleLike'},
       );
     }
   }
@@ -162,22 +165,23 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   Future<void> _handleDislike(User user) async {
     try {
       await AnalyticsService.trackEvent(
-        action: 'user_dislike',
-        category: 'matching',
-        properties: {'target_user_id': user.id},
+        name: 'user_dislike',
+        parameters: {'action': 'user_dislike', 'category': 'matching', 'target_user_id': user.id},
       );
 
       final matchingProvider = context.read<MatchingStateProvider>();
       await matchingProvider.dislikeUser(user.id);
     } catch (e) {
       await AnalyticsService.trackEvent(
-        action: 'user_dislike_failed',
-        category: 'matching',
+        name: 'user_dislike_failed',
+        parameters: {'action': 'user_dislike_failed', 'category': 'matching'},
       );
 
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'DiscoveryPage._handleDislike',
+        message: 'Failed to dislike user',
+        errorType: 'API_ERROR',
+        stackTrace: StackTrace.current,
+        context: {'context': 'DiscoveryPage._handleDislike'},
       );
     }
   }
@@ -185,26 +189,27 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   Future<void> _handleSuperLike(User user) async {
     try {
       await AnalyticsService.trackEvent(
-        action: 'user_super_like',
-        category: 'matching',
-        properties: {'target_user_id': user.id},
+        name: 'user_super_like',
+        parameters: {'action': 'user_super_like', 'category': 'matching', 'target_user_id': user.id},
       );
 
       final matchingProvider = context.read<MatchingStateProvider>();
       final result = await matchingProvider.superLikeUser(user.id);
       
-      if (result.isMatch) {
+      if (result) { // result is boolean indicating if match occurred
         _showMatchDialog(user);
       }
     } catch (e) {
       await AnalyticsService.trackEvent(
-        action: 'user_super_like_failed',
-        category: 'matching',
+        name: 'user_super_like_failed',
+        parameters: {'action': 'user_super_like_failed', 'category': 'matching'},
       );
 
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'DiscoveryPage._handleSuperLike',
+        message: 'Failed to super like user',
+        errorType: 'API_ERROR',
+        stackTrace: StackTrace.current,
+        context: {'context': 'DiscoveryPage._handleSuperLike'},
       );
     }
   }
@@ -680,30 +685,24 @@ class _DiscoveryPageState extends State<DiscoveryPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SkeletonLoaderService().createSkeletonProfileCard(
-            width: 300,
-            height: 400,
-          ),
+          SkeletonLoaderService.createSkeletonProfileCard(),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SkeletonLoaderService().createSkeletonBox(
+              SkeletonLoaderService.createSkeletonBox(
                 width: 60,
                 height: 60,
-                borderRadius: BorderRadius.circular(30),
               ),
               const SizedBox(width: 20),
-              SkeletonLoaderService().createSkeletonBox(
+              SkeletonLoaderService.createSkeletonBox(
                 width: 60,
                 height: 60,
-                borderRadius: BorderRadius.circular(30),
               ),
               const SizedBox(width: 20),
-              SkeletonLoaderService().createSkeletonBox(
+              SkeletonLoaderService.createSkeletonBox(
                 width: 60,
                 height: 60,
-                borderRadius: BorderRadius.circular(30),
               ),
             ],
           ),
@@ -804,80 +803,21 @@ class _DiscoveryPageState extends State<DiscoveryPage>
             ),
           ),
         
-        // Action buttons
-        Positioned(
-          bottom: 40,
-          left: 0,
-          right: 0,
-          child: _buildActionButtons(),
-        ),
+        // Action buttons removed from skeleton loading state
       ],
     );
   }
-  
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        // Dislike button
-        _buildActionButton(
-          icon: Icons.close,
-          color: Colors.red,
-          onTap: () => _handleSwipe(SwipeDirection.left),
-        ),
-        
-        // Super like button
-        _buildActionButton(
-          icon: Icons.star,
-          color: Colors.blue,
-          onTap: () => _handleSwipe(SwipeDirection.up),
-        ),
-        
-        // Like button
-        _buildActionButton(
-          icon: Icons.favorite,
-          color: Colors.green,
-          onTap: () => _handleSwipe(SwipeDirection.right),
-        ),
-      ],
-    );
+
+  void _likeUser(User user) {
+    _handleLike(user);
+    _moveToNextCard();
+  }
+
+  void _superLikeUser(User user) {
+    _handleSuperLike(user);
+    _moveToNextCard();
   }
   
-  Widget _buildActionButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 10,
-              spreadRadius: 2,
-            ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 28,
-        ),
-      ),
-    );
-  }
-  
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
 }
 
 enum SwipeDirection {

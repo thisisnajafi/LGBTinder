@@ -24,6 +24,12 @@ class User {
   final List<Job> jobs;
   final List<Education> educations;
   final List<MusicGenre> musicGenres;
+  
+  // Alias getters for compatibility
+  List<String> get education => educations.map((e) => e.name).toList();
+  List<String> get relationshipGoals => relationGoals.map((r) => r.name ?? '').toList();
+  List<String> get profilePictures => profileImages.map((img) => img.url).toList();
+  String? get username => null; // Legacy field
   final List<Language> languages;
   final List<Interest> interests;
   final List<RelationGoal> relationGoals;
@@ -46,6 +52,11 @@ class User {
   final bool isPremium;
   final DateTime? lastSeen;
   final UserPreferences? preferences; // User preferences
+  final int? countryId; // Users country ID
+  final int? cityId; // Users city ID
+  final int? minAgePreference; // Minimum age preference
+  final int? maxAgePreference; // Maximum age preference
+  final bool? profileCompleted; // Profile completion status
   final UserSettings? settings; // User settings
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -59,6 +70,11 @@ class User {
     this.phoneNumber,
     this.country,
     this.city,
+    this.countryId,
+    this.cityId,
+    this.minAgePreference,
+    this.maxAgePreference,
+    this.profileCompleted,
     this.birthDate,
     this.profileBio,
     this.bio,
@@ -226,6 +242,11 @@ class User {
       preferences: json['preferences'] != null
           ? UserPreferences.fromJson(json['preferences'])
           : null,
+      countryId: json['country_id'] as int?,
+      cityId: json['city_id'] as int?,
+      minAgePreference: json['min_age_preference'] as int?,
+      maxAgePreference: json['max_age_preference'] as int?,
+      profileCompleted: json['profile_completed'] as bool?,
       settings: json['settings'] != null
           ? UserSettings.fromJson(json['settings'])
           : null,

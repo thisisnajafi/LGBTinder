@@ -14,11 +14,13 @@ class ReferenceDataItem {
   final int id;
   final String title;
   final String status;
+  final String? imageUrl;
 
   const ReferenceDataItem({
     required this.id,
     required this.title,
     required this.status,
+    this.imageUrl,
   });
 
   factory ReferenceDataItem.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class ReferenceDataItem {
       id: json['id'] as int,
       title: json['title'] as String,
       status: json['status'] as String,
+      imageUrl: json['image_url'] as String?,
     );
   }
 
@@ -137,11 +140,13 @@ class City {
   final int id;
   final String name;
   final String? stateProvince;
+  final int countryId;
 
   const City({
     required this.id,
     required this.name,
     this.stateProvince,
+    this.countryId = 0,
   });
 
   factory City.fromJson(Map<String, dynamic> json) {
@@ -149,6 +154,7 @@ class City {
       id: json['id'] as int,
       name: json['name'] as String,
       stateProvince: json['state_province'] as String?,
+      countryId: json['country_id'] as int? ?? 0,
     );
   }
 

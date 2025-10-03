@@ -11,7 +11,9 @@ import '../components/loading/loading_widgets.dart';
 import '../components/loading/skeleton_loader.dart';
 import '../components/offline/offline_wrapper.dart';
 import '../providers/profile_state_provider.dart';
+import '../providers/profile_provider.dart';
 import '../models/api_models/user_models.dart';
+import '../models/user.dart';
 import '../services/analytics_service.dart';
 import '../services/error_monitoring_service.dart';
 import '../screens/safety_settings_screen.dart';
@@ -40,6 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadProfile() async {
     try {
       await AnalyticsService.trackEvent(
+        name: 'profile_view',
         action: 'profile_view',
         category: 'profile',
       );
@@ -48,8 +51,8 @@ class _ProfilePageState extends State<ProfilePage> {
       await profileProvider.loadCurrentUser();
     } catch (e) {
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'ProfilePage._loadProfile',
+        message: e.toString(),
+        context: {'operation': 'ProfilePage._loadProfile'},
       );
     }
   }
@@ -115,35 +118,31 @@ class _ProfilePageState extends State<ProfilePage> {
           // Profile header skeleton
           SkeletonCard(
             height: 200,
-            showHeader: true,
-            showContent: true,
-            contentLines: 2,
+
+
           ),
           const SizedBox(height: 20),
           
           // Profile info sections skeleton
           SkeletonCard(
             height: 150,
-            showHeader: false,
-            showContent: true,
-            contentLines: 3,
+
+
           ),
           const SizedBox(height: 20),
           
           // Photo gallery skeleton
           SkeletonCard(
             height: 120,
-            showHeader: true,
-            showContent: false,
+
           ),
           const SizedBox(height: 20),
           
           // Safety verification skeleton
           SkeletonCard(
             height: 100,
-            showHeader: true,
-            showContent: true,
-            contentLines: 2,
+
+
           ),
         ],
       ),
@@ -237,7 +236,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 24),
 
                 // Profile Completion Progress
-                if (!_isEditMode) _buildProfileCompletionCard(profileProvider),
+                if (!_isEditMode) _buildProfileCompletionCard(profileProvider as dynamic),
 
                 const SizedBox(height: 24),
 
@@ -262,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 24),
 
                 // Action Buttons (for own profile, show management options)
-                if (!_isEditMode) _buildManagementButtons(profileProvider),
+                if (!_isEditMode) _buildManagementButtons(profileProvider as dynamic),
 
                 const SizedBox(height: 100), // Bottom padding
               ],

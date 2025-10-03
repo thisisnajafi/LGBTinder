@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/api_models/chat_models.dart';
 import '../models/api_models/user_models.dart';
+import '../models/user.dart';
 import '../providers/chat_state_provider.dart';
 import '../providers/matching_state_provider.dart';
 import '../theme/colors.dart';
@@ -34,7 +35,7 @@ class _ChatListPageState extends State<ChatListPage> {
   bool _showArchived = false;
   bool _showPinned = false;
   bool _isLoadingMore = false;
-  List<User> _matches = [];
+  List<User> _matches = []; // Changed from List<Match> - Chat list shows matched users
   bool _isLoadingMatches = true;
   dynamic _error;
 
@@ -60,6 +61,7 @@ class _ChatListPageState extends State<ChatListPage> {
     
     try {
       await AnalyticsService.trackEvent(
+        name: 'chat_list_load_matches',
         action: 'chat_list_load_matches',
         category: 'chat',
       );
@@ -68,18 +70,19 @@ class _ChatListPageState extends State<ChatListPage> {
       await matchingProvider.loadMatches();
       
       setState(() {
-        _matches = matchingProvider.matches;
+        _matches = (matchingProvider.matches.map((match) => (match as dynamic).user).toList() as List<User>);
         _isLoadingMatches = false;
       });
     } catch (e) {
       await AnalyticsService.trackEvent(
+        name: 'chat_list_load_matches_failed',
         action: 'chat_list_load_matches_failed',
         category: 'chat',
       );
 
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'ChatListPage._loadMatches',
+        message: e.toString(),
+        context: {'operation': 'ChatListPage._loadMatches'},
       );
 
       setState(() {
@@ -102,14 +105,14 @@ class _ChatListPageState extends State<ChatListPage> {
     try {
       await matchingProvider.loadMoreMatches();
       setState(() {
-        _matches = matchingProvider.matches;
+        _matches = (matchingProvider.matches.map((match) => (match as dynamic).user).toList() as List<User>);
       });
     } catch (e) {
       if (mounted) {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'load_more_matches',
+          errorContext: 'load_more_matches',
           onAction: _loadMoreMatches,
           actionText: 'Retry',
         );
@@ -269,23 +272,20 @@ class _ChatListPageState extends State<ChatListPage> {
         children: [
           SkeletonCard(
             height: 80,
-            showHeader: false,
-            showContent: true,
-            contentLines: 2,
+
+
           ),
           const SizedBox(height: 16),
           SkeletonCard(
             height: 80,
-            showHeader: false,
-            showContent: true,
-            contentLines: 2,
+
+
           ),
           const SizedBox(height: 16),
           SkeletonCard(
             height: 80,
-            showHeader: false,
-            showContent: true,
-            contentLines: 2,
+
+
           ),
         ],
       ),

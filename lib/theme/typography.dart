@@ -222,4 +222,14 @@ class AppTypography {
     fontWeight: FontWeight.normal,
     letterSpacing: 0.5,
   );
+
+  static TextStyle get heading2 => headlineMediumStyle.copyWith(
+    fontSize: 24.0,
+    fontWeight: FontWeight.w600,
+  );
+
+  static TextStyle get heading3 => titleLargeStyle.copyWith(
+    fontSize: 20.0,
+    fontWeight: FontWeight.w600,
+  );
 } 

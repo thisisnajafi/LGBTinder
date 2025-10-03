@@ -152,7 +152,7 @@ class EnvironmentConfig {
   }
 
   // Get environment-specific API endpoints
-  static Map<String, String> get apiEndpoints {
+  static Map<String, Map<String, String>> get apiEndpoints {
     final baseUrl = apiBaseUrl;
     return {
       'auth': {

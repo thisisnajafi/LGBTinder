@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/api_models/matching_models.dart';
 import '../models/api_models/auth_models.dart';
+import '../models/user.dart';
 import '../services/api_services/matching_api_service.dart';
 import '../services/token_management_service.dart';
 import '../services/rate_limiting_service.dart';
@@ -9,6 +10,7 @@ import '../models/user_state_models.dart';
 class MatchingStateProvider extends ChangeNotifier {
   // State variables
   List<Match> _matches = [];
+  List<User> _potentialMatches = [];
   bool _isLoading = false;
   bool _isLiking = false;
   AuthError? _error;
@@ -17,6 +19,7 @@ class MatchingStateProvider extends ChangeNotifier {
 
   // Getters
   List<Match> get matches => _matches;
+  List<User> get potentialMatches => _potentialMatches;
   bool get isLoading => _isLoading;
   bool get isLiking => _isLiking;
   AuthError? get error => _error;
@@ -170,6 +173,75 @@ class MatchingStateProvider extends ChangeNotifier {
       );
     }
     notifyListeners();
+  }
+
+  // Load potential matches
+  Future<void> loadPotentialMatches() async {
+    try {
+      _setLoading(true);
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('No token');
+      
+      // Mock potential matches for now
+      _potentialMatches = [];
+      notifyListeners();
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Super like a user
+  Future<bool> superLikeUser(int userId) async {
+    try {
+      _setLiking(true);
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('No token');
+      
+      // Mock super like for now - return true to indicate match
+      _lastLikedUserId = userId;
+      _setLiking(false);
+      notifyListeners();
+      return false; // Not a match for now
+    } catch (e) {
+      _setLiking(false);
+      _handleError(e);
+      return false;
+    }
+  }
+
+  // Dislike a user
+  Future<void> dislikeUser(int userId) async {
+    try {
+      _setLoading(true);
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('No token');
+      
+      // Mock dislike for now
+      notifyListeners();
+    } catch (e) {
+      _handleError(e);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Load more matches (pagination)
+  Future<void> loadMoreMatches() async {
+    try {
+      _setLoading(true);
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('No token');
+
+      // Mock loading more matches for now
+      // TODO: Implement actual pagination logic
+      await Future.delayed(Duration(milliseconds: 500));
+      
+      notifyListeners();
+    } catch (e) {
+      _handleError(e);
+    }
   }
 
   // Dispose method

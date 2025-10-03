@@ -509,6 +509,11 @@ class MediaPickerService {
     }
   }
 
+  /// Pick image (simple method for compatibility)
+  Future<List<File>?> pickImage() async {
+    return await pickImageFromGallery();
+  }
+
   /// Show media picker dialog
   Future<List<File>?> showMediaPickerDialog(BuildContext context, {
     bool allowImages = true,

@@ -113,4 +113,12 @@ class AppColors {
     Color(0xFF3B82F6), // Blue-500
     Color(0xFF60A5FA), // Blue-400
   ];
+
+  // UI Surface Colors
+  static const Color surface = Color(0xFFFFFFFF); // White
+  static const Color border = Color(0xFFE5E7EB); // Gray-200
+
+  // Background Colors
+  static const Color backgroundPrimary = Color(0xFFFFFFFF); // White
+  static const Color backgroundSecondary = Color(0xFFF9FAFB); // Gray-50
 } 

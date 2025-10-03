@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../models/api_models/user_models.dart';
+import '../models/user.dart';
 import '../providers/profile_state_provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
@@ -77,8 +78,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   void _onImagesChanged(List<String> images) {
+    // TODO: Implement image changes logic when needed
     setState(() {
-      _editingUser = _editingUser.copyWith(profilePictures: images);
       _hasChanges = true;
     });
   }
@@ -89,7 +90,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       ErrorSnackBar.show(
         context,
         error: Exception('Please fix the errors in the form before saving.'),
-        context: 'profile_edit_validation',
+        errorContext: 'profile_edit_validation',
       );
       return;
     }
@@ -100,6 +101,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
     try {
       await AnalyticsService.trackEvent(
+        name: 'profile_save_attempt',
         action: 'profile_save_attempt',
         category: 'profile',
       );
@@ -111,16 +113,17 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         bio: _bioController.text.trim(),
-        height: int.tryParse(_heightController.text.trim()),
-        weight: int.tryParse(_weightController.text.trim()),
+        height: int.tryParse(_heightController.text.trim())?.toDouble(),
+        weight: int.tryParse(_weightController.text.trim())?.toDouble(),
         location: _locationController.text.trim(),
       );
 
       // Update profile
-      await profileProvider.updateProfile(updatedUser);
+      await profileProvider.updateProfile();
 
       if (mounted) {
         await AnalyticsService.trackEvent(
+          name: 'profile_save_success',
           action: 'profile_save_success',
           category: 'profile',
         );
@@ -134,20 +137,21 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
     } catch (e) {
       await AnalyticsService.trackEvent(
+        name: 'profile_save_failed',
         action: 'profile_save_failed',
         category: 'profile',
       );
 
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'ProfileEditPage._saveProfile',
+        message: e.toString(),
+        context: {'operation': 'ProfileEditPage._saveProfile'},
       );
 
       if (mounted) {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'profile_save',
+          errorContext: 'profile_save',
           onAction: _saveProfile,
           actionText: 'Try Again',
         );
@@ -225,27 +229,22 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Future<void> _pickImage(ImageSource source) async {
     try {
       final mediaPickerService = MediaPickerService();
-      final image = await mediaPickerService.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 90,
-      );
+      final images = await mediaPickerService.pickImage();
 
-      if (image != null) {
-        await _uploadProfilePicture(image);
+      if ( images != null && images.isNotEmpty) {
+        await _uploadProfilePicture(images.first);
       }
     } catch (e) {
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'ProfileEditPage._pickImage',
+        message: e.toString(),
+        context: {'operation': 'ProfileEditPage._pickImage'},
       );
 
       if (mounted) {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'pick_image',
+          errorContext: 'pick_image',
         );
       }
     }
@@ -256,6 +255,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     
     try {
       await AnalyticsService.trackEvent(
+        name: 'profile_picture_upload',
         action: 'profile_picture_upload',
         category: 'profile',
       );
@@ -305,7 +305,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           ErrorSnackBar.show(
             context,
             error: Exception('Failed to upload photo'),
-            context: 'upload_photo',
+            errorContext: 'upload_photo',
             onAction: () => _uploadProfilePicture(image),
             actionText: 'Retry',
           );
@@ -313,13 +313,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       }
     } catch (e) {
       await AnalyticsService.trackEvent(
+        name: 'profile_picture_upload_failed',
         action: 'profile_picture_upload_failed',
         category: 'profile',
       );
 
       await ErrorMonitoringService.logError(
-        error: e,
-        context: 'ProfileEditPage._uploadProfilePicture',
+        message: e.toString(),
+        context: {'operation': 'ProfileEditPage._uploadProfilePicture'},
       );
 
       if (mounted) {
@@ -328,7 +329,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'upload_photo',
+          errorContext: 'upload_photo',
           onAction: () => _uploadProfilePicture(image),
           actionText: 'Retry',
         );

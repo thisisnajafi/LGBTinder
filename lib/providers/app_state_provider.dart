@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_state_models.dart';
+import '../models/user.dart';
 import '../models/api_models/auth_models.dart';
 import '../models/api_models/reference_data_models.dart';
 import '../models/api_models/user_models.dart';
@@ -23,6 +24,11 @@ class AppStateProvider extends ChangeNotifier {
   Map<String, List<ReferenceDataItem>> _referenceData = {};
   List<Country> _countries = [];
   Map<int, List<City>> _citiesByCountry = {};
+  
+  // Secure storage keys
+  static const String _tokenKey = 'access_token';
+  static const String _userKey = 'user_data';
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   UserState? get currentUserState => _currentUserState;
   User? get user => _user;
@@ -50,11 +56,15 @@ class AppStateProvider extends ChangeNotifier {
         
         if (_token != null) {
           // Get current user profile
-          _user = await UserApiService.getCurrentUser(_token!);
-          _currentUserState = ReadyForLoginState();
+          final userProfile = await UserApiService.getCurrentUser(_token!);
+          _user = User.fromJson(userProfile?.toJson() ?? {});
+          // For now, assume user needs login screen
+          _currentUserState = ReadyForLoginState({'user_id': _user?.id ?? 0});
         } else {
           // Token is invalid, clear state
-          await _clearAuthState();
+          _currentUserState = null;
+          _user = null;
+          _token = null;
         }
       } else {
         // User is not authenticated
@@ -100,10 +110,11 @@ class AppStateProvider extends ChangeNotifier {
       final response = await AuthApiService.register(request);
 
       if (response.status) {
-        _currentUserState = EmailVerificationRequiredState(
-          userId: response.data?.userId ?? 0,
-          email: email,
-        );
+        _currentUserState = EmailVerificationRequiredState({
+          'email': email,
+          'user_id': response.data?.userId ?? 0,
+          'userId': response.data?.userId ?? 0,
+        });
         return AuthResult.success(message: response.message);
       } else {
         _error = AuthError(
@@ -111,7 +122,7 @@ class AppStateProvider extends ChangeNotifier {
           message: response.message,
           details: response.errors,
         );
-        return AuthResult.error(message: response.message);
+        return AuthResult.error(response.message);
       }
     } catch (e) {
       _error = AuthError(
@@ -148,12 +159,12 @@ class AppStateProvider extends ChangeNotifier {
             userId: response.data?.userId,
           );
           
-          _currentUserState = ProfileCompletionRequiredState(
-            userId: response.data?.userId ?? 0,
-            email: email,
-          );
+          _currentUserState = ProfileCompletionRequiredState({
+            'userId': response.data?.userId ?? 0,
+            'email': email,
+          });
         } else {
-          _currentUserState = ReadyForLoginState();
+          _currentUserState = ReadyForLoginState({'user_id': response.data?.userId ?? 0});
         }
         return AuthResult.success(message: response.message);
       } else {
@@ -161,7 +172,7 @@ class AppStateProvider extends ChangeNotifier {
           type: AuthErrorType.invalidCode,
           message: response.message,
         );
-        return AuthResult.error(message: response.message);
+        return AuthResult.error(response.message);
       }
     } catch (e) {
       _error = AuthError(
@@ -217,11 +228,11 @@ class AppStateProvider extends ChangeNotifier {
           await TokenManagementService.storeTokenData(
             accessToken: response.data!.token,
             tokenType: response.data!.tokenType,
-            userId: response.data!.user['id'],
+            userId: response.data!.user.id,
           );
 
           _token = response.data!.token;
-          _currentUserState = ReadyForLoginState();
+          _currentUserState = ReadyForLoginState({'user_id': response.data?.user.id ?? 0});
 
           return AuthResult.success(
             message: response.message,
@@ -258,10 +269,12 @@ class AppStateProvider extends ChangeNotifier {
   Future<void> _loadReferenceData() async {
     try {
       // Load countries
-      _countries = await ReferenceDataApiService.getCountries();
+      final countriesResponse = await ReferenceDataApiService.getCountries();
+      _countries = countriesResponse.data;
       
-      // Load all reference data
-      _referenceData = await ReferenceDataApiService.getAllReferenceData();
+      // Load all reference data - cast to proper type
+      final refData = await ReferenceDataApiService.getAllReferenceData();
+      _referenceData = Map<String, List<ReferenceDataItem>>.from(refData);
     } catch (e) {
       print('Error loading reference data: $e');
       // Don't fail the app initialization if reference data fails to load
@@ -272,8 +285,8 @@ class AppStateProvider extends ChangeNotifier {
   Future<void> loadCitiesForCountry(int countryId) async {
     try {
       if (!_citiesByCountry.containsKey(countryId)) {
-        final cities = await ReferenceDataApiService.getCitiesByCountry(countryId);
-        _citiesByCountry[countryId] = cities;
+        final citiesResponse = await ReferenceDataApiService.getCitiesByCountry(countryId);
+        _citiesByCountry[countryId] = citiesResponse.data;
         notifyListeners();
       }
     } catch (e) {

@@ -45,6 +45,7 @@ class ProfileApiService {
     } catch (e) {
       // Handle network or parsing errors
       return UpdateProfileResponse(
+        success: false,
         status: false,
         message: 'Network error: ${e.toString()}',
       );
@@ -134,6 +135,7 @@ class ProfileApiService {
     } catch (e) {
       // Handle network or parsing errors
       return UploadProfilePictureResponse(
+        success: false,
         status: false,
         message: 'Network error: ${e.toString()}',
       );

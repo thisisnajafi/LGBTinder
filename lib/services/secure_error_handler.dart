@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/user_state_models.dart';
 
@@ -78,7 +79,7 @@ class SecureErrorHandler {
     return AuthError(
       type: error.type,
       message: _sanitizeMessage(error.message),
-      details: error.details != null ? _sanitizeMessage(error.details!) : null,
+      details: error.details,
     );
   }
 
@@ -103,7 +104,7 @@ class SecureErrorHandler {
     return AuthError(
       type: AuthErrorType.networkError,
       message: message,
-      details: details,
+      details: details != null ? {'message': details} : null,
     );
   }
 
@@ -134,7 +135,7 @@ class SecureErrorHandler {
     return AuthError(
       type: AuthErrorType.serverError,
       message: message,
-      details: details,
+      details: details != null ? {'message': details} : null,
     );
   }
 
@@ -143,7 +144,7 @@ class SecureErrorHandler {
     return AuthError(
       type: AuthErrorType.validationError,
       message: 'Invalid data format',
-      details: 'The data received is not in the expected format',
+      details: {'message': 'The data received is not in the expected format'},
     );
   }
 
@@ -152,7 +153,7 @@ class SecureErrorHandler {
     return AuthError(
       type: AuthErrorType.networkError,
       message: 'Request timeout',
-      details: 'The request took too long to complete. Please try again.',
+      details: {'message': 'The request took too long to complete. Please try again.'},
     );
   }
 
@@ -165,7 +166,7 @@ class SecureErrorHandler {
       return AuthError(
         type: AuthErrorType.unknownError,
         message: 'An unexpected error occurred',
-        details: 'Please try again or contact support if the problem persists',
+        details: {'message': 'Please try again or contact support if the problem persists'},
       );
     }
 
@@ -174,7 +175,7 @@ class SecureErrorHandler {
       return AuthError(
         type: AuthErrorType.networkError,
         message: 'Network error',
-        details: 'Please check your internet connection and try again',
+        details: {'message': 'Please check your internet connection and try again'},
       );
     }
 
@@ -183,7 +184,7 @@ class SecureErrorHandler {
       return AuthError(
         type: AuthErrorType.serverError,
         message: 'Server error',
-        details: 'The server encountered an error. Please try again later',
+        details: {'message': 'The server encountered an error. Please try again later'},
       );
     }
 
@@ -191,7 +192,7 @@ class SecureErrorHandler {
     return AuthError(
       type: AuthErrorType.unknownError,
       message: 'An unexpected error occurred',
-      details: 'Please try again or contact support if the problem persists',
+      details: {'message': 'Please try again or contact support if the problem persists'},
     );
   }
 

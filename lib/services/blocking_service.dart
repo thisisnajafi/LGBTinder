@@ -142,7 +142,7 @@ class MutingService {
     try {
       final requestBody = {'user_id': userId};
       if (duration != null) {
-        requestBody['duration_minutes'] = duration.inMinutes;
+        requestBody['duration_minutes'] = duration.inMinutes.toString();
       }
 
       final response = await http.post(

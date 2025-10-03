@@ -1,16 +1,155 @@
-import 'dart:convert';
-import 'dart:io';
+/// Profile-related API models
 
-/// Profile Management API Models
-/// 
-/// This file contains all data models for profile management endpoints
-/// including updating profile information and uploading profile pictures.
+/// User profile model
+class UserProfile {
+  final int id;
+  final String name;
+  final String email;
+  final String? profileBio;
+  final DateTime? birthDate;
+  final int? gender;
+  final int? countryId;
+  final int? cityId;
+  final int? height;
+  final int? weight;
+  final bool? smoke;
+  final bool? drink;
+  final bool? gym;
+  final int? minAgePreference;
+  final int? maxAgePreference;
+  final List<String> profileImages;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
-// ============================================================================
-// PROFILE UPDATE MODELS
-// ============================================================================
+  const UserProfile({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.profileBio,
+    this.birthDate,
+    this.gender,
+    this.countryId,
+    this.cityId,
+    this.height,
+    this.weight,
+    this.smoke,
+    this.drink,
+    this.gym,
+    this.minAgePreference,
+    this.maxAgePreference,
+    required this.profileImages,
+    required this.createdAt,
+    required this.updatedAt,
+  });
 
-/// Request model for updating user profile
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      email: json['email'] as String,
+      profileBio: json['profile_bio'] as String?,
+      birthDate: json['birth_date'] != null 
+          ? DateTime.parse(json['birth_date'] as String) 
+          : null,
+      gender: json['gender'] as int?,
+      countryId: json['country_id'] as int?,
+      cityId: json['city_id'] as int?,
+      height: json['height'] as int?,
+      weight: json['weight'] as int?,
+      smoke: json['smoke'] as bool?,
+      drink: json['drink'] as bool?,
+      gym: json['gym'] as bool?,
+      minAgePreference: json['min_age_preference'] as int?,
+      maxAgePreference: json['max_age_preference'] as int?,
+      profileImages: List<String>.from(json['profile_images'] ?? []),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'profile_bio': profileBio,
+      'birth_date': birthDate?.toIso8601String(),
+      'gender': gender,
+      'country_id': countryId,
+      'city_id': cityId,
+      'height': height,
+      'weight': weight,
+      'smoke': smoke,
+      'drink': drink,
+      'gym': gym,
+      'min_age_preference': minAgePreference,
+      'max_age_preference': maxAgePreference,
+      'profile_images': profileImages,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+}
+
+/// Profile picture upload request
+class ProfilePictureUploadRequest {
+  final String imageData;
+  final String fileName;
+  final bool isPrimary;
+
+  const ProfilePictureUploadRequest({
+    required this.imageData,
+    required this.fileName,
+    this.isPrimary = false,
+  });
+
+  factory ProfilePictureUploadRequest.fromJson(Map<String, dynamic> json) {
+    return ProfilePictureUploadRequest(
+      imageData: json['image_data'] as String,
+      fileName: json['file_name'] as String,
+      isPrimary: json['is_primary'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'image_data': imageData,
+      'file_name': fileName,
+      'is_primary': isPrimary,
+    };
+  }
+}
+
+/// Profile picture upload response
+class ProfilePictureUploadResponse {
+  final int pictureId;
+  final String pictureUrl;
+  final bool isPrimary;
+
+  const ProfilePictureUploadResponse({
+    required this.pictureId,
+    required this.pictureUrl,
+    required this.isPrimary,
+  });
+
+  factory ProfilePictureUploadResponse.fromJson(Map<String, dynamic> json) {
+    return ProfilePictureUploadResponse(
+      pictureId: json['picture_id'] as int,
+      pictureUrl: json['picture_url'] as String,
+      isPrimary: json['is_primary'] as bool,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'picture_id': pictureId,
+      'picture_url': pictureUrl,
+      'is_primary': isPrimary,
+    };
+  }
+}
+
+/// Update profile request model
 class UpdateProfileRequest {
   final String? profileBio;
   final int? height;
@@ -46,180 +185,130 @@ class UpdateProfileRequest {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    
-    if (profileBio != null) data['profile_bio'] = profileBio;
-    if (height != null) data['height'] = height;
-    if (weight != null) data['weight'] = weight;
-    if (smoke != null) data['smoke'] = smoke;
-    if (drink != null) data['drink'] = drink;
-    if (gym != null) data['gym'] = gym;
-    if (minAgePreference != null) data['min_age_preference'] = minAgePreference;
-    if (maxAgePreference != null) data['max_age_preference'] = maxAgePreference;
-    
-    return data;
-  }
-
-  /// Check if request has any data to update
-  bool get hasData {
-    return profileBio != null ||
-           height != null ||
-           weight != null ||
-           smoke != null ||
-           drink != null ||
-           gym != null ||
-           minAgePreference != null ||
-           maxAgePreference != null;
-  }
-}
-
-/// Profile update response data model
-class UpdateProfileResponseData {
-  final int id;
-  final String? profileBio;
-  final int? height;
-  final int? weight;
-  final bool? smoke;
-  final bool? drink;
-  final bool? gym;
-  final int? minAgePreference;
-  final int? maxAgePreference;
-  final String updatedAt;
-
-  const UpdateProfileResponseData({
-    required this.id,
-    this.profileBio,
-    this.height,
-    this.weight,
-    this.smoke,
-    this.drink,
-    this.gym,
-    this.minAgePreference,
-    this.maxAgePreference,
-    required this.updatedAt,
-  });
-
-  factory UpdateProfileResponseData.fromJson(Map<String, dynamic> json) {
-    return UpdateProfileResponseData(
-      id: json['id'] as int,
-      profileBio: json['profile_bio'] as String?,
-      height: json['height'] as int?,
-      weight: json['weight'] as int?,
-      smoke: json['smoke'] as bool?,
-      drink: json['drink'] as bool?,
-      gym: json['gym'] as bool?,
-      minAgePreference: json['min_age_preference'] as int?,
-      maxAgePreference: json['max_age_preference'] as int?,
-      updatedAt: json['updated_at'] as String,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      if (profileBio != null) 'profile_bio': profileBio,
-      if (height != null) 'height': height,
-      if (weight != null) 'weight': weight,
-      if (smoke != null) 'smoke': smoke,
-      if (drink != null) 'drink': drink,
-      if (gym != null) 'gym': gym,
-      if (minAgePreference != null) 'min_age_preference': minAgePreference,
-      if (maxAgePreference != null) 'max_age_preference': maxAgePreference,
-      'updated_at': updatedAt,
+      'profile_bio': profileBio,
+      'height': height,
+      'weight': weight,
+      'smoke': smoke,
+      'drink': drink,
+
+      'gym': gym,
+      'min_age_preference': minAgePreference,
+      'max_age_preference': maxAgePreference,
     };
   }
 }
 
 /// Update profile response model
 class UpdateProfileResponse {
-  final bool status;
+  final bool success;
   final String message;
-  final UpdateProfileResponseData? data;
-  final Map<String, List<String>>? errors;
+  final bool status; // Added for compatibility
+  final UserProfile? data;
 
   const UpdateProfileResponse({
-    required this.status,
+    required this.success,
     required this.message,
+    required this.status,
     this.data,
-    this.errors,
   });
 
   factory UpdateProfileResponse.fromJson(Map<String, dynamic> json) {
     return UpdateProfileResponse(
-      status: json['status'] as bool,
+      success: json['success'] as bool,
       message: json['message'] as String,
+      status: json['status'] != null ? json['status'] as bool : json['success'] as bool,
       data: json['data'] != null 
-          ? UpdateProfileResponseData.fromJson(json['data'] as Map<String, dynamic>)
-          : null,
-      errors: json['errors'] != null 
-          ? Map<String, List<String>>.from(
-              (json['errors'] as Map<String, dynamic>).map(
-                (key, value) => MapEntry(key, List<String>.from(value as List)),
-              ),
-            )
+          ? UserProfile.fromJson(json['data'] as Map<String, dynamic>)
           : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'status': status,
+      'success': success,
       'message': message,
-      if (data != null) 'data': data!.toJson(),
-      if (errors != null) 'errors': errors,
+      'data': data?.toJson(),
     };
   }
 }
 
-// ============================================================================
-// PROFILE PICTURE UPLOAD MODELS
-// ============================================================================
-
-/// Profile picture upload request model
+/// Upload profile picture request model
 class UploadProfilePictureRequest {
-  final File image;
+  final String imagePath;
   final bool isPrimary;
 
   const UploadProfilePictureRequest({
-    required this.image,
+    required this.imagePath,
     this.isPrimary = false,
   });
 
-  /// Get multipart fields for the request
-  Map<String, String> get fields {
-    return {
-      'is_primary': isPrimary.toString(),
-    };
+  factory UploadProfilePictureRequest.fromJson(Map<String, dynamic> json) {
+    return UploadProfilePictureRequest(
+      imagePath: json['image_path'] as String,
+      isPrimary: json['is_primary'] as bool? ?? false,
+    );
   }
 
-  /// Get multipart files for the request
-  Map<String, File> get files {
+  Map<String, dynamic> toJson() {
     return {
-      'image': image,
+      'image_path': imagePath,
+      'is_primary': isPrimary,
     };
   }
 }
 
-/// Profile picture upload response data model
-class UploadProfilePictureResponseData {
+/// Upload profile picture response model
+class UploadProfilePictureResponse {
+  final bool success;
+  final String message;
+  final bool status; // Added for compatibility  
+  final ProfilePictureResponseData? data;
+
+  const UploadProfilePictureResponse({
+    required this.success,
+    required this.message,
+    required this.status,
+    this.data,
+  });
+
+  factory UploadProfilePictureResponse.fromJson(Map<String, dynamic> json) {
+    return UploadProfilePictureResponse(
+      success: json['success'] as bool,
+      message: json['message'] as String,
+      status: json['status'] != null ? json['status'] as bool : json['success'] as bool,
+      data: json['data'] != null
+          ? ProfilePictureResponseData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+      'data': data?.toJson(),
+    };
+  }
+}
+
+/// Profile picture response data
+class ProfilePictureResponseData {
   final int id;
   final String url;
   final bool isPrimary;
-  final String createdAt;
 
-  const UploadProfilePictureResponseData({
+  const ProfilePictureResponseData({
     required this.id,
     required this.url,
     required this.isPrimary,
-    required this.createdAt,
   });
 
-  factory UploadProfilePictureResponseData.fromJson(Map<String, dynamic> json) {
-    return UploadProfilePictureResponseData(
+  factory ProfilePictureResponseData.fromJson(Map<String, dynamic> json) {
+    return ProfilePictureResponseData(
       id: json['id'] as int,
       url: json['url'] as String,
       isPrimary: json['is_primary'] as bool,
-      createdAt: json['created_at'] as String,
     );
   }
 
@@ -228,190 +317,43 @@ class UploadProfilePictureResponseData {
       'id': id,
       'url': url,
       'is_primary': isPrimary,
-      'created_at': createdAt,
     };
   }
 }
 
-/// Upload profile picture response model
-class UploadProfilePictureResponse {
-  final bool status;
-  final String message;
-  final UploadProfilePictureResponseData? data;
+/// Profile visibility settings
+class ProfileVisibilitySettings {
+  final bool showAge;
+  final bool showLocation;
+  final bool showInterests;
+  final bool showPhotos;
+  final bool showSocialLinks;
 
-  const UploadProfilePictureResponse({
-    required this.status,
-    required this.message,
-    this.data,
+  const ProfileVisibilitySettings({
+    this.showAge = true,
+    this.showLocation = true,
+    this.showInterests = true,
+    this.showPhotos = true,
+    this.showSocialLinks = false,
   });
 
-  factory UploadProfilePictureResponse.fromJson(Map<String, dynamic> json) {
-    return UploadProfilePictureResponse(
-      status: json['status'] as bool,
-      message: json['message'] as String,
-      data: json['data'] != null 
-          ? UploadProfilePictureResponseData.fromJson(json['data'] as Map<String, dynamic>)
-          : null,
+  factory ProfileVisibilitySettings.fromJson(Map<String, dynamic> json) {
+    return ProfileVisibilitySettings(
+      showAge: json['show_age'] as bool? ?? true,
+      showLocation: json['show_location'] as bool? ?? true,
+      showInterests: json['show_interests'] as bool? ?? true,
+      showPhotos: json['show_photos'] as bool? ?? true,
+      showSocialLinks: json['show_social_links'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'status': status,
-      'message': message,
-      if (data != null) 'data': data!.toJson(),
+      'show_age': showAge,
+      'show_location': showLocation,
+      'show_interests': showInterests,
+      'show_photos': showPhotos,
+      'show_social_links': showSocialLinks,
     };
-  }
-}
-
-// ============================================================================
-// PROFILE UTILITIES
-// ============================================================================
-
-/// Profile helper class
-class ProfileHelper {
-  /// Validate profile bio
-  static bool isValidProfileBio(String? bio) {
-    if (bio == null) return true; // Optional field
-    return bio.trim().isNotEmpty && bio.length <= 500;
-  }
-
-  /// Validate height
-  static bool isValidHeight(int? height) {
-    if (height == null) return true; // Optional field
-    return height >= 100 && height <= 250; // 100cm to 250cm
-  }
-
-  /// Validate weight
-  static bool isValidWeight(int? weight) {
-    if (weight == null) return true; // Optional field
-    return weight >= 30 && weight <= 200; // 30kg to 200kg
-  }
-
-  /// Validate age preference
-  static bool isValidAgePreference(int? minAge, int? maxAge) {
-    if (minAge == null && maxAge == null) return true; // Both optional
-    if (minAge == null || maxAge == null) return false; // Both must be provided
-    
-    return minAge >= 18 && 
-           maxAge >= 18 && 
-           minAge <= maxAge && 
-           maxAge <= 100;
-  }
-
-  /// Get profile bio character count
-  static int getProfileBioCharacterCount(String? bio) {
-    return bio?.length ?? 0;
-  }
-
-  /// Get remaining characters for profile bio
-  static int getRemainingBioCharacters(String? bio, {int maxLength = 500}) {
-    return maxLength - getProfileBioCharacterCount(bio);
-  }
-
-  /// Check if profile bio is too long
-  static bool isProfileBioTooLong(String? bio, {int maxLength = 500}) {
-    return getProfileBioCharacterCount(bio) > maxLength;
-  }
-
-  /// Format height for display
-  static String formatHeight(int? height) {
-    if (height == null) return 'Not specified';
-    return '${height}cm';
-  }
-
-  /// Format weight for display
-  static String formatWeight(int? weight) {
-    if (weight == null) return 'Not specified';
-    return '${weight}kg';
-  }
-
-  /// Format age preference for display
-  static String formatAgePreference(int? minAge, int? maxAge) {
-    if (minAge == null || maxAge == null) return 'Not specified';
-    return '$minAge-$maxAge years';
-  }
-
-  /// Get lifestyle preferences string
-  static String getLifestyleString(bool? smoke, bool? drink, bool? gym) {
-    final List<String> preferences = [];
-    
-    if (smoke == true) preferences.add('Smokes');
-    if (drink == true) preferences.add('Drinks');
-    if (gym == true) preferences.add('Gym');
-    
-    return preferences.isEmpty ? 'No lifestyle preferences set' : preferences.join(', ');
-  }
-
-  /// Check if profile has required fields
-  static bool hasRequiredFields(UpdateProfileRequest request) {
-    return request.profileBio != null ||
-           request.height != null ||
-           request.weight != null ||
-           request.smoke != null ||
-           request.drink != null ||
-           request.gym != null ||
-           request.minAgePreference != null ||
-           request.maxAgePreference != null;
-  }
-
-  /// Get missing required fields
-  static List<String> getMissingRequiredFields(UpdateProfileRequest request) {
-    final List<String> missingFields = [];
-    
-    if (request.profileBio == null) missingFields.add('profile_bio');
-    if (request.height == null) missingFields.add('height');
-    if (request.weight == null) missingFields.add('weight');
-    if (request.smoke == null) missingFields.add('smoke');
-    if (request.drink == null) missingFields.add('drink');
-    if (request.gym == null) missingFields.add('gym');
-    if (request.minAgePreference == null) missingFields.add('min_age_preference');
-    if (request.maxAgePreference == null) missingFields.add('max_age_preference');
-    
-    return missingFields;
-  }
-
-  /// Validate profile picture file
-  static bool isValidProfilePictureFile(File file) {
-    // Check if file exists
-    if (!file.existsSync()) return false;
-    
-    // Check file size (max 10MB)
-    final fileSize = file.lengthSync();
-    if (fileSize > 10 * 1024 * 1024) return false;
-    
-    // Check file extension
-    final extension = file.path.split('.').last.toLowerCase();
-    final allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    if (!allowedExtensions.contains(extension)) return false;
-    
-    return true;
-  }
-
-  /// Get profile picture file size in MB
-  static double getProfilePictureFileSizeMB(File file) {
-    return file.lengthSync() / (1024 * 1024);
-  }
-
-  /// Get profile picture file extension
-  static String getProfilePictureFileExtension(File file) {
-    return file.path.split('.').last.toLowerCase();
-  }
-
-  /// Check if profile picture file is too large
-  static bool isProfilePictureFileTooLarge(File file, {double maxSizeMB = 10.0}) {
-    return getProfilePictureFileSizeMB(file) > maxSizeMB;
-  }
-
-  /// Get profile picture file size error message
-  static String getProfilePictureFileSizeErrorMessage(File file, {double maxSizeMB = 10.0}) {
-    final sizeMB = getProfilePictureFileSizeMB(file);
-    return 'File size (${sizeMB.toStringAsFixed(2)}MB) exceeds maximum allowed size (${maxSizeMB}MB)';
-  }
-
-  /// Get profile picture file extension error message
-  static String getProfilePictureFileExtensionErrorMessage(File file) {
-    final extension = getProfilePictureFileExtension(file);
-    return 'File extension (.$extension) is not supported. Allowed extensions: .jpg, .jpeg, .png, .gif, .webp';
   }
 }

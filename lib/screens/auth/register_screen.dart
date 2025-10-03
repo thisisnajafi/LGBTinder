@@ -246,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                ErrorSnackBar.show(
                  context,
                  error: Exception(result.message),
-                 context: 'register',
+                 errorContext: 'register',
                  onAction: _handleRegister,
                  actionText: 'Try Again',
                );
@@ -272,7 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                ErrorSnackBar.show(
                  context,
                  error: e,
-                 context: 'register',
+                 errorContext: 'register',
                  onAction: _handleRegister,
                  actionText: 'Try Again',
                );

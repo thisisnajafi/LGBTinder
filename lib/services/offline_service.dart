@@ -58,8 +58,8 @@ class OfflineService {
         listener();
       } catch (e) {
         ErrorMonitoringService.logError(
-          error: e,
-          context: 'OfflineService._notifyConnectivityListeners',
+          message: e.toString(),
+          context: {'operation': 'OfflineService._notifyConnectivityListeners'},
         );
       }
     }
@@ -140,8 +140,8 @@ class OfflineService {
       }
     } catch (e) {
       ErrorMonitoringService.logError(
-        error: e,
-        context: 'OfflineService.queueRequest',
+        message: e.toString(),
+        context: {'operation': 'OfflineService.queueRequest'},
       );
     }
   }
@@ -177,7 +177,7 @@ class OfflineService {
           await Future.delayed(const Duration(milliseconds: 100));
         } catch (e) {
           ErrorMonitoringService.logError(
-            error: e,
+            message: e.toString(),
             context: 'OfflineService.processQueuedRequest',
           );
         }
@@ -191,7 +191,7 @@ class OfflineService {
       }
     } catch (e) {
       ErrorMonitoringService.logError(
-        error: e,
+        message: e.toString(),
         context: 'OfflineService.processQueuedRequests',
       );
     }
@@ -203,7 +203,7 @@ class OfflineService {
       return await _cacheService.get<T>(key);
     } catch (e) {
       ErrorMonitoringService.logError(
-        error: e,
+        message: e.toString(),
         context: 'OfflineService.getOfflineData',
       );
       return null;
@@ -216,7 +216,7 @@ class OfflineService {
       await _cacheService.set(key, data, expiry: expiry);
     } catch (e) {
       ErrorMonitoringService.logError(
-        error: e,
+        message: e.toString(),
         context: 'OfflineService.setOfflineData',
       );
     }
@@ -232,7 +232,7 @@ class OfflineService {
       await prefs.remove('offline_queue');
     } catch (e) {
       ErrorMonitoringService.logError(
-        error: e,
+        message: e.toString(),
         context: 'OfflineService.clearOfflineData',
       );
     }
@@ -257,7 +257,7 @@ class OfflineService {
       }
     } catch (e) {
       ErrorMonitoringService.logError(
-        error: e,
+        message: e.toString(),
         context: 'OfflineService.getNetworkStatus',
       );
       return NetworkStatus.unknown;

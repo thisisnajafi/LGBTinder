@@ -57,6 +57,17 @@ class RateLimitingService {
     _requestHistory[endpointCategory] = requests;
   }
 
+  /// Check rate limit for endpoint category - async method that can block if needed
+  static Future<void> checkRateLimit(String endpointCategory) async {
+    if (!isWithinRateLimit(endpointCategory)) {
+      final retryAfter = Duration(minutes: _windowSizeMinutes);
+      await Future.delayed(retryAfter);
+      recordRequest(endpointCategory);
+    } else {
+      recordRequest(endpointCategory);
+    }
+  }
+
   /// Get remaining requests for endpoint category
   static int getRemainingRequests(String endpointCategory) {
     final now = DateTime.now();

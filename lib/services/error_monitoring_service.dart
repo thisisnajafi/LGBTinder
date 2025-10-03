@@ -26,6 +26,48 @@ class ErrorMonitoringService {
     }
   }
 
+  // Log generic error
+  static Future<void> logError({
+    required String message,
+    String errorType = 'generic',
+    StackTrace? stackTrace,
+    Map<String, dynamic>? context,
+    Map<String, dynamic>? details,
+    String? userId,
+  }) async {
+    if (!EnvironmentConfig.enableCrashReporting) return;
+
+    final errorLog = ErrorLogEntry(
+      id: _generateId(),
+      timestamp: DateTime.now(),
+      type: ErrorType.generic,
+      errorMessage: message,
+      stackTrace: stackTrace?.toString(),
+      userId: userId,
+      context: context,
+      details: details != null ? json.encode(details) : null,
+      appVersion: '1.0.0',
+      environment: 'development',
+    );
+
+    _errorLogs.add(errorLog);
+    await _saveErrorLogs();
+  }
+
+  // Save error logs to storage
+  static Future<void> _saveErrorLogs() async {
+    if (!EnvironmentConfig.enableCrashReporting) return;
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = json.encode(_errorLogs.map((log) => log.toJson()).toList());
+      await prefs.setString(_errorLogKey, jsonString);
+    } catch (e) {
+      // Handle error silently to avoid infinite loops
+      debugPrint('Failed to save error logs: $e');
+    }
+  }
+
   // Log API error
   static Future<void> logApiError({
     required String endpoint,
@@ -451,6 +493,7 @@ class ErrorMonitoringService {
 
 // Error types
 enum ErrorType {
+  generic,
   apiError,
   authError,
   validationError,

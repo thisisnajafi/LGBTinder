@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
-import '../models/api_models/user_models.dart';
+import '../models/user.dart';
 import '../services/blocking_service.dart';
 import '../providers/auth_provider.dart';
 import '../components/error_handling/error_display_widget.dart';
@@ -77,14 +77,15 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ErrorSnackBar.showSuccess(
           context,
-          'User unblocked successfully',
+          message: 'User unblocked successfully',
         );
       }
     } catch (e) {
       if (mounted) {
         ErrorSnackBar.show(
           context,
-          'Failed to unblock user: ${e.toString().replaceFirst('Exception: ', '')}',
+          error: e,
+          errorContext: 'blocked_users_unblock',
         );
       }
     }
@@ -211,8 +212,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
   Widget _buildBlockedUsersList() {
     final filteredUsers = _blockedUsers.where((user) {
-      return user.name.toLowerCase().contains(_searchQuery) ||
-             user.username?.toLowerCase().contains(_searchQuery) == true;
+      return user.name?.toLowerCase().contains(_searchQuery) == true ||
+             user.email.toLowerCase().contains(_searchQuery);
     }).toList();
 
     if (filteredUsers.isEmpty) {
@@ -306,9 +307,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height)
-
-,
+                const SizedBox(height: 8),
                 Text(
                   'Blocked',
                   style: AppTypography.caption.copyWith(
@@ -322,7 +321,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           IconButton(
             onPressed: () => _showUnblockConfirmation(user),
             icon: Icon(
-              Icons.unblock,
+              Icons.block,
               color: AppColors.primary,
               size: 20,
             ),

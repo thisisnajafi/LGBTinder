@@ -261,7 +261,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'email_verification',
+          errorContext: 'email_verification',
           onAction: _handleVerification,
           actionText: 'Try Again',
         );
@@ -334,7 +334,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                  ErrorSnackBar.show(
                    context,
                    error: Exception('Unable to send verification code'),
-                   context: 'resend_verification',
+                   errorContext: 'resend_verification',
                    onAction: _handleResendCode,
                    actionText: 'Try Again',
                  );
@@ -362,7 +362,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'email_verification',
+          errorContext: 'email_verification',
           onAction: _handleVerification,
           actionText: 'Try Again',
         );

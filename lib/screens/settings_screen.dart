@@ -160,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsTile(
                 'Skeleton Loader Settings',
                 'Configure loading skeleton preferences',
-                Icons.skeleton,
+                Icons.image_not_supported_outlined,
                 () => Navigator.push(
                   context,
                   MaterialPageRoute(

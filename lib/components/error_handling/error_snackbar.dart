@@ -8,12 +8,12 @@ class ErrorSnackBar {
   static void show(
     BuildContext context, {
     required dynamic error,
-    String? context,
+    String? errorContext,
     Duration duration = const Duration(seconds: 4),
     VoidCallback? onAction,
     String? actionText,
   }) {
-    final authError = SecureErrorHandler.handleError(error, context: context);
+    final authError = SecureErrorHandler.handleError(error, context: errorContext);
     final userMessage = SecureErrorHandler.createUserFriendlyMessage(authError);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -21,7 +21,7 @@ class ErrorSnackBar {
         content: Row(
           children: [
             Icon(
-              _getErrorIcon(authError.type),
+              _getErrorIcon(authError.type.name),
               color: Colors.white,
               size: 20,
             ),
@@ -36,7 +36,7 @@ class ErrorSnackBar {
             ),
           ],
         ),
-        backgroundColor: _getErrorColor(authError.type),
+        backgroundColor: _getErrorColor(authError.type.name),
         duration: duration,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -187,18 +187,20 @@ class ErrorSnackBar {
 
   static IconData _getErrorIcon(String errorType) {
     switch (errorType) {
-      case 'network_error':
+      case 'networkError':
         return Icons.wifi_off;
-      case 'server_error':
+      case 'serverError':
         return Icons.api;
-      case 'validation_error':
+      case 'validationError':
         return Icons.warning;
-      case 'authentication_error':
-        return Icons.lock;
-      case 'authorization_error':
+      case 'emailNotSent':
+        return Icons.email;
+      case 'invalidCode':
+        return Icons.security;
+      case 'userBanned':
         return Icons.block;
-      case 'rate_limit_error':
-        return Icons.schedule;
+      case 'unknownError':
+        return Icons.error_outline;
       default:
         return Icons.error_outline;
     }
@@ -206,18 +208,20 @@ class ErrorSnackBar {
 
   static Color _getErrorColor(String errorType) {
     switch (errorType) {
-      case 'network_error':
+      case 'networkError':
         return AppColors.warning;
-      case 'server_error':
+      case 'serverError':
         return AppColors.error;
-      case 'validation_error':
+      case 'validationError':
         return AppColors.warning;
-      case 'authentication_error':
-        return AppColors.error;
-      case 'authorization_error':
-        return AppColors.error;
-      case 'rate_limit_error':
+      case 'emailNotSent':
         return AppColors.warning;
+      case 'invalidCode':
+        return AppColors.warning;
+      case 'userBanned':
+        return AppColors.error;
+      case 'unknownError':
+        return AppColors.error;
       default:
         return AppColors.error;
     }

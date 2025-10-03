@@ -136,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'login',
+          errorContext: 'login',
           onAction: _handleLogin,
           actionText: 'Try Again',
         );

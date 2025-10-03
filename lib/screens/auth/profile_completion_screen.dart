@@ -108,7 +108,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
         ReferenceDataApiService.getCountries(),
         ReferenceDataApiService.getGenders(),
         ReferenceDataApiService.getMusicGenres(),
-        ReferenceDataApiService.getEducations(),
+        ReferenceDataApiService.getAllReferenceData(),
         ReferenceDataApiService.getJobs(),
         ReferenceDataApiService.getLanguages(),
         ReferenceDataApiService.getInterests(),
@@ -141,7 +141,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'load_reference_data',
+          errorContext: 'load_reference_data',
           onAction: _loadReferenceData,
           actionText: 'Retry',
         );
@@ -255,7 +255,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
         ErrorSnackBar.show(
           context,
           error: e,
-          context: 'complete_profile',
+          errorContext: 'complete_profile',
           onAction: _completeProfile,
           actionText: 'Try Again',
         );
@@ -681,7 +681,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   try {
                     final cities = await ReferenceDataApiService.getCitiesByCountry(value);
                     setState(() {
-                      _cities = cities;
+                      _cities = cities.data;
                     });
                   } catch (e) {
                     print('Error fetching cities: $e');
@@ -689,12 +689,12 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                       ErrorSnackBar.show(
                         context,
                         error: e,
-                        context: 'load_cities',
+                        errorContext: 'load_cities',
                         onAction: () async {
                           try {
                             final cities = await ReferenceDataApiService.getCitiesByCountry(value);
                             setState(() {
-                              _cities = cities;
+                              _cities = cities.data;
                             });
                           } catch (e) {
                             // Error will be handled by ErrorSnackBar
@@ -1073,13 +1073,40 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   String _getGenderTitle(int? genderId) {
     if (genderId == null) return 'Not selected';
     final genders = _genders;
-    final gender = genders.firstWhere((g) => g.id == genderId, orElse: () => ReferenceDataItem(id: 0, title: 'Unknown', imageUrl: ''));
+    final gender = genders.firstWhere((g) => g.id == genderId, orElse: () => ReferenceDataItem(id: 0, title: 'Unknown', status: 'active', imageUrl: ''));
     return gender.title;
   }
 
   String _getSelectedItemsTitle(String category, List<int> selectedIds) {
     if (selectedIds.isEmpty) return 'None selected';
-    final items = _referenceData[category] as List<ReferenceDataItem>? ?? [];
+    
+    List<ReferenceDataItem> items;
+    switch (category) {
+      case 'music_genres':
+        items = _musicGenres;
+        break;
+      case 'educations':
+        items = _educations;
+        break;
+      case 'jobs':
+        items = _jobs;
+        break;
+      case 'languages':
+        items = _languages;
+        break;
+      case 'interests':
+        items = _interests;
+        break;
+      case 'preferred_genders':
+        items = _preferredGenders;
+        break;
+      case 'relation_goals':
+        items = _relationGoals;
+        break;
+      default:
+        items = [];
+    }
+    
     final selectedItems = items.where((item) => selectedIds.contains(item.id));
     return selectedItems.map((item) => item.title).join(', ');
   }
