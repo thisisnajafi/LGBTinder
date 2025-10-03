@@ -248,10 +248,10 @@ class _DiscoveryPageState extends State<DiscoveryPage>
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage: user.profilePictures.isNotEmpty
-                          ? NetworkImage(user.profilePictures.first)
+                      backgroundImage: user.avatarUrl != null
+                          ? NetworkImage(user.avatarUrl!)
                           : null,
-                      child: user.profilePictures.isEmpty
+                      child: user.avatarUrl == null
                           ? Icon(
                               Icons.person,
                               size: 30,
@@ -265,7 +265,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${user.firstName} ${user.lastName}',
+                            user.fullName,
                             style: AppTypography.heading2.copyWith(
                               color: AppColors.textPrimary,
                             ),
@@ -364,7 +364,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
                       ],
                       
                       // Photos Section
-                      if (user.profilePictures.length > 1) ...[
+                      if (user.avatarUrl != null) ...[
                         _buildPhotosSection(user),
                         const SizedBox(height: 24),
                       ],
@@ -481,14 +481,14 @@ class _DiscoveryPageState extends State<DiscoveryPage>
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: user.profilePictures.length,
+            itemCount: user.avatarUrl != null ? 1 : 0,
             itemBuilder: (context, index) {
               return Container(
                 margin: const EdgeInsets.only(right: 12),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
-                    user.profilePictures[index],
+                    user.avatarUrl!,
                     width: 120,
                     height: 120,
                     fit: BoxFit.cover,

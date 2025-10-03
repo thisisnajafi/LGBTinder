@@ -899,10 +899,10 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             CircleAvatar(
               radius: 16,
-              backgroundImage: widget.match.profilePictures.isNotEmpty
-                  ? NetworkImage(widget.match.profilePictures.first)
+              backgroundImage: widget.match.avatarUrl != null
+                  ? NetworkImage(widget.match.avatarUrl!)
                   : null,
-              child: widget.match.profilePictures.isEmpty
+              child: widget.match.avatarUrl == null
                   ? Icon(
                       Icons.person,
                       size: 16,
@@ -912,7 +912,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
             const SizedBox(width: 12),
             Text(
-              '${widget.match.firstName} ${widget.match.lastName}',
+              '${widget.match.fullName}',
               style: AppTypography.heading3.copyWith(
                 color: AppColors.textPrimary,
               ),
@@ -1067,10 +1067,10 @@ class _ChatPageState extends State<ChatPage> {
           if (!isOwnMessage) ...[
             CircleAvatar(
               radius: 16,
-              backgroundImage: widget.match.profilePictures.isNotEmpty
-                  ? NetworkImage(widget.match.profilePictures.first)
+              backgroundImage: widget.match.avatarUrl != null
+                  ? NetworkImage(widget.match.avatarUrl!)
                   : null,
-              child: widget.match.profilePictures.isEmpty
+              child: widget.match.avatarUrl == null
                   ? Icon(
                       Icons.person,
                       size: 16,

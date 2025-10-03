@@ -12,6 +12,7 @@ import 'providers/profile_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/app_state_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
@@ -72,6 +73,10 @@ class LGBTinderApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AppStateProvider(),
         ),
+        // Theme provider for theme switching
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(),
+        ),
         // All other providers are lazy-loaded to improve startup performance
         ChangeNotifierProvider(
           lazy: true,
@@ -86,28 +91,20 @@ class LGBTinderApp extends StatelessWidget {
           create: (_) => ChatProvider(),
         ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        themeMode: ThemeMode.dark,
-        // Performance optimizations
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-            child: child!,
-          );
-        },
-        theme: ThemeData.dark().copyWith(
-          primaryColor: AppColors.primaryLight,
-          scaffoldBackgroundColor: AppColors.appBackground,
-          bottomAppBarTheme: BottomAppBarThemeData(color: AppColors.appBackground),
-          // Optimized animations
-          pageTransitionsTheme: const PageTransitionsTheme(
-            builders: {
-              TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-              TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            themeMode: themeProvider.themeMode,
+            theme: themeProvider.lightTheme,
+            darkTheme: themeProvider.darkTheme,
+            // Performance optimizations
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                child: child!,
+              );
             },
-          ),
-        ),
         initialRoute: '/',
         routes: {
           '/': (context) => const AuthWrapper(),
@@ -148,6 +145,9 @@ class LGBTinderApp extends StatelessWidget {
           '/feed': (context) => const FeedPage(),
           '/main': (context) => const MainScreen(),
           '/api-test': (context) => const ApiTestPage(),
+        },
+      ),
+    );
         },
       ),
     );
@@ -222,29 +222,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     ];
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Page content with fade transitions only
-          PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(), // Disable swipe navigation
-            onPageChanged: (index) {
-              setState(() => _currentIndex = index);
-            },
-            children: pages.map((page) => _buildPageWithTransition(page)).toList(),
-          ),
-          
-          // Floating navbar positioned at bottom
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: BottomNavbar(
-              currentIndex: _currentIndex,
-              onTap: _onNavTap,
-            ),
-          ),
-        ],
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(), // Disable swipe navigation
+        onPageChanged: (index) {
+          setState(() => _currentIndex = index);
+        },
+        children: pages.map((page) => _buildPageWithTransition(page)).toList(),
+      ),
+      bottomNavigationBar: BottomNavbar(
+        currentIndex: _currentIndex,
+        onTap: _onNavTap,
       ),
     );
   }
@@ -328,8 +316,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildMessagesPage() {
-    // return const ChatListPage(); // Commented out due to syntax error
-    return const Center(child: Text('Messages Page - Under Construction'));
+    return const ChatListPage();
   }
 
   Widget _buildProfilePage() {

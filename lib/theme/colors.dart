@@ -66,16 +66,107 @@ class AppColors {
   static const Color textSecondaryLight = Color(0xFF6B7280); // Gray-500
   static const Color textSecondaryDark = Color(0xFF9CA3AF); // Gray-400
   
-  // Additional Text Colors
-  static const Color textPrimary = Color(0xFF111827); // Gray-900
-  static const Color textSecondary = Color(0xFF6B7280); // Gray-500
+  // Semantic Color Tokens - UI States
+  static const Color surfacePrimary = Color(0xFFFFFFFF); // White
+  static const Color surfaceSecondary = Color(0xFFF8F9FA); // Light gray
+  static const Color surfaceTertiary = Color(0xFFE9ECEF); // Medium gray
   
-  // Additional Background Colors
-  static const Color background = Color(0xFFF8F9FA); // Light background
+  // Interactive States - Enhanced with variants
+  static const Color interactiveDefault = primaryLight; // Default interactive color
+  static const Color interactiveHover = Color(0xFF7C3AED); // Purple-600
+  static const Color interactivePressed = Color(0xFF6D28D9); // Purple-700
+  static const Color interactiveDisabled = Color(0xFF9CA3AF); // Gray-400
+  static const Color interactiveFocus = Color(0xFF8B5CF6); // Purple-500
   
-  // Additional Status Colors
-  static const Color success = Color(0xFF10B981); // Emerald-500
-  static const Color error = Color(0xFFEF4444); // Red-500
+  // Interactive State Variants - Hover
+  static const Color interactiveHoverLight = Color(0xFF8B5CF6); // Purple-500
+  static const Color interactiveHoverDark = Color(0xFF5B21B6); // Purple-800
+  
+  // Interactive State Variants - Pressed
+  static const Color interactivePressedLight = Color(0xFF6D28D9); // Purple-700
+  static const Color interactivePressedDark = Color(0xFF4C1D95); // Purple-900
+  
+  // Interactive State Variants - Disabled
+  static const Color interactiveDisabledLight = Color(0xFFD1D5DB); // Gray-300
+  static const Color interactiveDisabledDark = Color(0xFF6B7280); // Gray-500
+  
+  // Interactive State Variants - Focus
+  static const Color interactiveFocusLight = Color(0xFF8B5CF6); // Purple-500
+  static const Color interactiveFocusDark = Color(0xFF5B21B6); // Purple-800
+  
+  // Feedback States - Enhanced with variants
+  static const Color feedbackSuccess = Color(0xFF10B981); // Emerald-500
+  static const Color feedbackWarning = Color(0xFFF59E0B); // Amber-500
+  static const Color feedbackError = Color(0xFFEF4444); // Red-500
+  static const Color feedbackInfo = Color(0xFF3B82F6); // Blue-500
+  
+  // Feedback State Variants - Success
+  static const Color feedbackSuccessLight = Color(0xFF34D399); // Emerald-400
+  static const Color feedbackSuccessDark = Color(0xFF059669); // Emerald-600
+  
+  // Feedback State Variants - Warning
+  static const Color feedbackWarningLight = Color(0xFFFBBF24); // Amber-400
+  static const Color feedbackWarningDark = Color(0xFFD97706); // Amber-600
+  
+  // Feedback State Variants - Error
+  static const Color feedbackErrorLight = Color(0xFFF87171); // Red-400
+  static const Color feedbackErrorDark = Color(0xFFDC2626); // Red-600
+  
+  // Feedback State Variants - Info
+  static const Color feedbackInfoLight = Color(0xFF60A5FA); // Blue-400
+  static const Color feedbackInfoDark = Color(0xFF2563EB); // Blue-600
+  
+  // Background States
+  static const Color backgroundOverlay = Color(0x80000000); // Black with 50% opacity
+  static const Color backgroundModal = Color(0xFFFFFFFF); // White for modals
+  static const Color backgroundTooltip = Color(0xFF1F2937); // Gray-800
+  
+  // Border States - Enhanced with variants
+  static const Color borderDefault = Color(0xFFE5E7EB); // Gray-200
+  static const Color borderHover = Color(0xFFD1D5DB); // Gray-300
+  static const Color borderFocus = primaryLight; // Primary color
+  static const Color borderError = feedbackError; // Error color
+  
+  // Border State Variants - Default
+  static const Color borderDefaultLight = Color(0xFFF3F4F6); // Gray-100
+  static const Color borderDefaultDark = Color(0xFF9CA3AF); // Gray-400
+  
+  // Border State Variants - Hover
+  static const Color borderHoverLight = Color(0xFFE5E7EB); // Gray-200
+  static const Color borderHoverDark = Color(0xFF6B7280); // Gray-500
+  
+  // Border State Variants - Focus
+  static const Color borderFocusLight = Color(0xFF8B5CF6); // Purple-500
+  static const Color borderFocusDark = Color(0xFF5B21B6); // Purple-800
+  
+  // Border State Variants - Error
+  static const Color borderErrorLight = Color(0xFFF87171); // Red-400
+  static const Color borderErrorDark = Color(0xFFDC2626); // Red-600
+  
+  // Text States
+  static const Color textInteractive = primaryLight; // Interactive text
+  static const Color textInteractiveHover = interactiveHover; // Hover state
+  static const Color textDisabled = Color(0xFF9CA3AF); // Gray-400
+  static const Color textPlaceholder = Color(0xFF6B7280); // Gray-500
+  
+  // LGBT Pride Colors - Semantic Tokens
+  static const Color prideRed = Color(0xFFE70000); // Red
+  static const Color prideOrange = Color(0xFFFF8C00); // Orange
+  static const Color prideYellow = Color(0xFFFFD700); // Gold
+  static const Color prideGreen = Color(0xFF00811F); // Green
+  static const Color prideBlue = Color(0xFF004CFF); // Blue
+  static const Color pridePurple = Color(0xFF760089); // Purple
+  
+  // Trans Pride Colors
+  static const Color transBlue = Color(0xFF5BCEFA); // Light blue
+  static const Color transPink = Color(0xFFF5A9B8); // Light pink
+  static const Color transWhite = Color(0xFFFFFFFF); // White
+  
+  // Non-binary Pride Colors
+  static const Color nonBinaryYellow = Color(0xFFFFF700); // Yellow
+  static const Color nonBinaryWhite = Color(0xFFFFFFFF); // White
+  static const Color nonBinaryPurple = Color(0xFF9C59D1); // Purple
+  static const Color nonBinaryBlack = Color(0xFF2C2C2C); // Black
   
   // Additional UI Colors
   static const Color greyLight = Color(0xFFF3F4F6); // Gray-100

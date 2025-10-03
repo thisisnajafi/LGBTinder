@@ -70,7 +70,25 @@ class _ChatListPageState extends State<ChatListPage> {
       await matchingProvider.loadMatches();
       
       setState(() {
-        _matches = (matchingProvider.matches.map((match) => (match as dynamic).user).toList() as List<User>);
+        _matches = matchingProvider.matches.map((match) {
+          // Handle different match types safely
+          if (match is Map<String, dynamic> && match.containsKey('user')) {
+            return User.fromJson(match['user']);
+          } else if (match is User) {
+            return match;
+          } else {
+            // Create a default user if match structure is unexpected
+            return User(
+              id: 1,
+              firstName: 'Unknown',
+              lastName: 'User',
+              fullName: 'Unknown User',
+              email: '',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+          }
+        }).toList();
         _isLoadingMatches = false;
       });
     } catch (e) {
@@ -105,7 +123,25 @@ class _ChatListPageState extends State<ChatListPage> {
     try {
       await matchingProvider.loadMoreMatches();
       setState(() {
-        _matches = (matchingProvider.matches.map((match) => (match as dynamic).user).toList() as List<User>);
+        _matches = matchingProvider.matches.map((match) {
+          // Handle different match types safely
+          if (match is Map<String, dynamic> && match.containsKey('user')) {
+            return User.fromJson(match['user']);
+          } else if (match is User) {
+            return match;
+          } else {
+            // Create a default user if match structure is unexpected
+            return User(
+              id: 1,
+              firstName: 'Unknown',
+              lastName: 'User',
+              fullName: 'Unknown User',
+              email: '',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+          }
+        }).toList();
       });
     } catch (e) {
       if (mounted) {
@@ -272,20 +308,20 @@ class _ChatListPageState extends State<ChatListPage> {
         children: [
           SkeletonCard(
             height: 80,
-
-
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 16),
           SkeletonCard(
             height: 80,
-
-
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 16),
           SkeletonCard(
             height: 80,
-
-
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
         ],
       ),
@@ -371,10 +407,10 @@ class _ChatListPageState extends State<ChatListPage> {
         return ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundImage: match.profilePictures.isNotEmpty
-                ? NetworkImage(match.profilePictures.first)
+            backgroundImage: match.avatarUrl != null
+                ? NetworkImage(match.avatarUrl!)
                 : null,
-            child: match.profilePictures.isEmpty
+            child: match.avatarUrl == null
                 ? Icon(
                     Icons.person,
                     color: AppColors.textSecondary,
@@ -382,7 +418,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 : null,
           ),
           title: Text(
-            '${match.firstName} ${match.lastName}',
+            match.fullName,
             style: AppTypography.body1.copyWith(
               color: AppColors.textPrimary,
               fontWeight: unreadCount > 0 ? FontWeight.w600 : FontWeight.normal,
