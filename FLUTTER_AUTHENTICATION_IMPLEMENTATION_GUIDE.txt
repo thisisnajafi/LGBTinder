@@ -1,0 +1,1423 @@
+# Flutter Authentication & Profile Completion Implementation Guide
+
+## Overview
+
+This guide provides comprehensive implementation instructions for the LGBTinder Flutter app authentication flow, including registration, email verification, profile completion, and state management.
+
+## Table of Contents
+
+1. [Authentication Flow Overview](#authentication-flow-overview)
+2. [API Endpoints](#api-endpoints)
+3. [Flutter Implementation](#flutter-implementation)
+4. [State Management](#state-management)
+5. [Error Handling](#error-handling)
+6. [Complete Code Examples](#complete-code-examples)
+
+---
+
+## Authentication Flow Overview
+
+### User Journey States
+
+1. **New User Registration** → Email Verification → Profile Completion → App Access
+2. **Existing User Login** → Check State → Handle Requirements → App Access
+3. **App Reopening** → Check User State → Continue from Last Step
+
+### State Types
+
+- `email_verification_required` - User needs to verify email
+- `profile_completion_required` - User needs to complete profile
+- `ready_for_app` - User can access the app
+- `banned` - User account is banned
+
+---
+
+## API Endpoints
+
+### 1. User Registration
+```
+POST /api/auth/register
+```
+
+**Request:**
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe", 
+  "email": "john@example.com",
+  "password": "password123",
+  "referral_code": "ABC123" // optional
+}
+```
+
+**Response:**
+```json
+{
+  "status": true,
+  "message": "Registration successful! Please check your email for verification code.",
+  "data": {
+    "user_id": 1,
+    "email": "john@example.com",
+    "email_sent": true,
+    "resend_available_at": "2024-01-01 12:02:00",
+    "hourly_attempts_remaining": 2
+  }
+}
+```
+
+### 2. Check User State
+```
+POST /api/auth/check-user-state
+```
+
+**Request:**
+```json
+{
+  "email": "john@example.com"
+}
+```
+
+**Response Examples:**
+
+**Email Verification Required:**
+```json
+{
+  "status": false,
+  "message": "Email verification required",
+  "data": {
+    "user_state": "email_verification_required",
+    "user_id": 1,
+    "email": "john@example.com",
+    "needs_verification": true
+  }
+}
+```
+
+**Profile Completion Required:**
+```json
+{
+  "status": false,
+  "message": "Profile completion required",
+  "data": {
+    "user_state": "profile_completion_required",
+    "user_id": 1,
+    "email": "john@example.com",
+    "token": "profile_completion_token",
+    "token_type": "Bearer",
+    "profile_completion_status": {
+      "is_complete": false,
+      "missing_fields": ["country", "city", "gender", "birth_date"]
+    }
+  }
+}
+```
+
+**Ready for App:**
+```json
+{
+  "status": true,
+  "message": "User is ready for login",
+  "data": {
+    "user_state": "ready_for_login",
+    "user_id": 1,
+    "email": "john@example.com",
+    "profile_completed": true
+  }
+}
+```
+
+### 3. Email Verification
+```
+POST /api/auth/send-verification
+```
+
+**Request:**
+```json
+{
+  "email": "john@example.com",
+  "code": "123456"
+}
+```
+
+### 4. Profile Completion
+```
+POST /api/auth/complete-registration
+```
+
+**Request:**
+```json
+{
+  "device_name": "iPhone 15 Pro",
+  "country_id": 1,
+  "city_id": 1,
+  "gender": 1,
+  "birth_date": "1995-06-15",
+  "min_age_preference": 21,
+  "max_age_preference": 35,
+  "profile_bio": "Love traveling and music!",
+  "height": 175,
+  "weight": 70,
+  "smoke": false,
+  "drink": true,
+  "gym": true,
+  "music_genres": [1, 3, 5],
+  "educations": [2, 3],
+  "jobs": [1, 4],
+  "languages": [1, 2],
+  "interests": [1, 2, 3, 7],
+  "preferred_genders": [1, 3],
+  "relation_goals": [1, 2]
+}
+```
+
+### 5. Reference Data Endpoints
+
+**Countries:**
+```
+GET /api/countries
+```
+
+**Cities by Country:**
+```
+GET /api/cities/country/{countryId}
+```
+
+**Other Reference Data:**
+```
+GET /api/genders
+GET /api/jobs
+GET /api/education
+GET /api/interests
+GET /api/languages
+GET /api/music-genres
+GET /api/preferred-genders
+GET /api/relation-goals
+```
+
+---
+
+## Flutter Implementation
+
+### 1. Dependencies
+
+Add to `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.1.0
+  shared_preferences: ^2.2.2
+  provider: ^6.1.1
+  flutter_secure_storage: ^9.0.0
+```
+
+### 2. API Service Class
+
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class ApiService {
+  static const String baseUrl = 'https://api.lgbtinder.com/api';
+  
+  static Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode(data),
+    );
+    
+    return json.decode(response.body);
+  }
+  
+  static Future<Map<String, dynamic>> get(String endpoint, {String? token}) async {
+    final headers = {
+      'Accept': 'application/json',
+    };
+    
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    
+    final response = await http.get(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: headers,
+    );
+    
+    return json.decode(response.body);
+  }
+}
+```
+
+### 3. Authentication Service
+
+```dart
+class AuthService {
+  static const String _tokenKey = 'auth_token';
+  static const String _userKey = 'user_data';
+  
+  // Register user
+  static Future<AuthResult> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    String? referralCode,
+  }) async {
+    try {
+      final response = await ApiService.post('/auth/register', {
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+        'password': password,
+        if (referralCode != null) 'referral_code': referralCode,
+      });
+      
+      if (response['status'] == true) {
+        return AuthResult.success(
+          message: response['message'],
+          data: response['data'],
+        );
+      } else {
+        return AuthResult.error(response['message']);
+      }
+    } catch (e) {
+      return AuthResult.error('Registration failed: $e');
+    }
+  }
+  
+  // Check user state
+  static Future<UserState> checkUserState(String email) async {
+    try {
+      final response = await ApiService.post('/auth/check-user-state', {
+        'email': email,
+      });
+      
+      if (response['status'] == true) {
+        return UserState.readyForLogin(response['data']);
+      } else {
+        final data = response['data'];
+        final state = data['user_state'];
+        
+        switch (state) {
+          case 'email_verification_required':
+            return UserState.emailVerificationRequired(data);
+          case 'profile_completion_required':
+            return UserState.profileCompletionRequired(data);
+          case 'banned':
+            return UserState.banned(data);
+          default:
+            return UserState.error(response['message']);
+        }
+      }
+    } catch (e) {
+      return UserState.error('Failed to check user state: $e');
+    }
+  }
+  
+  // Verify email
+  static Future<AuthResult> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
+    try {
+      final response = await ApiService.post('/auth/send-verification', {
+        'email': email,
+        'code': code,
+      });
+      
+      if (response['status'] == true) {
+        return AuthResult.success(
+          message: response['message'],
+          data: response['data'],
+        );
+      } else {
+        return AuthResult.error(response['message']);
+      }
+    } catch (e) {
+      return AuthResult.error('Email verification failed: $e');
+    }
+  }
+  
+  // Complete profile
+  static Future<AuthResult> completeProfile({
+    required String token,
+    required Map<String, dynamic> profileData,
+  }) async {
+    try {
+      final response = await ApiService.post('/auth/complete-registration', profileData);
+      
+      if (response['status'] == true) {
+        // Store the full access token
+        await _storeToken(response['data']['token']);
+        await _storeUser(response['data']['user']);
+        
+        return AuthResult.success(
+          message: response['message'],
+          data: response['data'],
+        );
+      } else {
+        return AuthResult.error(response['message']);
+      }
+    } catch (e) {
+      return AuthResult.error('Profile completion failed: $e');
+    }
+  }
+  
+  // Store token securely
+  static Future<void> _storeToken(String token) async {
+    final storage = FlutterSecureStorage();
+    await storage.write(key: _tokenKey, value: token);
+  }
+  
+  // Get stored token
+  static Future<String?> getToken() async {
+    final storage = FlutterSecureStorage();
+    return await storage.read(key: _tokenKey);
+  }
+  
+  // Store user data
+  static Future<void> _storeUser(Map<String, dynamic> user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userKey, json.encode(user));
+  }
+  
+  // Get stored user
+  static Future<Map<String, dynamic>?> getUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userString = prefs.getString(_userKey);
+    if (userString != null) {
+      return json.decode(userString);
+    }
+    return null;
+  }
+  
+  // Logout
+  static Future<void> logout() async {
+    final storage = FlutterSecureStorage();
+    final prefs = await SharedPreferences.getInstance();
+    
+    await storage.delete(key: _tokenKey);
+    await prefs.remove(_userKey);
+  }
+}
+```
+
+### 4. Data Models
+
+```dart
+// Auth Result
+class AuthResult {
+  final bool success;
+  final String message;
+  final Map<String, dynamic>? data;
+  
+  AuthResult.success({required this.message, this.data}) : success = true;
+  AuthResult.error(this.message) : success = false, data = null;
+}
+
+// User State
+abstract class UserState {
+  const UserState();
+  
+  factory UserState.emailVerificationRequired(Map<String, dynamic> data) = 
+    EmailVerificationRequiredState;
+  factory UserState.profileCompletionRequired(Map<String, dynamic> data) = 
+    ProfileCompletionRequiredState;
+  factory UserState.readyForLogin(Map<String, dynamic> data) = 
+    ReadyForLoginState;
+  factory UserState.banned(Map<String, dynamic> data) = BannedState;
+  factory UserState.error(String message) = ErrorState;
+}
+
+class EmailVerificationRequiredState extends UserState {
+  final Map<String, dynamic> data;
+  EmailVerificationRequiredState(this.data);
+}
+
+class ProfileCompletionRequiredState extends UserState {
+  final Map<String, dynamic> data;
+  ProfileCompletionRequiredState(this.data);
+}
+
+class ReadyForLoginState extends UserState {
+  final Map<String, dynamic> data;
+  ReadyForLoginState(this.data);
+}
+
+class BannedState extends UserState {
+  final Map<String, dynamic> data;
+  BannedState(this.data);
+}
+
+class ErrorState extends UserState {
+  final String message;
+  ErrorState(this.message);
+}
+
+// Reference Data Models
+class Country {
+  final int id;
+  final String name;
+  final String code;
+  final String phoneCode;
+  
+  Country({
+    required this.id,
+    required this.name,
+    required this.code,
+    required this.phoneCode,
+  });
+  
+  factory Country.fromJson(Map<String, dynamic> json) {
+    return Country(
+      id: json['id'],
+      name: json['name'],
+      code: json['code'],
+      phoneCode: json['phone_code'],
+    );
+  }
+}
+
+class City {
+  final int id;
+  final String name;
+  final String? stateProvince;
+  
+  City({
+    required this.id,
+    required this.name,
+    this.stateProvince,
+  });
+  
+  factory City.fromJson(Map<String, dynamic> json) {
+    return City(
+      id: json['id'],
+      name: json['name'],
+      stateProvince: json['state_province'],
+    );
+  }
+}
+```
+
+### 5. Reference Data Service
+
+```dart
+class ReferenceDataService {
+  // Get countries
+  static Future<List<Country>> getCountries() async {
+    try {
+      final response = await ApiService.get('/countries');
+      if (response['status'] == 'success') {
+        return (response['data'] as List)
+            .map((json) => Country.fromJson(json))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+  
+  // Get cities by country
+  static Future<List<City>> getCitiesByCountry(int countryId) async {
+    try {
+      final response = await ApiService.get('/cities/country/$countryId');
+      if (response['status'] == 'success') {
+        return (response['data'] as List)
+            .map((json) => City.fromJson(json))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+  
+  // Get genders
+  static Future<List<Map<String, dynamic>>> getGenders() async {
+    try {
+      final response = await ApiService.get('/genders');
+      if (response['status'] == 'success') {
+        return List<Map<String, dynamic>>.from(response['data']);
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+  
+  // Get other reference data (jobs, educations, etc.)
+  static Future<List<Map<String, dynamic>>> getReferenceData(String endpoint) async {
+    try {
+      final response = await ApiService.get('/$endpoint');
+      if (response['status'] == 'success') {
+        return List<Map<String, dynamic>>.from(response['data']);
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+}
+```
+
+---
+
+## State Management
+
+### 1. App State Provider
+
+```dart
+import 'package:flutter/material.dart';
+
+class AppStateProvider extends ChangeNotifier {
+  UserState? _currentUserState;
+  Map<String, dynamic>? _user;
+  String? _token;
+  bool _isLoading = false;
+  
+  UserState? get currentUserState => _currentUserState;
+  Map<String, dynamic>? get user => _user;
+  String? get token => _token;
+  bool get isLoading => _isLoading;
+  
+  // Initialize app state
+  Future<void> initializeApp() async {
+    _isLoading = true;
+    notifyListeners();
+    
+    try {
+      _token = await AuthService.getToken();
+      _user = await AuthService.getUser();
+      
+      if (_token != null && _user != null) {
+        // Check if user state is still valid
+        final email = _user!['email'];
+        if (email != null) {
+          _currentUserState = await AuthService.checkUserState(email);
+        }
+      }
+    } catch (e) {
+      print('Error initializing app: $e');
+    }
+    
+    _isLoading = false;
+    notifyListeners();
+  }
+  
+  // Handle registration
+  Future<void> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    String? referralCode,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    
+    final result = await AuthService.register(
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password,
+      referralCode: referralCode,
+    );
+    
+    if (result.success) {
+      _currentUserState = UserState.emailVerificationRequired(result.data!);
+    }
+    
+    _isLoading = false;
+    notifyListeners();
+  }
+  
+  // Handle email verification
+  Future<void> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    
+    final result = await AuthService.verifyEmail(email: email, code: code);
+    
+    if (result.success) {
+      _currentUserState = UserState.profileCompletionRequired(result.data!);
+    }
+    
+    _isLoading = false;
+    notifyListeners();
+  }
+  
+  // Handle profile completion
+  Future<void> completeProfile(Map<String, dynamic> profileData) async {
+    _isLoading = true;
+    notifyListeners();
+    
+    if (_currentUserState is ProfileCompletionRequiredState) {
+      final state = _currentUserState as ProfileCompletionRequiredState;
+      final token = state.data['token'];
+      
+      final result = await AuthService.completeProfile(
+        token: token,
+        profileData: profileData,
+      );
+      
+      if (result.success) {
+        _user = result.data!['user'];
+        _token = result.data!['token'];
+        _currentUserState = UserState.readyForLogin(result.data!);
+      }
+    }
+    
+    _isLoading = false;
+    notifyListeners();
+  }
+  
+  // Logout
+  Future<void> logout() async {
+    await AuthService.logout();
+    _currentUserState = null;
+    _user = null;
+    _token = null;
+    notifyListeners();
+  }
+}
+```
+
+---
+
+## Error Handling
+
+### 1. Error Types
+
+```dart
+enum AuthErrorType {
+  networkError,
+  validationError,
+  serverError,
+  emailNotSent,
+  invalidCode,
+  userBanned,
+  unknownError,
+}
+
+class AuthError {
+  final AuthErrorType type;
+  final String message;
+  final Map<String, dynamic>? details;
+  
+  AuthError({
+    required this.type,
+    required this.message,
+    this.details,
+  });
+  
+  factory AuthError.fromResponse(Map<String, dynamic> response) {
+    final message = response['message'] ?? 'Unknown error';
+    final errors = response['errors'];
+    
+    if (errors != null && errors is Map<String, dynamic>) {
+      return AuthError(
+        type: AuthErrorType.validationError,
+        message: message,
+        details: errors,
+      );
+    }
+    
+    return AuthError(
+      type: AuthErrorType.serverError,
+      message: message,
+    );
+  }
+}
+```
+
+### 2. Error Handling Widget
+
+```dart
+class ErrorHandler {
+  static void handleAuthError(AuthError error, BuildContext context) {
+    String title = 'Error';
+    String message = error.message;
+    
+    switch (error.type) {
+      case AuthErrorType.networkError:
+        title = 'Network Error';
+        message = 'Please check your internet connection';
+        break;
+      case AuthErrorType.validationError:
+        title = 'Validation Error';
+        message = 'Please check your input and try again';
+        break;
+      case AuthErrorType.emailNotSent:
+        title = 'Email Issue';
+        message = 'There was an issue sending the email. Please try again.';
+        break;
+      case AuthErrorType.userBanned:
+        title = 'Account Banned';
+        message = 'Your account has been banned. Please contact support.';
+        break;
+      default:
+        break;
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+---
+
+## Complete Code Examples
+
+### 1. Main App Structure
+
+```dart
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => AppStateProvider(),
+      child: MaterialApp(
+        title: 'LGBTinder',
+        home: AuthWrapper(),
+      ),
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AppStateProvider>(
+      builder: (context, appState, child) {
+        if (appState.isLoading) {
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        final userState = appState.currentUserState;
+        
+        if (userState == null) {
+          return RegistrationScreen();
+        }
+        
+        if (userState is EmailVerificationRequiredState) {
+          return EmailVerificationScreen(
+            email: userState.data['email'],
+            userId: userState.data['user_id'],
+          );
+        }
+        
+        if (userState is ProfileCompletionRequiredState) {
+          return ProfileCompletionScreen(
+            token: userState.data['token'],
+            profileStatus: userState.data['profile_completion_status'],
+          );
+        }
+        
+        if (userState is ReadyForLoginState) {
+          return LoginScreen();
+        }
+        
+        if (userState is BannedState) {
+          return BannedScreen();
+        }
+        
+        return RegistrationScreen();
+      },
+    );
+  }
+}
+```
+
+### 2. Registration Screen
+
+```dart
+class RegistrationScreen extends StatefulWidget {
+  @override
+  _RegistrationScreenState createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _referralController = TextEditingController();
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Register')),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _firstNameController,
+                decoration: InputDecoration(labelText: 'First Name'),
+                validator: (value) => value?.isEmpty == true ? 'Required' : null,
+              ),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: InputDecoration(labelText: 'Last Name'),
+                validator: (value) => value?.isEmpty == true ? 'Required' : null,
+              ),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) => value?.isEmpty == true ? 'Required' : null,
+              ),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
+                validator: (value) => value?.isEmpty == true ? 'Required' : null,
+              ),
+              TextFormField(
+                controller: _referralController,
+                decoration: InputDecoration(labelText: 'Referral Code (Optional)'),
+              ),
+              SizedBox(height: 20),
+              Consumer<AppStateProvider>(
+                builder: (context, appState, child) {
+                  return ElevatedButton(
+                    onPressed: appState.isLoading ? null : _register,
+                    child: appState.isLoading 
+                        ? CircularProgressIndicator() 
+                        : Text('Register'),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  void _register() async {
+    if (_formKey.currentState!.validate()) {
+      final appState = Provider.of<AppStateProvider>(context, listen: false);
+      
+      await appState.register(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        referralCode: _referralController.text.isEmpty ? null : _referralController.text,
+      );
+    }
+  }
+}
+```
+
+### 3. Profile Completion Screen
+
+```dart
+class ProfileCompletionScreen extends StatefulWidget {
+  final String token;
+  final Map<String, dynamic> profileStatus;
+  
+  ProfileCompletionScreen({
+    required this.token,
+    required this.profileStatus,
+  });
+  
+  @override
+  _ProfileCompletionScreenState createState() => _ProfileCompletionScreenState();
+}
+
+class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
+  final _formKey = GlobalKey<FormState>();
+  
+  // Form controllers
+  final _bioController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
+  
+  // Selection variables
+  int? _selectedCountryId;
+  int? _selectedCityId;
+  int? _selectedGender;
+  DateTime? _birthDate;
+  int _minAgePreference = 18;
+  int _maxAgePreference = 35;
+  bool _smoke = false;
+  bool _drink = false;
+  bool _gym = false;
+  
+  // Multi-select arrays
+  List<int> _selectedMusicGenres = [];
+  List<int> _selectedEducations = [];
+  List<int> _selectedJobs = [];
+  List<int> _selectedLanguages = [];
+  List<int> _selectedInterests = [];
+  List<int> _selectedPreferredGenders = [];
+  List<int> _selectedRelationGoals = [];
+  
+  // Reference data
+  List<Country> _countries = [];
+  List<City> _cities = [];
+  List<Map<String, dynamic>> _genders = [];
+  List<Map<String, dynamic>> _musicGenres = [];
+  List<Map<String, dynamic>> _educations = [];
+  List<Map<String, dynamic>> _jobs = [];
+  List<Map<String, dynamic>> _languages = [];
+  List<Map<String, dynamic>> _interests = [];
+  List<Map<String, dynamic>> _preferredGenders = [];
+  List<Map<String, dynamic>> _relationGoals = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadReferenceData();
+  }
+  
+  Future<void> _loadReferenceData() async {
+    try {
+      final results = await Future.wait([
+        ReferenceDataService.getCountries(),
+        ReferenceDataService.getGenders(),
+        ReferenceDataService.getReferenceData('music-genres'),
+        ReferenceDataService.getReferenceData('education'),
+        ReferenceDataService.getReferenceData('jobs'),
+        ReferenceDataService.getReferenceData('languages'),
+        ReferenceDataService.getReferenceData('interests'),
+        ReferenceDataService.getReferenceData('preferred-genders'),
+        ReferenceDataService.getReferenceData('relation-goals'),
+      ]);
+      
+      setState(() {
+        _countries = results[0] as List<Country>;
+        _genders = results[1] as List<Map<String, dynamic>>;
+        _musicGenres = results[2] as List<Map<String, dynamic>>;
+        _educations = results[3] as List<Map<String, dynamic>>;
+        _jobs = results[4] as List<Map<String, dynamic>>;
+        _languages = results[5] as List<Map<String, dynamic>>;
+        _interests = results[6] as List<Map<String, dynamic>>;
+        _preferredGenders = results[7] as List<Map<String, dynamic>>;
+        _relationGoals = results[8] as List<Map<String, dynamic>>;
+      });
+    } catch (e) {
+      print('Error loading reference data: $e');
+    }
+  }
+  
+  Future<void> _loadCitiesForCountry(int countryId) async {
+    try {
+      final cities = await ReferenceDataService.getCitiesByCountry(countryId);
+      setState(() {
+        _cities = cities;
+        _selectedCityId = null; // Reset city selection
+      });
+    } catch (e) {
+      print('Error loading cities: $e');
+    }
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Complete Profile')),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Country Selection
+              DropdownButtonFormField<int>(
+                value: _selectedCountryId,
+                decoration: InputDecoration(labelText: 'Country *'),
+                items: _countries.map((country) {
+                  return DropdownMenuItem(
+                    value: country.id,
+                    child: Text(country.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCountryId = value;
+                  });
+                  if (value != null) {
+                    _loadCitiesForCountry(value);
+                  }
+                },
+                validator: (value) => value == null ? 'Please select a country' : null,
+              ),
+              
+              SizedBox(height: 16),
+              
+              // City Selection
+              DropdownButtonFormField<int>(
+                value: _selectedCityId,
+                decoration: InputDecoration(labelText: 'City *'),
+                items: _cities.map((city) {
+                  return DropdownMenuItem(
+                    value: city.id,
+                    child: Text(city.name),
+                  );
+                }).toList(),
+                onChanged: _selectedCountryId == null ? null : (value) {
+                  setState(() {
+                    _selectedCityId = value;
+                  });
+                },
+                validator: (value) => value == null ? 'Please select a city' : null,
+              ),
+              
+              SizedBox(height: 16),
+              
+              // Gender Selection
+              DropdownButtonFormField<int>(
+                value: _selectedGender,
+                decoration: InputDecoration(labelText: 'Gender *'),
+                items: _genders.map((gender) {
+                  return DropdownMenuItem(
+                    value: gender['id'],
+                    child: Text(gender['title']),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedGender = value;
+                  });
+                },
+                validator: (value) => value == null ? 'Please select your gender' : null,
+              ),
+              
+              SizedBox(height: 16),
+              
+              // Birth Date
+              InkWell(
+                onTap: _selectBirthDate,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Birth Date *',
+                    suffixIcon: Icon(Icons.calendar_today),
+                  ),
+                  child: Text(
+                    _birthDate != null 
+                        ? '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}'
+                        : 'Select your birth date',
+                  ),
+                ),
+              ),
+              
+              SizedBox(height: 16),
+              
+              // Profile Bio
+              TextFormField(
+                controller: _bioController,
+                decoration: InputDecoration(labelText: 'Bio *'),
+                maxLines: 3,
+                validator: (value) => value?.isEmpty == true ? 'Bio is required' : null,
+              ),
+              
+              SizedBox(height: 16),
+              
+              // Height and Weight
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _heightController,
+                      decoration: InputDecoration(labelText: 'Height (cm) *'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value?.isEmpty == true ? 'Required' : null,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _weightController,
+                      decoration: InputDecoration(labelText: 'Weight (kg) *'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value?.isEmpty == true ? 'Required' : null,
+                    ),
+                  ),
+                ],
+              ),
+              
+              SizedBox(height: 16),
+              
+              // Age Preferences
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      value: _minAgePreference,
+                      decoration: InputDecoration(labelText: 'Min Age'),
+                      items: List.generate(83, (index) => index + 18).map((age) {
+                        return DropdownMenuItem(
+                          value: age,
+                          child: Text(age.toString()),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _minAgePreference = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      value: _maxAgePreference,
+                      decoration: InputDecoration(labelText: 'Max Age'),
+                      items: List.generate(83, (index) => index + 18).map((age) {
+                        return DropdownMenuItem(
+                          value: age,
+                          child: Text(age.toString()),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _maxAgePreference = value!;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              
+              SizedBox(height: 16),
+              
+              // Lifestyle Preferences
+              Row(
+                children: [
+                  Expanded(
+                    child: CheckboxListTile(
+                      title: Text('Smoke'),
+                      value: _smoke,
+                      onChanged: (value) {
+                        setState(() {
+                          _smoke = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CheckboxListTile(
+                      title: Text('Drink'),
+                      value: _drink,
+                      onChanged: (value) {
+                        setState(() {
+                          _drink = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: CheckboxListTile(
+                      title: Text('Gym'),
+                      value: _gym,
+                      onChanged: (value) {
+                        setState(() {
+                          _gym = value!;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              
+              SizedBox(height: 20),
+              
+              // Multi-select sections
+              _buildMultiSelectSection('Music Genres', _musicGenres, _selectedMusicGenres, (value) {
+                setState(() {
+                  _selectedMusicGenres = value;
+                });
+              }),
+              
+              _buildMultiSelectSection('Education', _educations, _selectedEducations, (value) {
+                setState(() {
+                  _selectedEducations = value;
+                });
+              }),
+              
+              _buildMultiSelectSection('Jobs', _jobs, _selectedJobs, (value) {
+                setState(() {
+                  _selectedJobs = value;
+                });
+              }),
+              
+              _buildMultiSelectSection('Languages', _languages, _selectedLanguages, (value) {
+                setState(() {
+                  _selectedLanguages = value;
+                });
+              }),
+              
+              _buildMultiSelectSection('Interests', _interests, _selectedInterests, (value) {
+                setState(() {
+                  _selectedInterests = value;
+                });
+              }),
+              
+              _buildMultiSelectSection('Preferred Genders', _preferredGenders, _selectedPreferredGenders, (value) {
+                setState(() {
+                  _selectedPreferredGenders = value;
+                });
+              }),
+              
+              _buildMultiSelectSection('Relationship Goals', _relationGoals, _selectedRelationGoals, (value) {
+                setState(() {
+                  _selectedRelationGoals = value;
+                });
+              }),
+              
+              SizedBox(height: 20),
+              
+              // Submit Button
+              Consumer<AppStateProvider>(
+                builder: (context, appState, child) {
+                  return ElevatedButton(
+                    onPressed: appState.isLoading ? null : _submitProfile,
+                    child: appState.isLoading 
+                        ? CircularProgressIndicator() 
+                        : Text('Complete Profile'),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildMultiSelectSection(
+    String title,
+    List<Map<String, dynamic>> options,
+    List<int> selectedValues,
+    Function(List<int>) onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$title *',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Wrap(
+          children: options.map((option) {
+            final isSelected = selectedValues.contains(option['id']);
+            return Padding(
+              padding: EdgeInsets.all(4.0),
+              child: FilterChip(
+                label: Text(option['title']),
+                selected: isSelected,
+                onSelected: (selected) {
+                  final newValues = List<int>.from(selectedValues);
+                  if (selected) {
+                    newValues.add(option['id']);
+                  } else {
+                    newValues.remove(option['id']);
+                  }
+                  onChanged(newValues);
+                },
+              ),
+            );
+          }).toList(),
+        ),
+        SizedBox(height: 16),
+      ],
+    );
+  }
+  
+  Future<void> _selectBirthDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now().subtract(Duration(days: 6570)), // 18 years ago
+    );
+    
+    if (picked != null) {
+      setState(() {
+        _birthDate = picked;
+      });
+    }
+  }
+  
+  void _submitProfile() async {
+    if (_formKey.currentState!.validate()) {
+      // Validate multi-select fields
+      if (_selectedMusicGenres.isEmpty ||
+          _selectedEducations.isEmpty ||
+          _selectedJobs.isEmpty ||
+          _selectedLanguages.isEmpty ||
+          _selectedInterests.isEmpty ||
+          _selectedPreferredGenders.isEmpty ||
+          _selectedRelationGoals.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please select at least one option for each category')),
+        );
+        return;
+      }
+      
+      final profileData = {
+        'device_name': 'Flutter App',
+        'country_id': _selectedCountryId,
+        'city_id': _selectedCityId,
+        'gender': _selectedGender,
+        'birth_date': _birthDate!.toIso8601String().split('T')[0],
+        'min_age_preference': _minAgePreference,
+        'max_age_preference': _maxAgePreference,
+        'profile_bio': _bioController.text,
+        'height': int.parse(_heightController.text),
+        'weight': int.parse(_weightController.text),
+        'smoke': _smoke,
+        'drink': _drink,
+        'gym': _gym,
+        'music_genres': _selectedMusicGenres,
+        'educations': _selectedEducations,
+        'jobs': _selectedJobs,
+        'languages': _selectedLanguages,
+        'interests': _selectedInterests,
+        'preferred_genders': _selectedPreferredGenders,
+        'relation_goals': _selectedRelationGoals,
+      };
+      
+      final appState = Provider.of<AppStateProvider>(context, listen: false);
+      await appState.completeProfile(profileData);
+    }
+  }
+}
+```
+
+This comprehensive guide provides everything needed to implement the authentication and profile completion flow in Flutter, including proper state management, error handling, and user experience considerations.

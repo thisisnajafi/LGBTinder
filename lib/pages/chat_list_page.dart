@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/models.dart';
-import '../providers/chat_provider.dart';
+import '../models/api_models/chat_models.dart';
+import '../models/api_models/user_models.dart';
+import '../providers/chat_state_provider.dart';
+import '../providers/matching_state_provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../components/chat/chat_list_item.dart';
 import '../components/chat/chat_list_header.dart';
 import '../components/chat/chat_list_empty.dart';
 import '../components/chat/chat_list_loading.dart';
-import '../utils/error_handler.dart';
-import '../utils/success_feedback.dart';
-import '../services/pull_to_refresh_service.dart';
-import '../services/skeleton_loader_service.dart';
+import '../components/error_handling/error_display_widget.dart';
+import '../components/error_handling/error_snackbar.dart';
+import '../components/loading/loading_widgets.dart';
+import '../components/loading/skeleton_loader.dart';
+import '../components/offline/offline_wrapper.dart';
+import '../components/real_time/real_time_listener.dart';
+import '../services/analytics_service.dart';
+import '../services/error_monitoring_service.dart';
 
 class ChatListPage extends StatefulWidget {
   const ChatListPage({Key? key}) : super(key: key);
@@ -28,11 +34,14 @@ class _ChatListPageState extends State<ChatListPage> {
   bool _showArchived = false;
   bool _showPinned = false;
   bool _isLoadingMore = false;
+  List<User> _matches = [];
+  bool _isLoadingMatches = true;
+  dynamic _error;
 
   @override
   void initState() {
     super.initState();
-    _loadChats();
+    _loadMatches();
     _scrollController.addListener(_onScroll);
   }
 
@@ -43,51 +52,66 @@ class _ChatListPageState extends State<ChatListPage> {
     super.dispose();
   }
 
-  Future<void> _loadChats({bool refresh = false}) async {
-    final chatProvider = context.read<ChatProvider>();
+  Future<void> _loadMatches() async {
+    setState(() {
+      _isLoadingMatches = true;
+      _error = null;
+    });
     
     try {
-      await chatProvider.loadChats(
-        page: 1,
-        limit: 20,
-        searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
-        isArchived: _showArchived ? true : null,
-        isPinned: _showPinned ? true : null,
-        refresh: refresh,
+      await AnalyticsService.trackEvent(
+        action: 'chat_list_load_matches',
+        category: 'chat',
       );
+
+      final matchingProvider = context.read<MatchingStateProvider>();
+      await matchingProvider.loadMatches();
+      
+      setState(() {
+        _matches = matchingProvider.matches;
+        _isLoadingMatches = false;
+      });
     } catch (e) {
-      if (mounted) {
-        ErrorHandler.showErrorSnackBar(
-          context,
-          message: ErrorHandler.getErrorMessage(e),
-        );
-      }
+      await AnalyticsService.trackEvent(
+        action: 'chat_list_load_matches_failed',
+        category: 'chat',
+      );
+
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'ChatListPage._loadMatches',
+      );
+
+      setState(() {
+        _isLoadingMatches = false;
+        _error = e;
+      });
     }
   }
 
-  Future<void> _loadMoreChats() async {
+  Future<void> _loadMoreMatches() async {
     if (_isLoadingMore) return;
 
-    final chatProvider = context.read<ChatProvider>();
-    if (chatProvider.chats.isEmpty) return;
+    final matchingProvider = context.read<MatchingStateProvider>();
+    if (matchingProvider.matches.isEmpty) return;
 
     setState(() {
       _isLoadingMore = true;
     });
 
     try {
-      await chatProvider.loadChats(
-        page: (chatProvider.chats.length ~/ 20) + 1,
-        limit: 20,
-        searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
-        isArchived: _showArchived ? true : null,
-        isPinned: _showPinned ? true : null,
-      );
+      await matchingProvider.loadMoreMatches();
+      setState(() {
+        _matches = matchingProvider.matches;
+      });
     } catch (e) {
       if (mounted) {
-        ErrorHandler.showErrorSnackBar(
+        ErrorSnackBar.show(
           context,
-          message: ErrorHandler.getErrorMessage(e),
+          error: e,
+          context: 'load_more_matches',
+          onAction: _loadMoreMatches,
+          actionText: 'Retry',
         );
       }
     } finally {
@@ -102,7 +126,7 @@ class _ChatListPageState extends State<ChatListPage> {
   void _onScroll() {
     if (_scrollController.position.pixels >= 
         _scrollController.position.maxScrollExtent - 200) {
-      _loadMoreChats();
+      _loadMoreMatches();
     }
   }
 
@@ -110,7 +134,7 @@ class _ChatListPageState extends State<ChatListPage> {
     setState(() {
       _searchQuery = query;
     });
-    _loadChats(refresh: true);
+    _filterMatches();
   }
 
   void _onFilterChanged({bool? showArchived, bool? showPinned}) {
@@ -118,155 +142,35 @@ class _ChatListPageState extends State<ChatListPage> {
       if (showArchived != null) _showArchived = showArchived;
       if (showPinned != null) _showPinned = showPinned;
     });
-    _loadChats(refresh: true);
+    _filterMatches();
   }
 
-  void _onChatTap(Chat chat) {
-    context.read<ChatProvider>().setCurrentChat(chat);
-    Navigator.pushNamed(context, '/chat', arguments: chat);
+  void _onMatchTap(User match) {
+    // Navigate to chat with this match
+    Navigator.pushNamed(context, '/chat', arguments: match);
   }
 
   void _onNewChat() {
-    Navigator.pushNamed(context, '/new-chat');
+    // Show new chat options
+    _showNewChatOptions();
   }
 
   Future<void> _onRefresh() async {
-    await _loadChats(refresh: true);
+    await _loadMatches();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.navbarBackground,
-      body: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              ChatListHeader(
-                searchController: _searchController,
-                onSearchChanged: _onSearchChanged,
-                onNewChat: _onNewChat,
-                onFilterChanged: _onFilterChanged,
-                showArchived: _showArchived,
-                showPinned: _showPinned,
-              ),
-            
-            // Chat List
-            Expanded(
-              child: Consumer<ChatProvider>(
-                builder: (context, chatProvider, child) {
-                  if (chatProvider.isLoadingChats && chatProvider.chats.isEmpty) {
-                    return const ChatListLoading();
-                  }
-
-                  if (chatProvider.chatError != null && chatProvider.chats.isEmpty) {
-                    return _buildErrorState(chatProvider.chatError!);
-                  }
-
-                  if (chatProvider.chats.isEmpty) {
-                    return ChatListEmpty(
-                      onRefresh: _onRefresh,
-                      searchQuery: _searchQuery,
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: chatProvider.chats.length + (_isLoadingMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == chatProvider.chats.length) {
-                          return _buildLoadingMore();
-                        }
-
-                        final chat = chatProvider.chats[index];
-                        return ChatListItem(
-                          chat: chat,
-                          onTap: () => _onChatTap(chat),
-                          onLongPress: () => _showChatOptions(chat),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _filterMatches() {
+    // Filter matches based on search query
+    // This would be implemented based on the actual filtering requirements
   }
 
-  Widget _buildErrorState(String error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Failed to load chats',
-              style: AppTypography.h6.copyWith(
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              style: AppTypography.body2.copyWith(
-                color: Colors.white.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _onRefresh,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryLight,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-     Widget _buildLoadingMore() {
-     return Padding(
-       padding: const EdgeInsets.all(16),
-       child: Center(
-         child: CircularProgressIndicator(
-           color: AppColors.primaryLight,
-         ),
-       ),
-     );
-   }
-
-  void _showChatOptions(Chat chat) {
+  void _showNewChatOptions() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: AppColors.navbarBackground,
+          color: AppColors.background,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SafeArea(
@@ -279,60 +183,26 @@ class _ChatListPageState extends State<ChatListPage> {
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: AppColors.textSecondary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               
               // Options
               ListTile(
-                leading: Icon(
-                  chat.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                  color: Colors.white,
-                ),
-                title: Text(
-                  chat.isPinned ? 'Unpin chat' : 'Pin chat',
-                  style: AppTypography.body2.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _togglePinChat(chat);
-                },
-              ),
-              
-              ListTile(
-                leading: Icon(
-                  chat.isArchived ? Icons.unarchive : Icons.archive,
-                  color: Colors.white,
-                ),
-                                  title: Text(
-                    chat.isArchived ? 'Unarchive chat' : 'Archive chat',
-                    style: AppTypography.body2.copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _toggleArchiveChat(chat);
-                },
-              ),
-              
-              ListTile(
                 leading: const Icon(
-                  Icons.delete_outline,
-                  color: AppColors.error,
+                  Icons.person_add,
+                  color: AppColors.primary,
                 ),
                 title: Text(
-                  'Delete chat',
-                  style: AppTypography.body2.copyWith(
-                    color: AppColors.error,
+                  'Start New Chat',
+                  style: AppTypography.body1.copyWith(
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  _showDeleteConfirmation(chat);
+                  // Navigate to matches to start a new chat
                 },
               ),
               
@@ -344,129 +214,260 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  Future<void> _togglePinChat(Chat chat) async {
-    final chatProvider = context.read<ChatProvider>();
-    
-    try {
-      if (chat.isPinned) {
-        await chatProvider.unpinChat(chat.id);
-        if (mounted) {
-          SuccessFeedback.showSuccessToast(
-            context,
-            message: 'Chat unpinned',
-          );
-        }
-      } else {
-        await chatProvider.pinChat(chat.id);
-        if (mounted) {
-          SuccessFeedback.showSuccessToast(
-            context,
-            message: 'Chat pinned',
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ErrorHandler.showErrorSnackBar(
-          context,
-          message: ErrorHandler.getErrorMessage(e),
-        );
-      }
-    }
-  }
-
-  Future<void> _toggleArchiveChat(Chat chat) async {
-    final chatProvider = context.read<ChatProvider>();
-    
-    try {
-      if (chat.isArchived) {
-        await chatProvider.unarchiveChat(chat.id);
-        if (mounted) {
-          SuccessFeedback.showSuccessToast(
-            context,
-            message: 'Chat unarchived',
-          );
-        }
-      } else {
-        await chatProvider.archiveChat(chat.id);
-        if (mounted) {
-          SuccessFeedback.showSuccessToast(
-            context,
-            message: 'Chat archived',
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ErrorHandler.showErrorSnackBar(
-          context,
-          message: ErrorHandler.getErrorMessage(e),
-        );
-      }
-    }
-  }
-
-  void _showDeleteConfirmation(Chat chat) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
         title: Text(
-          'Delete Chat',
-          style: AppTypography.h6.copyWith(
-            color: Colors.white,
+          'Messages',
+          style: AppTypography.heading2.copyWith(
+            color: AppColors.textPrimary,
           ),
         ),
-        content: Text(
-          'Are you sure you want to delete this chat? This action cannot be undone.',
-          style: AppTypography.body2.copyWith(
-            color: Colors.white.withOpacity(0.7),
-          ),
-        ),
+        backgroundColor: AppColors.background,
+        elevation: 0,
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: AppTypography.button.copyWith(
-                color: Colors.white.withOpacity(0.7),
-              ),
+          IconButton(
+            icon: const Icon(
+              Icons.add,
+              color: AppColors.textPrimary,
             ),
+            onPressed: _onNewChat,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteChat(chat);
-            },
-            child: Text(
-              'Delete',
-              style: AppTypography.button.copyWith(
-                color: AppColors.error,
-              ),
-            ),
+        ],
+      ),
+      body: OfflineWrapper(
+        child: RealTimeListener(
+          eventTypes: ['message', 'match'],
+          child: _buildBody(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoadingMatches) {
+      return _buildLoadingState();
+    }
+
+    if (_error != null) {
+      return _buildErrorState();
+    }
+
+    if (_matches.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return _buildMatchesList();
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SkeletonCard(
+            height: 80,
+            showHeader: false,
+            showContent: true,
+            contentLines: 2,
+          ),
+          const SizedBox(height: 16),
+          SkeletonCard(
+            height: 80,
+            showHeader: false,
+            showContent: true,
+            contentLines: 2,
+          ),
+          const SizedBox(height: 16),
+          SkeletonCard(
+            height: 80,
+            showHeader: false,
+            showContent: true,
+            contentLines: 2,
           ),
         ],
       ),
     );
   }
 
-  Future<void> _deleteChat(Chat chat) async {
-    final chatProvider = context.read<ChatProvider>();
-    
-    try {
-      await chatProvider.deleteChat(chat.id);
-      if (mounted) {
-        SuccessFeedback.showSuccessToast(
-          context,
-          message: 'Chat deleted',
+  Widget _buildErrorState() {
+    return ErrorDisplayWidget(
+      error: _error,
+      context: 'load_matches',
+      onRetry: _loadMatches,
+      isFullScreen: true,
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 64,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No matches yet',
+            style: AppTypography.heading3.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start swiping to find your perfect match!',
+            style: AppTypography.body1.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/discovery');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Start Swiping'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatchesList() {
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: _matches.length + (_isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == _matches.length) {
+            return _buildLoadingMore();
+          }
+
+          final match = _matches[index];
+          return _buildMatchListItem(match);
+        },
+      ),
+    );
+  }
+
+  Widget _buildMatchListItem(User match) {
+    return Consumer<ChatStateProvider>(
+      builder: (context, chatProvider, child) {
+        final messages = chatProvider.getMessagesForUser(match.id);
+        final lastMessage = messages.isNotEmpty ? messages.last : null;
+        final unreadCount = messages.where((msg) => !msg.isRead && msg.senderId != match.id).length;
+
+        return ListTile(
+          leading: CircleAvatar(
+            radius: 28,
+            backgroundImage: match.profilePictures.isNotEmpty
+                ? NetworkImage(match.profilePictures.first)
+                : null,
+            child: match.profilePictures.isEmpty
+                ? Icon(
+                    Icons.person,
+                    color: AppColors.textSecondary,
+                  )
+                : null,
+          ),
+          title: Text(
+            '${match.firstName} ${match.lastName}',
+            style: AppTypography.body1.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: unreadCount > 0 ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+          subtitle: lastMessage != null
+              ? Text(
+                  lastMessage.message,
+                  style: AppTypography.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
+              : Text(
+                  'Start a conversation',
+                  style: AppTypography.body2.copyWith(
+                    color: AppColors.textSecondary,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (lastMessage != null)
+                Text(
+                  _formatTime(lastMessage.sentAt),
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              if (unreadCount > 0)
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    unreadCount.toString(),
+                    style: AppTypography.caption.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          onTap: () => _onMatchTap(match),
         );
+      },
+    );
+  }
+
+  Widget _buildLoadingMore() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+  String _formatTime(String sentAt) {
+    try {
+      final dateTime = DateTime.parse(sentAt);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inDays > 0) {
+        return '${difference.inDays}d';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours}h';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes}m';
+      } else {
+        return 'now';
       }
     } catch (e) {
-      if (mounted) {
-        ErrorHandler.showErrorSnackBar(
-          context,
-          message: ErrorHandler.getErrorMessage(e),
-        );
-      }
+      return 'now';
     }
   }
+
 }

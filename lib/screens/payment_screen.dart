@@ -7,6 +7,7 @@ import '../services/premium_service.dart';
 import '../providers/auth_provider.dart';
 import '../utils/api_error_handler.dart';
 import '../models/premium_plan.dart';
+import 'add_payment_method_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final PremiumPlan plan;
@@ -415,14 +416,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  void _addPaymentMethod() {
-    // TODO: Implement add payment method functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Add payment method feature coming soon!'),
-        backgroundColor: AppColors.primary,
+  void _addPaymentMethod() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddPaymentMethodScreen(),
       ),
     );
+    
+    if (result == true) {
+      // Payment method was added successfully, reload the list
+      _loadPaymentMethods();
+    }
   }
 
   Future<void> _processPayment() async {

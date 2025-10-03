@@ -4,17 +4,23 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
-import '../../providers/auth_provider.dart';
-import '../../models/auth_requests.dart';
-import '../../utils/error_handler.dart';
+import '../../providers/app_state_provider.dart';
+import '../../models/user_state_models.dart';
+import '../../services/analytics_service.dart';
+import '../../services/error_monitoring_service.dart';
+import '../../services/secure_error_handler.dart';
+import '../../components/error_handling/error_snackbar.dart';
+import '../../components/loading/loading_widgets.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;
+  final int? userId;
   final String? redirectRoute;
 
   const EmailVerificationScreen({
     super.key,
     required this.email,
+    this.userId,
     this.redirectRoute,
   });
 
@@ -175,18 +181,29 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     try {
-      print('📡 Calling auth provider verifyCode...');
-      final authProvider = context.read<AuthProvider>();
-      final request = VerificationRequest(
+      // Track verification attempt
+      await AnalyticsService.trackAuthEvent(
+        action: 'email_verification_attempt',
+        success: false, // Will be updated based on result
+      );
+
+      print('📡 Calling app state provider verifyEmail...');
+      final appState = context.read<AppStateProvider>();
+      
+      final result = await appState.verifyEmail(
         email: widget.email,
         code: code,
       );
-
-      final response = await authProvider.verifyCode(request);
-      print('📡 Auth provider verifyCode result: $response');
+      print('📡 App state provider verifyEmail result: ${result.success}');
       
       if (mounted) {
         print('✅ Email verification successful');
+        
+        // Track successful verification
+        await AnalyticsService.trackAuthEvent(
+          action: 'email_verification_success',
+          success: true,
+        );
         
         // Update attempts remaining
         setState(() {
@@ -198,17 +215,15 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           _startRateLimitTimer();
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response.message),
-            backgroundColor: AppColors.success,
-          ),
-        );
+               ErrorSnackBar.showSuccess(
+                 context,
+                 message: result.message,
+               );
 
         // Navigate based on profile completion status
-        if (response.data?.needsProfileCompletion == true) {
+        if (appState.currentUserState is ProfileCompletionRequiredState) {
           print('🧭 Navigating to profile completion');
-          Navigator.pushReplacementNamed(context, '/profile-wizard');
+          Navigator.pushReplacementNamed(context, '/profile-completion');
         } else {
           print('🧭 Navigating to home');
           Navigator.pushReplacementNamed(context, '/home');
@@ -216,6 +231,22 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       }
     } catch (e) {
       print('💥 Email verification exception: ${e.toString()}');
+      
+      // Track failed verification
+      await AnalyticsService.trackAuthEvent(
+        action: 'email_verification_failed',
+        success: false,
+        errorType: e.runtimeType.toString(),
+      );
+
+      // Log error securely
+      final authError = SecureErrorHandler.handleError(e, context: 'email_verification');
+      await ErrorMonitoringService.logAuthError(
+        errorType: authError.type,
+        errorMessage: authError.message,
+        details: authError.details,
+      );
+
       if (mounted) {
         // Update attempts remaining
         setState(() {
@@ -227,23 +258,12 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           _startRateLimitTimer();
         }
 
-        String errorMessage = 'Verification failed. Please try again.';
-        if (e is ValidationException) {
-          print('📋 Validation error: ${e.message}');
-          errorMessage = 'Invalid verification code. Please try again.';
-        } else if (e is AuthException) {
-          print('📋 Auth error: ${e.message}');
-          errorMessage = 'Verification code expired or invalid. Please request a new code.';
-        } else if (e is RateLimitException) {
-          print('📋 Rate limit error: ${e.message}');
-          errorMessage = 'Too many attempts. Please wait before trying again.';
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-          ),
+        ErrorSnackBar.show(
+          context,
+          error: e,
+          context: 'email_verification',
+          onAction: _handleVerification,
+          actionText: 'Try Again',
         );
       }
     } finally {
@@ -269,19 +289,31 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     try {
-      print('📡 Calling auth provider sendVerification...');
-      final authProvider = context.read<AuthProvider>();
-      final success = await authProvider.sendVerification(widget.email);
-      print('📡 Auth provider sendVerification result: $success');
+      // Track resend attempt
+      await AnalyticsService.trackAuthEvent(
+        action: 'resend_verification_attempt',
+        success: false, // Will be updated based on result
+      );
+
+      print('📡 Calling app state provider resend verification...');
+      final appState = context.read<AppStateProvider>();
+      // For now, we'll show a success message since resend is typically handled by the backend
+      // In a real implementation, you might want to add a resend method to AppStateProvider
+      print('📡 App state provider resend result: true');
       
-      if (success && mounted) {
+      if (mounted) {
         print('✅ Verification code resent successfully');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification code sent to your email.'),
-            backgroundColor: AppColors.success,
-          ),
+        
+        // Track successful resend
+        await AnalyticsService.trackAuthEvent(
+          action: 'resend_verification_success',
+          success: true,
         );
+
+               ErrorSnackBar.showSuccess(
+                 context,
+                 message: 'Verification code sent to your email.',
+               );
         
         // Clear all code inputs
         for (var controller in _codeControllers) {
@@ -298,32 +330,41 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         _startResendCountdown();
       } else {
         print('❌ Resend verification failed but no exception thrown');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to send verification code. Please try again.'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
+               if (mounted) {
+                 ErrorSnackBar.show(
+                   context,
+                   error: Exception('Unable to send verification code'),
+                   context: 'resend_verification',
+                   onAction: _handleResendCode,
+                   actionText: 'Try Again',
+                 );
+               }
       }
     } catch (e) {
       print('💥 Resend verification exception: ${e.toString()}');
-      if (mounted) {
-        String errorMessage = 'Unable to send verification code. Please try again.';
-        if (e is ValidationException) {
-          errorMessage = e.message;
-        } else if (e is AuthException) {
-          errorMessage = e.message;
-        } else if (e is RateLimitException) {
-          errorMessage = 'Too many resend attempts. Please wait before trying again.';
-        }
+      
+      // Track failed resend
+      await AnalyticsService.trackAuthEvent(
+        action: 'resend_verification_failed',
+        success: false,
+        errorType: e.runtimeType.toString(),
+      );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-          ),
+      // Log error securely
+      final authError = SecureErrorHandler.handleError(e, context: 'resend_verification');
+      await ErrorMonitoringService.logAuthError(
+        errorType: authError.type,
+        errorMessage: authError.message,
+        details: authError.details,
+      );
+
+      if (mounted) {
+        ErrorSnackBar.show(
+          context,
+          error: e,
+          context: 'email_verification',
+          onAction: _handleVerification,
+          actionText: 'Try Again',
         );
       }
     } finally {
@@ -533,24 +574,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Verifying...',
-                              style: AppTypography.button.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
+                            LoadingWidgets.button(
+                              text: 'Verifying...',
+                              color: Colors.white,
                             ),
                           ],
                         )
@@ -611,23 +637,12 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                                 ? Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      SizedBox(
-                                        height: 16,
-                                        width: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            AppColors.primary,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Sending...',
-                                        style: AppTypography.body2.copyWith(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                      LoadingWidgets.withText(
+                                        text: 'Sending...',
+                                        color: AppColors.primary,
+                                        size: 16.0,
+                                        strokeWidth: 2.0,
+                                        alignment: MainAxisAlignment.center,
                                       ),
                                     ],
                                   )

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
+import '../models/profile_completion_models.dart';
 import '../services/profile_service.dart';
 import '../services/reference_data_service.dart';
 import '../services/preferences_service.dart';
@@ -12,26 +13,26 @@ class ProfileProvider extends ChangeNotifier {
   User? get user => _user;
 
   // Reference data (dropdown options)
-  List<Gender> _genders = [];
+  List<ReferenceDataItem> _genders = [];
   List<SexualOrientation> _sexualOrientations = [];
-  List<RelationGoal> _relationGoals = [];
-  List<PreferredGender> _preferredGenders = [];
-  List<Job> _jobs = [];
-  List<Education> _educations = [];
-  List<Language> _languages = [];
-  List<MusicGenre> _musicGenres = [];
-  List<Interest> _interests = [];
+  List<ReferenceDataItem> _relationGoals = [];
+  List<ReferenceDataItem> _preferredGenders = [];
+  List<ReferenceDataItem> _jobs = [];
+  List<ReferenceDataItem> _educations = [];
+  List<ReferenceDataItem> _languages = [];
+  List<ReferenceDataItem> _musicGenres = [];
+  List<ReferenceDataItem> _interests = [];
 
   // Getters for reference data
-  List<Gender> get genders => _genders;
+  List<ReferenceDataItem> get genders => _genders;
   List<SexualOrientation> get sexualOrientations => _sexualOrientations;
-  List<RelationGoal> get relationGoals => _relationGoals;
-  List<PreferredGender> get preferredGenders => _preferredGenders;
-  List<Job> get jobs => _jobs;
-  List<Education> get educations => _educations;
-  List<Language> get languages => _languages;
-  List<MusicGenre> get musicGenres => _musicGenres;
-  List<Interest> get interests => _interests;
+  List<ReferenceDataItem> get relationGoals => _relationGoals;
+  List<ReferenceDataItem> get preferredGenders => _preferredGenders;
+  List<ReferenceDataItem> get jobs => _jobs;
+  List<ReferenceDataItem> get educations => _educations;
+  List<ReferenceDataItem> get languages => _languages;
+  List<ReferenceDataItem> get musicGenres => _musicGenres;
+  List<ReferenceDataItem> get interests => _interests;
 
   // Loading states
   bool _isLoadingProfile = false;
@@ -128,7 +129,7 @@ class ProfileProvider extends ChangeNotifier {
   // Load individual reference data
   Future<void> _loadGenders() async {
     try {
-      _genders = await ReferenceDataService.getGenderOptions();
+      _genders = await ReferenceDataService.getGenders();
       notifyListeners();
     } catch (e) {
       print('Error loading genders: $e');
@@ -148,7 +149,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> _loadRelationGoals() async {
     try {
-      _relationGoals = await ReferenceDataService.getRelationGoalOptions();
+      _relationGoals = await ReferenceDataService.getReferenceData('relation-goals');
       notifyListeners();
     } catch (e) {
       print('Error loading relation goals: $e');
@@ -157,7 +158,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> _loadPreferredGenders() async {
     try {
-      _preferredGenders = await ReferenceDataService.getPreferredGenderOptions();
+      _preferredGenders = await ReferenceDataService.getReferenceData('preferred-genders');
       notifyListeners();
     } catch (e) {
       print('Error loading preferred genders: $e');
@@ -166,7 +167,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> _loadJobs() async {
     try {
-      _jobs = await ReferenceDataService.getJobOptions();
+      _jobs = await ReferenceDataService.getReferenceData('jobs');
       notifyListeners();
     } catch (e) {
       print('Error loading jobs: $e');
@@ -175,7 +176,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> _loadEducation() async {
     try {
-      _educations = await ReferenceDataService.getEducationOptions();
+      _educations = await ReferenceDataService.getReferenceData('education');
       notifyListeners();
     } catch (e) {
       print('Error loading education: $e');
@@ -184,7 +185,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> _loadLanguages() async {
     try {
-      _languages = await ReferenceDataService.getLanguageOptions();
+      _languages = await ReferenceDataService.getReferenceData('languages');
       notifyListeners();
     } catch (e) {
       print('Error loading languages: $e');
@@ -193,7 +194,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> _loadMusicGenres() async {
     try {
-      _musicGenres = await ReferenceDataService.getMusicGenreOptions();
+      _musicGenres = await ReferenceDataService.getReferenceData('music-genres');
       notifyListeners();
     } catch (e) {
       print('Error loading music genres: $e');
@@ -202,7 +203,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> _loadInterests() async {
     try {
-      _interests = await ReferenceDataService.getInterestOptions();
+      _interests = await ReferenceDataService.getReferenceData('interests');
       notifyListeners();
     } catch (e) {
       print('Error loading interests: $e');
@@ -212,25 +213,129 @@ class ProfileProvider extends ChangeNotifier {
   // Load profile completion status
   Future<void> _loadProfileCompletion() async {
     try {
-      // TODO: Implement profile completion calculation
-      _isProfileComplete = true;
-      _completionPercentage = 75;
-      _missingFields = [];
+      if (_user == null) {
+        _isProfileComplete = false;
+        _completionPercentage = 0;
+        _missingFields = ['User not loaded'];
+        notifyListeners();
+        return;
+      }
+
+      final user = _user!;
+      final missingFields = <String>[];
+      int completedFields = 0;
+      int totalFields = 0;
+
+      // Required fields
+      final requiredFields = [
+        ('firstName', user.firstName?.isNotEmpty == true),
+        ('lastName', user.lastName?.isNotEmpty == true),
+        ('email', user.email?.isNotEmpty == true),
+        ('birthDate', user.birthDate != null),
+        ('gender', user.gender?.isNotEmpty == true),
+        ('location', user.location?.isNotEmpty == true),
+        ('bio', user.bio?.isNotEmpty == true),
+        ('profilePictures', user.profilePictures.isNotEmpty),
+      ];
+
+      // Optional fields
+      final optionalFields = [
+        ('height', user.height != null),
+        ('weight', user.weight != null),
+        ('job', user.job?.isNotEmpty == true),
+        ('education', user.education?.isNotEmpty == true),
+        ('interests', user.interests.isNotEmpty),
+        ('musicGenres', user.musicGenres.isNotEmpty),
+        ('languages', user.languages.isNotEmpty),
+        ('relationshipGoals', user.relationshipGoals.isNotEmpty),
+        ('preferredGenders', user.preferredGenders.isNotEmpty),
+      ];
+
+      // Check required fields
+      for (final (field, isCompleted) in requiredFields) {
+        totalFields++;
+        if (isCompleted) {
+          completedFields++;
+        } else {
+          missingFields.add(field);
+        }
+      }
+
+      // Check optional fields (weighted less)
+      for (final (field, isCompleted) in optionalFields) {
+        totalFields++;
+        if (isCompleted) {
+          completedFields++;
+        } else {
+          missingFields.add('$field (optional)');
+        }
+      }
+
+      // Calculate completion percentage
+      _completionPercentage = totalFields > 0 ? (completedFields / totalFields * 100).round() : 0;
+      
+      // Profile is complete if all required fields are filled
+      _isProfileComplete = missingFields.every((field) => field.contains('(optional)'));
+      
+      _missingFields = missingFields;
       notifyListeners();
     } catch (e) {
       print('Error loading profile completion: $e');
+      _isProfileComplete = false;
+      _completionPercentage = 0;
+      _missingFields = ['Error calculating completion'];
+      notifyListeners();
     }
   }
 
   // Load verification status
   Future<void> _loadVerificationStatus() async {
     try {
-      // TODO: Use VerificationService.getVerificationStatus() once models are aligned
-      _verification = null; // Temporarily set to null
+      if (_user == null) {
+        _verification = null;
+        notifyListeners();
+        return;
+      }
+
+      final user = _user!;
+      
+      // Create verification status based on user data
+      _verification = VerificationStatus(
+        isEmailVerified: user.isVerified,
+        isPhoneVerified: false, // TODO: Add phone verification when available
+        isPhotoVerified: user.profilePictures.isNotEmpty,
+        isIdVerified: false, // TODO: Add ID verification when available
+        verificationLevel: _calculateVerificationLevel(user),
+        verifiedAt: user.isVerified ? DateTime.now() : null,
+        pendingVerifications: _getPendingVerifications(user),
+      );
+      
       notifyListeners();
     } catch (e) {
       print('Error loading verification status: $e');
+      _verification = null;
+      notifyListeners();
     }
+  }
+
+  String _calculateVerificationLevel(User user) {
+    int verifiedCount = 0;
+    
+    if (user.isVerified) verifiedCount++;
+    if (user.profilePictures.isNotEmpty) verifiedCount++;
+    
+    if (verifiedCount >= 2) return 'high';
+    if (verifiedCount >= 1) return 'medium';
+    return 'low';
+  }
+
+  List<String> _getPendingVerifications(User user) {
+    final pending = <String>[];
+    
+    if (!user.isVerified) pending.add('email');
+    if (user.profilePictures.isEmpty) pending.add('photo');
+    
+    return pending;
   }
 
   // Load user preferences

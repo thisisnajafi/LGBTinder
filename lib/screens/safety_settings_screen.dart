@@ -539,23 +539,11 @@ class _SafetySettingsScreenState extends State<SafetySettingsScreen> {
   }
 
   void _showBlockedUsers() {
-    // TODO: Navigate to blocked users screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Blocked users feature coming soon!'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+    Navigator.pushNamed(context, '/blocked-users');
   }
 
   void _showReportHistory() {
-    // TODO: Navigate to report history screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Report history feature coming soon!'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+    Navigator.pushNamed(context, '/report-history');
   }
 
   void _showSafetyTips() {

@@ -11,6 +11,7 @@ import 'pages/onboarding_page.dart';
 import 'providers/profile_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/app_state_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
@@ -19,6 +20,7 @@ import 'screens/auth/auth_wrapper.dart';
 import 'screens/auth/forgot_password_screen.dart';
 import 'screens/auth/profile_completion_welcome_screen.dart';
 import 'screens/auth/profile_wizard_screen.dart';
+import 'screens/auth/profile_completion_screen.dart';
 import 'pages/api_test_page.dart';
 import 'pages/discovery_page.dart';
 import 'screens/story_creation_screen.dart';
@@ -39,6 +41,11 @@ import 'screens/pull_to_refresh_settings_screen.dart';
 import 'screens/skeleton_loader_settings_screen.dart';
 import 'screens/image_compression_settings_screen.dart';
 import 'screens/media_picker_settings_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/help_support_screen.dart';
+import 'screens/add_payment_method_screen.dart';
+import 'screens/blocked_users_screen.dart';
+import 'screens/report_history_screen.dart';
 // import 'screens/audio_recorder_settings_screen.dart'; // Commented out - file removed
 import 'models/premium_plan.dart';
 import 'models/user.dart';
@@ -61,6 +68,9 @@ class LGBTinderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) => AppStateProvider()..initializeApp(),
+        ),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
@@ -88,7 +98,7 @@ class LGBTinderApp extends StatelessWidget {
           '/register': (context) => const RegisterScreen(),
           '/email-verification': (context) => const EmailVerificationScreen(email: '', redirectRoute: '/home'),
           '/forgot-password': (context) => const ForgotPasswordScreen(),
-          '/profile-completion': (context) => const ProfileCompletionWelcomeScreen(userName: ''),
+          '/profile-completion': (context) => const ProfileCompletionScreen(),
           '/profile-wizard': (context) => const ProfileWizardScreen(),
           '/home': (context) => const HomePage(),
           '/discovery': (context) => const DiscoveryPage(),
@@ -110,6 +120,11 @@ class LGBTinderApp extends StatelessWidget {
           '/skeleton-loader-settings': (context) => const SkeletonLoaderSettingsScreen(),
           '/image-compression-settings': (context) => const ImageCompressionSettingsScreen(),
           '/media-picker-settings': (context) => const MediaPickerSettingsScreen(),
+          '/settings': (context) => const SettingsScreen(),
+          '/help-support': (context) => const HelpSupportScreen(),
+          '/add-payment-method': (context) => const AddPaymentMethodScreen(),
+          '/blocked-users': (context) => const BlockedUsersScreen(),
+          '/report-history': (context) => const ReportHistoryScreen(),
           // '/audio-recorder-settings': (context) => const AudioRecorderSettingsScreen(), // Commented out - screen removed
           '/feed': (context) => const FeedPage(),
           '/main': (context) => const MainScreen(),

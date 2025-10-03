@@ -6,6 +6,7 @@ import '../services/premium_service.dart';
 import '../providers/auth_provider.dart';
 import '../utils/api_error_handler.dart';
 import '../models/premium_plan.dart';
+import 'payment_screen.dart';
 
 class PremiumFeaturesScreen extends StatefulWidget {
   const PremiumFeaturesScreen({Key? key}) : super(key: key);
@@ -181,6 +182,8 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildPremiumStatus(),
+                  const SizedBox(height: 24),
+                  _buildSubscriptionActions(),
                   const SizedBox(height: 24),
                   _buildPremiumPlans(),
                   const SizedBox(height: 24),
@@ -498,6 +501,112 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
     );
   }
 
+  Widget _buildSubscriptionActions() {
+    final isPremium = _premiumStatus['is_premium'] ?? false;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.navbarBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Subscription Management',
+            style: AppTypography.h4.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          if (isPremium) ...[
+            _buildSubscriptionActionButton(
+              'Manage Subscription',
+              'View and manage your premium subscription',
+              Icons.card_membership,
+              () => Navigator.pushNamed(context, '/subscription-management'),
+            ),
+            _buildSubscriptionActionButton(
+              'Payment Methods',
+              'Add or update payment methods',
+              Icons.payment,
+              () => Navigator.pushNamed(context, '/add-payment-method'),
+            ),
+          ],
+          
+          _buildSubscriptionActionButton(
+            'Contact Support',
+            'Get help with your subscription',
+            Icons.support_agent,
+            () => Navigator.pushNamed(context, '/help-support'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionActionButton(
+    String title,
+    String subtitle,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.body1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTypography.body2.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white54,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildUsageStats() {
     final isPremium = _premiumStatus['is_premium'] ?? false;
     
@@ -594,11 +703,10 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
   }
 
   void _purchasePlan(PremiumPlan plan) {
-    // TODO: Navigate to payment screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Payment integration for ${plan.name} coming soon!'),
-        backgroundColor: AppColors.primary,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(plan: plan),
       ),
     );
   }

@@ -488,13 +488,18 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     Navigator.pushNamed(context, '/premium-features');
   }
 
-  void _updatePaymentMethod() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Payment method update coming soon!'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+  void _updatePaymentMethod() async {
+    final result = await Navigator.pushNamed(context, '/add-payment-method');
+    if (result == true) {
+      // Payment method was updated successfully, reload data
+      _loadSubscriptionData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment method updated successfully!'),
+          backgroundColor: AppColors.primary,
+        ),
+      );
+    }
   }
 
   void _cancelSubscription() {

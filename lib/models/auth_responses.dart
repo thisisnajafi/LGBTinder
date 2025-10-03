@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'auth_user.dart';
 
 class LoginResponse {
@@ -205,27 +206,29 @@ class VerificationResponse {
 }
 
 class VerificationData {
-  final String user;
-  final String token;
-  final String tokenType;
+  final Map<String, dynamic> user;
+  final String? token;
+  final String? tokenType;
   final bool needsProfileCompletion;
-  final String profileCompletionStatus;
+  final String? profileCompletionStatus;
 
   const VerificationData({
     required this.user,
-    required this.token,
-    required this.tokenType,
+    this.token,
+    this.tokenType,
     required this.needsProfileCompletion,
-    required this.profileCompletionStatus,
+    this.profileCompletionStatus,
   });
 
   factory VerificationData.fromJson(Map<String, dynamic> json) {
+    final userData = json['user'] as Map<String, dynamic>;
+    final profileCompletionStatus = json['profile_completion_status'] as Map<String, dynamic>?;
     return VerificationData(
-      user: json['user'] as String,
-      token: json['token'] as String,
-      tokenType: json['token_type'] as String,
-      needsProfileCompletion: json['needs_profile_completion'] as bool,
-      profileCompletionStatus: json['profile_completion_status'] as String,
+      user: userData,
+      token: json['token'] as String?,
+      tokenType: json['token_type'] as String?,
+      needsProfileCompletion: json['needs_profile_completion'] as bool? ?? userData['profile_completed'] == false,
+      profileCompletionStatus: profileCompletionStatus != null ? jsonEncode(profileCompletionStatus) : null,
     );
   }
 
@@ -419,6 +422,213 @@ class ResendVerificationResponse {
   @override
   String toString() {
     return 'ResendVerificationResponse(success: $success, message: $message, cooldownSeconds: $cooldownSeconds)';
+  }
+}
+
+/// Enhanced response for email verification with rate limiting info
+class EmailVerificationResponse {
+  final bool status;
+  final String message;
+  final EmailVerificationData? data;
+
+  const EmailVerificationResponse({
+    required this.status,
+    required this.message,
+    this.data,
+  });
+
+  factory EmailVerificationResponse.fromJson(Map<String, dynamic> json) {
+    return EmailVerificationResponse(
+      status: json['status'] as bool,
+      message: json['message'] as String,
+      data: json['data'] != null
+          ? EmailVerificationData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'message': message,
+      'data': data?.toJson(),
+    };
+  }
+}
+
+class EmailVerificationData {
+  final String email;
+  final String? resendAvailableAt;
+  final int? hourlyAttemptsRemaining;
+  final int? dailyAttemptsRemaining;
+  final String? restrictionTier;
+  final int? failedAttempts;
+  final String? nextAvailableAt;
+  final int? secondsRemaining;
+  final Map<String, int>? remainingAttempts;
+
+  const EmailVerificationData({
+    required this.email,
+    this.resendAvailableAt,
+    this.hourlyAttemptsRemaining,
+    this.dailyAttemptsRemaining,
+    this.restrictionTier,
+    this.failedAttempts,
+    this.nextAvailableAt,
+    this.secondsRemaining,
+    this.remainingAttempts,
+  });
+
+  factory EmailVerificationData.fromJson(Map<String, dynamic> json) {
+    return EmailVerificationData(
+      email: json['email'] as String,
+      resendAvailableAt: json['resend_available_at'] as String?,
+      hourlyAttemptsRemaining: json['hourly_attempts_remaining'] as int?,
+      dailyAttemptsRemaining: json['daily_attempts_remaining'] as int?,
+      restrictionTier: json['restriction_tier'] as String?,
+      failedAttempts: json['failed_attempts'] as int?,
+      nextAvailableAt: json['next_available_at'] as String?,
+      secondsRemaining: json['seconds_remaining'] as int?,
+      remainingAttempts: json['remaining_attempts'] != null
+          ? Map<String, int>.from(json['remaining_attempts'] as Map)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'resend_available_at': resendAvailableAt,
+      'hourly_attempts_remaining': hourlyAttemptsRemaining,
+      'daily_attempts_remaining': dailyAttemptsRemaining,
+      'restriction_tier': restrictionTier,
+      'failed_attempts': failedAttempts,
+      'next_available_at': nextAvailableAt,
+      'seconds_remaining': secondsRemaining,
+      'remaining_attempts': remainingAttempts,
+    };
+  }
+}
+
+/// Enhanced login response with user data and token
+class LoginCodeResponse {
+  final bool status;
+  final String message;
+  final LoginCodeData? data;
+
+  const LoginCodeResponse({
+    required this.status,
+    required this.message,
+    this.data,
+  });
+
+  factory LoginCodeResponse.fromJson(Map<String, dynamic> json) {
+    return LoginCodeResponse(
+      status: json['status'] as bool,
+      message: json['message'] as String,
+      data: json['data'] != null
+          ? LoginCodeData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'message': message,
+      'data': data?.toJson(),
+    };
+  }
+}
+
+class LoginCodeData {
+  final AuthUser user;
+  final String token;
+  final String tokenType;
+  final int expiresIn;
+
+  const LoginCodeData({
+    required this.user,
+    required this.token,
+    required this.tokenType,
+    required this.expiresIn,
+  });
+
+  factory LoginCodeData.fromJson(Map<String, dynamic> json) {
+    return LoginCodeData(
+      user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
+      token: json['token'] as String,
+      tokenType: json['token_type'] as String,
+      expiresIn: json['expires_in'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user': user.toJson(),
+      'token': token,
+      'token_type': tokenType,
+      'expires_in': expiresIn,
+    };
+  }
+}
+
+/// Enhanced password reset response
+class PasswordResetOtpResponse {
+  final bool status;
+  final String message;
+  final PasswordResetOtpData? data;
+
+  const PasswordResetOtpResponse({
+    required this.status,
+    required this.message,
+    this.data,
+  });
+
+  factory PasswordResetOtpResponse.fromJson(Map<String, dynamic> json) {
+    return PasswordResetOtpResponse(
+      status: json['status'] as bool,
+      message: json['message'] as String,
+      data: json['data'] != null
+          ? PasswordResetOtpData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'message': message,
+      'data': data?.toJson(),
+    };
+  }
+}
+
+class PasswordResetOtpData {
+  final String email;
+  final String resetToken;
+  final String expiresAt;
+
+  const PasswordResetOtpData({
+    required this.email,
+    required this.resetToken,
+    required this.expiresAt,
+  });
+
+  factory PasswordResetOtpData.fromJson(Map<String, dynamic> json) {
+    return PasswordResetOtpData(
+      email: json['email'] as String,
+      resetToken: json['reset_token'] as String,
+      expiresAt: json['expires_at'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'reset_token': resetToken,
+      'expires_at': expiresAt,
+    };
   }
 }
 

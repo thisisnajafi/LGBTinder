@@ -1,731 +1,144 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
-import '../models/reference_data.dart';
-import '../utils/error_handler.dart';
+import '../models/profile_completion_models.dart';
 
 class ReferenceDataService {
-  /// Get all education options
-  static Future<List<Education>> getEducationOptions() async {
+  static const String _baseUrl = ApiConfig.baseUrl;
+
+  /// Get countries
+  static Future<List<Country>> getCountries() async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.education)),
+        Uri.parse('$_baseUrl/api/countries'),
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => Education.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch education options: ${response.statusCode}');
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return (data['data'] as List)
+              .map((json) => Country.fromJson(json))
+              .toList();
+        }
       }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
+      return [];
     } catch (e) {
-      throw NetworkException('Network error while fetching education options: $e');
+      print('Error fetching countries: $e');
+      return [];
     }
   }
 
-  /// Get all gender options
-  static Future<List<Gender>> getGenderOptions() async {
+  /// Get cities by country
+  static Future<List<City>> getCitiesByCountry(int countryId) async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.genders)),
+        Uri.parse('$_baseUrl/api/cities/country/$countryId'),
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => Gender.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch gender options: ${response.statusCode}');
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return (data['data'] as List)
+              .map((json) => City.fromJson(json))
+              .toList();
+        }
       }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
+      return [];
     } catch (e) {
-      throw NetworkException('Network error while fetching gender options: $e');
+      print('Error fetching cities: $e');
+      return [];
     }
   }
 
-  /// Get all interest options
-  static Future<List<Interest>> getInterestOptions() async {
+  /// Get genders
+  static Future<List<ReferenceDataItem>> getGenders() async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.interests)),
+        Uri.parse('$_baseUrl/api/genders'),
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => Interest.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch interest options: ${response.statusCode}');
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return (data['data'] as List)
+              .map((json) => ReferenceDataItem.fromJson(json))
+              .toList();
+        }
       }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
+      return [];
     } catch (e) {
-      throw NetworkException('Network error while fetching interest options: $e');
+      print('Error fetching genders: $e');
+      return [];
     }
   }
 
-  /// Get all job options
-  static Future<List<Job>> getJobOptions() async {
+  /// Get other reference data (jobs, educations, etc.)
+  static Future<List<ReferenceDataItem>> getReferenceData(String endpoint) async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.jobs)),
+        Uri.parse('$_baseUrl/api/$endpoint'),
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => Job.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch job options: ${response.statusCode}');
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return (data['data'] as List)
+              .map((json) => ReferenceDataItem.fromJson(json))
+              .toList();
+        }
       }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
+      return [];
     } catch (e) {
-      throw NetworkException('Network error while fetching job options: $e');
+      print('Error fetching $endpoint: $e');
+      return [];
     }
   }
 
-  /// Get all language options
-  static Future<List<Language>> getLanguageOptions() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.languages)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => Language.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch language options: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching language options: $e');
-    }
-  }
-
-  /// Get all music genre options
-  static Future<List<MusicGenre>> getMusicGenreOptions() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.musicGenres)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => MusicGenre.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch music genre options: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching music genre options: $e');
-    }
-  }
-
-  /// Get all preferred gender options
-  static Future<List<PreferredGender>> getPreferredGenderOptions() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.preferredGenders)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => PreferredGender.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch preferred gender options: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching preferred gender options: $e');
-    }
-  }
-
-  /// Get all relationship goal options
-  static Future<List<RelationGoal>> getRelationGoalOptions() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.relationGoals)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.map((item) => RelationGoal.fromJson(item)).toList();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch relationship goal options: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching relationship goal options: $e');
-    }
-  }
-
-  /// Get all countries
-  static Future<List<Map<String, dynamic>>> getCountries() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.countries)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch countries: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching countries: $e');
-    }
-  }
-
-  /// Get all cities by country
-  static Future<List<Map<String, dynamic>>> getCitiesByCountry(String countryCode) async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.cities) + '/$countryCode'),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else if (response.statusCode == 404) {
-        throw ApiException('Country not found');
-      } else {
-        throw ApiException('Failed to fetch cities: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching cities: $e');
-    }
-  }
-
-  /// Get all age ranges
-  static Future<List<Map<String, dynamic>>> getAgeRanges() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.ageRanges)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch age ranges: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching age ranges: $e');
-    }
-  }
-
-  /// Get all height ranges
-  static Future<List<Map<String, dynamic>>> getHeightRanges() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.heightRanges)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch height ranges: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching height ranges: $e');
-    }
-  }
-
-  /// Get all body types
-  static Future<List<Map<String, dynamic>>> getBodyTypes() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.bodyTypes)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch body types: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching body types: $e');
-    }
-  }
-
-  /// Get all zodiac signs
-  static Future<List<Map<String, dynamic>>> getZodiacSigns() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.zodiacSigns)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch zodiac signs: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching zodiac signs: $e');
-    }
-  }
-
-  /// Get all drinking habits
-  static Future<List<Map<String, dynamic>>> getDrinkingHabits() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.drinkingHabits)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch drinking habits: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching drinking habits: $e');
-    }
-  }
-
-  /// Get all smoking habits
-  static Future<List<Map<String, dynamic>>> getSmokingHabits() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.smokingHabits)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch smoking habits: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching smoking habits: $e');
-    }
-  }
-
-  /// Get all exercise habits
-  static Future<List<Map<String, dynamic>>> getExerciseHabits() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.exerciseHabits)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch exercise habits: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching exercise habits: $e');
-    }
-  }
-
-  /// Get all pet preferences
-  static Future<List<Map<String, dynamic>>> getPetPreferences() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.petPreferences)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch pet preferences: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching pet preferences: $e');
-    }
-  }
-
-  /// Get all children preferences
-  static Future<List<Map<String, dynamic>>> getChildrenPreferences() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.childrenPreferences)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch children preferences: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching children preferences: $e');
-    }
-  }
-
-  /// Get all report categories
-  static Future<List<Map<String, dynamic>>> getReportCategories() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.reportCategories)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch report categories: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching report categories: $e');
-    }
-  }
-
-  /// Get all notification types
-  static Future<List<Map<String, dynamic>>> getNotificationTypes() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.notificationTypes)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch notification types: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching notification types: $e');
-    }
-  }
-
-  /// Get all privacy settings
-  static Future<List<Map<String, dynamic>>> getPrivacySettings() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.privacySettings)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch privacy settings: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching privacy settings: $e');
-    }
-  }
-
-  /// Get all app settings
-  static Future<List<Map<String, dynamic>>> getAppSettings() async {
-    try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.appSettings)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch app settings: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching app settings: $e');
-    }
-  }
-
-  /// Get all reference data at once
+  /// Get all reference data needed for profile completion
   static Future<Map<String, dynamic>> getAllReferenceData() async {
     try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.referenceData)),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
+      final results = await Future.wait([
+        getCountries(),
+        getGenders(),
+        getReferenceData('preferred-genders'),
+        getReferenceData('interests'),
+        getReferenceData('music-genres'),
+        getReferenceData('languages'),
+        getReferenceData('jobs'),
+        getReferenceData('education'),
+        getReferenceData('relation-goals'),
+      ]);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['data'] ?? data;
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else {
-        throw ApiException('Failed to fetch all reference data: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while fetching all reference data: $e');
-    }
-  }
-
-  /// Search reference data
-  static Future<List<Map<String, dynamic>>> searchReferenceData({
-    required String query,
-    String? category,
-    int? limit,
-  }) async {
-    try {
-      var uri = Uri.parse(ApiConfig.getUrl(ApiConfig.referenceDataSearch));
-      
-      // Add query parameters
-      final queryParams = <String, String>{
-        'q': query,
+      return {
+        'countries': results[0] as List<Country>,
+        'genders': results[1] as List<ReferenceDataItem>,
+        'preferred_genders': results[2] as List<ReferenceDataItem>,
+        'interests': results[3] as List<ReferenceDataItem>,
+        'music_genres': results[4] as List<ReferenceDataItem>,
+        'languages': results[5] as List<ReferenceDataItem>,
+        'jobs': results[6] as List<ReferenceDataItem>,
+        'education': results[7] as List<ReferenceDataItem>,
+        'relation_goals': results[8] as List<ReferenceDataItem>,
       };
-      if (category != null) queryParams['category'] = category;
-      if (limit != null) queryParams['limit'] = limit.toString();
-      
-      uri = uri.replace(queryParameters: queryParams);
-
-      final response = await http.get(
-        uri,
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> items = data['data'] ?? data;
-        return items.cast<Map<String, dynamic>>();
-      } else if (response.statusCode == 401) {
-        throw AuthException('Authentication required');
-      } else if (response.statusCode == 422) {
-        final data = jsonDecode(response.body);
-        throw ValidationException(
-          data['message'] ?? 'Invalid search parameters',
-          data['errors'] ?? <String, String>{},
-        );
-      } else {
-        throw ApiException('Failed to search reference data: ${response.statusCode}');
-      }
-    } on AuthException {
-      rethrow;
-    } on ValidationException {
-      rethrow;
-    } on ApiException {
-      rethrow;
     } catch (e) {
-      throw NetworkException('Network error while searching reference data: $e');
+      print('Error fetching all reference data: $e');
+      return {};
     }
   }
 }

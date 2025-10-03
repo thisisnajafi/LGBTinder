@@ -319,12 +319,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () {
-                          // TODO: Navigate to support page
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Support page coming soon!'),
-                            ),
-                          );
+                          Navigator.pushNamed(context, '/help-support');
                         },
                         child: Text(
                           'Contact Support',

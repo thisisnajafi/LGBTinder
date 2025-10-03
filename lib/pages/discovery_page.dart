@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
-import '../models/user.dart';
+import '../models/api_models/user_models.dart';
 import '../components/profile_cards/swipeable_profile_card.dart';
-import '../services/matching_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../services/pull_to_refresh_service.dart';
-import '../services/skeleton_loader_service.dart';
-import '../providers/auth_provider.dart';
-import '../utils/api_error_handler.dart';
+import '../components/error_handling/error_display_widget.dart';
+import '../components/loading/loading_widgets.dart';
+import '../components/loading/skeleton_loader.dart';
+import '../components/offline/offline_wrapper.dart';
+import '../components/real_time/real_time_listener.dart';
+import '../providers/matching_state_provider.dart';
+import '../services/analytics_service.dart';
+import '../services/error_monitoring_service.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({Key? key}) : super(key: key);
@@ -27,7 +29,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   List<User> _potentialMatches = [];
   int _currentIndex = 0;
   bool _isLoading = true;
-  String? _errorMessage;
+  dynamic _error;
   
   // Swipe directions
   double _dragStartX = 0;
@@ -39,6 +41,12 @@ class _DiscoveryPageState extends State<DiscoveryPage>
     super.initState();
     _initializeAnimations();
     _loadPotentialMatches();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
   
   void _initializeAnimations() {
@@ -67,39 +75,37 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   Future<void> _loadPotentialMatches() async {
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
+      _error = null;
     });
     
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = await authProvider.accessToken;
-      
-      if (accessToken == null) {
-        throw Exception('No access token available');
-      }
-      
-      // Load potential matches from API
-      final matches = await MatchingService.getPotentialMatches(
-        accessToken: accessToken,
-        limit: 10,
+      await AnalyticsService.trackEvent(
+        action: 'discovery_load_matches',
+        category: 'matching',
       );
+
+      final matchingProvider = context.read<MatchingStateProvider>();
+      await matchingProvider.loadPotentialMatches();
       
       setState(() {
-        _potentialMatches = matches;
+        _potentialMatches = matchingProvider.potentialMatches;
         _isLoading = false;
       });
     } catch (e) {
+      await AnalyticsService.trackEvent(
+        action: 'discovery_load_matches_failed',
+        category: 'matching',
+      );
+
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'DiscoveryPage._loadPotentialMatches',
+      );
+
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Failed to load potential matches';
+        _error = e;
       });
-      
-      ApiErrorHandler.handleApiError(
-        context,
-        e,
-        customMessage: 'Unable to load potential matches. Please try again.',
-        onRetry: _loadPotentialMatches,
-      );
     }
   }
   
@@ -107,23 +113,18 @@ class _DiscoveryPageState extends State<DiscoveryPage>
     if (_currentIndex >= _potentialMatches.length) return;
     
     final currentUser = _potentialMatches[_currentIndex];
-    final hapticService = HapticFeedbackService();
     
     switch (direction) {
       case SwipeDirection.left:
-        hapticService.swipeLeft();
         _handleDislike(currentUser);
         break;
       case SwipeDirection.right:
-        hapticService.swipeRight();
         _handleLike(currentUser);
         break;
       case SwipeDirection.up:
-        hapticService.swipeUp();
         _handleSuperLike(currentUser);
         break;
       case SwipeDirection.down:
-        hapticService.swipeDown();
         _showProfileDetails(currentUser);
         break;
     }
@@ -133,96 +134,81 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   
   Future<void> _handleLike(User user) async {
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = await authProvider.accessToken;
-      
-      if (accessToken == null) return;
-      
-      await MatchingService.likeUser(
-        userId: user.id.toString(),
-        accessToken: accessToken,
+      await AnalyticsService.trackEvent(
+        action: 'user_like',
+        category: 'matching',
+        properties: {'target_user_id': user.id},
       );
+
+      final matchingProvider = context.read<MatchingStateProvider>();
+      final result = await matchingProvider.likeUser(user.id);
       
-      // Haptic feedback for successful like
-      await HapticFeedbackService().like();
-      
-      // Show success feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('You liked ${user.firstName}!'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      if (result.isMatch) {
+        _showMatchDialog(user);
+      }
     } catch (e) {
-      // Haptic feedback for error
-      await HapticFeedbackService().error();
-      
-      ApiErrorHandler.handleApiError(
-        context,
-        e,
-        customMessage: 'Failed to like user. Please try again.',
+      await AnalyticsService.trackEvent(
+        action: 'user_like_failed',
+        category: 'matching',
+      );
+
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'DiscoveryPage._handleLike',
       );
     }
   }
   
   Future<void> _handleDislike(User user) async {
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = await authProvider.accessToken;
-      
-      if (accessToken == null) return;
-      
-      await MatchingService.dislikeUser(
-        userId: user.id.toString(),
-        accessToken: accessToken,
+      await AnalyticsService.trackEvent(
+        action: 'user_dislike',
+        category: 'matching',
+        properties: {'target_user_id': user.id},
       );
-      
-      // No feedback needed for dislikes
+
+      final matchingProvider = context.read<MatchingStateProvider>();
+      await matchingProvider.dislikeUser(user.id);
     } catch (e) {
-      ApiErrorHandler.handleApiError(
-        context,
-        e,
-        customMessage: 'Failed to dislike user. Please try again.',
+      await AnalyticsService.trackEvent(
+        action: 'user_dislike_failed',
+        category: 'matching',
+      );
+
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'DiscoveryPage._handleDislike',
       );
     }
   }
-  
+
   Future<void> _handleSuperLike(User user) async {
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = await authProvider.accessToken;
-      
-      if (accessToken == null) return;
-      
-      await MatchingService.superLikeUser(
-        userId: user.id.toString(),
-        accessToken: accessToken,
+      await AnalyticsService.trackEvent(
+        action: 'user_super_like',
+        category: 'matching',
+        properties: {'target_user_id': user.id},
       );
+
+      final matchingProvider = context.read<MatchingStateProvider>();
+      final result = await matchingProvider.superLikeUser(user.id);
       
-      // Haptic feedback for successful super like
-      await HapticFeedbackService().superLike();
-      
-      // Show success feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('You super liked ${user.firstName}! ⭐'),
-          backgroundColor: Colors.blue,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      if (result.isMatch) {
+        _showMatchDialog(user);
+      }
     } catch (e) {
-      // Haptic feedback for error
-      await HapticFeedbackService().error();
-      
-      ApiErrorHandler.handleApiError(
-        context,
-        e,
-        customMessage: 'Failed to super like user. Please try again.',
+      await AnalyticsService.trackEvent(
+        action: 'user_super_like_failed',
+        category: 'matching',
+      );
+
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'DiscoveryPage._handleSuperLike',
       );
     }
   }
-  
+
   void _showProfileDetails(User user) {
     showModalBottomSheet(
       context: context,
@@ -233,87 +219,154 @@ class _DiscoveryPageState extends State<DiscoveryPage>
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.navbarBackground,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
-              // Handle bar
+              // Handle
               Container(
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white30,
+                  color: AppColors.textSecondary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Profile details content
+              
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundImage: user.profilePictures.isNotEmpty
+                          ? NetworkImage(user.profilePictures.first)
+                          : null,
+                      child: user.profilePictures.isEmpty
+                          ? Icon(
+                              Icons.person,
+                              size: 30,
+                              color: AppColors.textSecondary,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${user.firstName} ${user.lastName}',
+                            style: AppTypography.heading2.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            '${user.age} years old',
+                            style: AppTypography.body1.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          if (user.location != null)
+                            Text(
+                              user.location!,
+                              style: AppTypography.body2.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Content
               Expanded(
                 child: SingleChildScrollView(
                   controller: scrollController,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${user.firstName} ${user.lastName}',
-                        style: AppTypography.h2.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      // Bio Section
+                      if (user.bio != null && user.bio!.isNotEmpty) ...[
+                        _buildProfileSection(
+                          'About ${user.firstName}',
+                          user.bio!,
+                          Icons.info_outline,
                         ),
+                        const SizedBox(height: 24),
+                      ],
+                      
+                      // Basic Info Section
+                      _buildProfileSection(
+                        'Basic Info',
+                        _buildBasicInfo(user),
+                        Icons.person_outline,
                       ),
-                      const SizedBox(height: 8),
-                      if (user.profileBio != null) ...[
-                        Text(
-                          user.profileBio!,
-                          style: AppTypography.body1.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      // Add more profile details here
-                      _buildProfileSection('Age', '${_calculateAge(user.birthDate)}'),
-                      _buildProfileSection('Location', user.location ?? 'Not specified'),
-                      _buildProfileSection('Job', user.job ?? 'Not specified'),
+                      const SizedBox(height: 24),
+                      
+                      // Interests Section
                       if (user.interests.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Text(
+                        _buildProfileSection(
                           'Interests',
-                          style: AppTypography.h4.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          user.interests.join(', '),
+                          Icons.favorite_outline,
                         ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: user.interests.take(5).map((interest) =>
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.5),
-                                ),
-                              ),
-                              child: Text(
-                                interest.name,
-                                style: AppTypography.body2.copyWith(
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ).toList(),
-                        ),
+                        const SizedBox(height: 24),
                       ],
+                      
+                      // Music Genres Section
+                      if (user.musicGenres.isNotEmpty) ...[
+                        _buildProfileSection(
+                          'Music Genres',
+                          user.musicGenres.join(', '),
+                          Icons.music_note_outlined,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      
+                      // Languages Section
+                      if (user.languages.isNotEmpty) ...[
+                        _buildProfileSection(
+                          'Languages',
+                          user.languages.join(', '),
+                          Icons.language_outlined,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      
+                      // Relationship Goals Section
+                      if (user.relationshipGoals.isNotEmpty) ...[
+                        _buildProfileSection(
+                          'Relationship Goals',
+                          user.relationshipGoals.join(', '),
+                          Icons.favorite_border,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      
+                      // Photos Section
+                      if (user.profilePictures.length > 1) ...[
+                        _buildPhotosSection(user),
+                        const SizedBox(height: 24),
+                      ],
+                      
+                      // Action Buttons
+                      _buildActionButtons(user),
+                      const SizedBox(height: 32),
                     ],
                   ),
                 ),
@@ -324,47 +377,204 @@ class _DiscoveryPageState extends State<DiscoveryPage>
       ),
     );
   }
-  
-  Widget _buildProfileSection(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: AppTypography.body2.copyWith(
-                color: Colors.white70,
-                fontWeight: FontWeight.w500,
+
+  Widget _buildProfileSection(String title, String content, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: AppTypography.heading3.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.navbarBackground,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.border,
+              width: 1,
+            ),
+          ),
+          child: Text(
+            content,
+            style: AppTypography.body1.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _buildBasicInfo(User user) {
+    final info = <String>[];
+    
+    if (user.job != null && user.job!.isNotEmpty) {
+      info.add('Job: ${user.job}');
+    }
+    
+    if (user.education != null && user.education!.isNotEmpty) {
+      info.add('Education: ${user.education}');
+    }
+    
+    if (user.height != null) {
+      info.add('Height: ${user.height} cm');
+    }
+    
+    if (user.weight != null) {
+      info.add('Weight: ${user.weight} kg');
+    }
+    
+    if (user.gender != null && user.gender!.isNotEmpty) {
+      info.add('Gender: ${user.gender}');
+    }
+    
+    if (info.isEmpty) {
+      return 'No additional information available';
+    }
+    
+    return info.join('\n');
+  }
+
+  Widget _buildPhotosSection(User user) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.photo_library_outlined,
+              size: 20,
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Photos',
+              style: AppTypography.heading3.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 120,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: user.profilePictures.length,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.only(right: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    user.profilePictures[index],
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 120,
+                        height: 120,
+                        color: AppColors.navbarBackground,
+                        child: Icon(
+                          Icons.person,
+                          color: AppColors.textSecondary,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(User user) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _likeUser(user);
+            },
+            icon: const Icon(Icons.favorite),
+            label: const Text('Like'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTypography.body2.copyWith(
-                color: Colors.white,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _superLikeUser(user);
+            },
+            icon: const Icon(Icons.star),
+            label: const Text('Super Like'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showMatchDialog(User user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('It\'s a Match!'),
+        content: Text('You and ${user.firstName} liked each other!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Keep Swiping'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Navigate to chat
+            },
+            child: const Text('Send Message'),
           ),
         ],
       ),
     );
   }
-  
-  int _calculateAge(DateTime? birthDate) {
-    if (birthDate == null) return 0;
-    final now = DateTime.now();
-    int age = now.year - birthDate.year;
-    if (now.month < birthDate.month ||
-        (now.month == birthDate.month && now.day < birthDate.day)) {
-      age--;
-    }
-    return age;
-  }
-  
+
   void _moveToNextCard() {
     setState(() {
       _currentIndex++;
@@ -436,22 +646,31 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.appBackground,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Discover'),
-        backgroundColor: AppColors.navbarBackground,
-        foregroundColor: Colors.white,
+        title: Text(
+          'Discover',
+          style: AppTypography.heading2.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        backgroundColor: AppColors.background,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(
+              Icons.refresh,
+              color: AppColors.textPrimary,
+            ),
             onPressed: _loadPotentialMatches,
           ),
         ],
       ),
-      body: PullToRefreshService().createRefreshIndicator(
-        onRefresh: _loadPotentialMatches,
-        child: _buildBody(),
+      body: OfflineWrapper(
+        child: RealTimeListener(
+          eventTypes: ['match', 'like'],
+          child: _buildBody(),
+        ),
       ),
     );
   }
@@ -498,35 +717,12 @@ class _DiscoveryPageState extends State<DiscoveryPage>
       return _buildSkeletonLoading();
     }
     
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red.withValues(alpha: 0.7),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              style: AppTypography.body1.copyWith(
-                color: Colors.white70,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadPotentialMatches,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Try Again'),
-            ),
-          ],
-        ),
+    if (_error != null) {
+      return ErrorDisplayWidget(
+        error: _error,
+        context: 'load_potential_matches',
+        onRetry: _loadPotentialMatches,
+        isFullScreen: true,
       );
     }
     
@@ -538,21 +734,20 @@ class _DiscoveryPageState extends State<DiscoveryPage>
             Icon(
               Icons.favorite_border,
               size: 64,
-              color: Colors.white.withValues(alpha: 0.7),
+              color: AppColors.textSecondary,
             ),
             const SizedBox(height: 16),
             Text(
               'No more matches',
-              style: AppTypography.h4.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+              style: AppTypography.heading3.copyWith(
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Check back later for new potential matches!',
               style: AppTypography.body1.copyWith(
-                color: Colors.white70,
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),

@@ -266,12 +266,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                    ),
                                    TextButton(
                                      onPressed: () {
-                                       // TODO: Navigate to privacy policy
-                                       ScaffoldMessenger.of(context).showSnackBar(
-                                         const SnackBar(
-                                           content: Text('Privacy Policy coming soon!'),
-                                         ),
-                                       );
+                                       Navigator.pushNamed(context, '/privacy-policy');
                                      },
                                      child: Text(
                                        'Privacy Policy',
@@ -284,12 +279,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                    ),
                                    TextButton(
                                      onPressed: () {
-                                       // TODO: Navigate to help & support
-                                       ScaffoldMessenger.of(context).showSnackBar(
-                                         const SnackBar(
-                                           content: Text('Help & Support coming soon!'),
-                                         ),
-                                       );
+                                       Navigator.pushNamed(context, '/help-support');
                                      },
                                      child: Text(
                                        'Help & Support',

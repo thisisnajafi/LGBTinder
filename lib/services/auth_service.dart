@@ -12,9 +12,12 @@ class AuthService {
   static const String _registerEndpoint = ApiConfig.register;
   static const String _sendVerificationEndpoint = ApiConfig.sendVerification;
   static const String _verifyCodeEndpoint = ApiConfig.verifyCode;
+  static const String _sendLoginCodeEndpoint = ApiConfig.sendLoginCode;
+  static const String _verifyLoginCodeEndpoint = ApiConfig.verifyLoginCode;
   static const String _sendOtpEndpoint = ApiConfig.sendOtp;
   static const String _verifyOtpEndpoint = ApiConfig.verifyOtp;
   static const String _resendVerificationEndpoint = ApiConfig.resendVerification;
+  static const String _checkUserStateEndpoint = '/auth/check-user-state';
   // static const String _refreshTokenEndpoint = ApiConfig.refreshToken; // Not implemented in backend
   static const String _logoutEndpoint = ApiConfig.logout;
 
@@ -63,6 +66,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode(request.toJson()),
       );
@@ -100,6 +104,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode(request.toJson()),
       );
@@ -216,6 +221,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode({'email': email}),
       );
@@ -256,6 +262,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode(request.toJson()),
       );
@@ -296,6 +303,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode(request.toJson()),
       );
@@ -494,6 +502,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode({
           'email': email,
@@ -525,14 +534,57 @@ class AuthService {
     }
   }
 
-  /// Verify login code (for 2FA or email verification during login)
-  static Future<LoginResponse> verifyLoginCode(String email, String code) async {
+  /// Send login code to email
+  static Future<EmailVerificationResponse> sendLoginCode(String email) async {
     try {
       final response = await http.post(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.verifyLoginCode)),
+        Uri.parse(ApiConfig.getUrl(_sendLoginCodeEndpoint)),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return EmailVerificationResponse.fromJson(data);
+      } else if (response.statusCode == 422) {
+        final data = jsonDecode(response.body);
+        throw ValidationException(
+          data['message'] ?? 'Invalid email address',
+          data['errors'] ?? <String, String>{},
+        );
+      } else if (response.statusCode == 429) {
+        final data = jsonDecode(response.body);
+        throw RateLimitException(
+          data['message'] ?? 'Too many login code requests. Please wait before trying again.',
+          cooldownSeconds: data['data']?['retry_after'] ?? 60,
+        );
+      } else {
+        throw ApiException('Failed to send login code: ${response.statusCode}');
+      }
+    } on ValidationException {
+      rethrow;
+    } on RateLimitException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Network error while sending login code: $e');
+    }
+  }
+
+  /// Verify login code (for 2FA or email verification during login)
+  static Future<LoginCodeResponse> verifyLoginCode(String email, String code) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(_verifyLoginCodeEndpoint)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode({
           'email': email,
@@ -542,7 +594,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return LoginResponse.fromJson(data);
+        return LoginCodeResponse.fromJson(data);
       } else if (response.statusCode == 422) {
         final data = jsonDecode(response.body);
         throw ValidationException(
@@ -571,6 +623,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
           if (accessToken != null) 'Authorization': 'Bearer $accessToken',
         },
         body: jsonEncode({
@@ -610,6 +663,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: jsonEncode({
           'token': token,
@@ -757,45 +811,6 @@ class AuthService {
     }
   }
 
-  /// Send login code to email (for passwordless login)
-  static Future<bool> sendLoginCode(String email, String deviceName) async {
-    try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.getUrl(ApiConfig.login)),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'email': email,
-          'device_name': deviceName,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['success'] as bool? ?? false;
-      } else if (response.statusCode == 422) {
-        final data = jsonDecode(response.body);
-        throw ValidationException(
-          data['message'] ?? 'Invalid email address',
-          data['errors'] ?? <String, String>{},
-        );
-      } else if (response.statusCode == 429) {
-        throw RateLimitException('Too many login attempts. Please wait before trying again.');
-      } else {
-        throw ApiException('Failed to send login code: ${response.statusCode}');
-      }
-    } on ValidationException {
-      rethrow;
-    } on RateLimitException {
-      rethrow;
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw NetworkException('Network error while sending login code: $e');
-    }
-  }
 
   /// Verify login code and get access token
   static Future<LoginResponse> verifyLoginCodeWithDevice(String email, String code, String deviceName) async {
@@ -835,6 +850,29 @@ class AuthService {
       rethrow;
     } catch (e) {
       throw NetworkException('Network error during login code verification: $e');
+    }
+  }
+
+  /// Check user state
+  static Future<Map<String, dynamic>> checkUserState(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(_checkUserStateEndpoint)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw ApiException('Check user state failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('Check user state failed: $e');
     }
   }
 } 

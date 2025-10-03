@@ -1,0 +1,829 @@
+# Profile Completion API Documentation
+
+## Overview
+
+This document provides comprehensive documentation for the LGBTinder profile completion system. The profile completion process is mandatory for all new users after email verification and consists of multiple steps to gather essential user information for matching and preferences.
+
+## Table of Contents
+
+1. [Authentication & Authorization](#authentication--authorization)
+2. [Profile Completion Flow](#profile-completion-flow)
+3. [Reference Data APIs](#reference-data-apis)
+4. [Profile Completion API](#profile-completion-api)
+5. [Request/Response Formats](#requestresponse-formats)
+6. [Error Handling](#error-handling)
+7. [Implementation Examples](#implementation-examples)
+
+---
+
+## Authentication & Authorization
+
+### Base URL
+```
+Production: https://api.lgbtinder.com/api
+Development: http://127.0.0.1:8000/api
+```
+
+### Headers
+All API requests require the following headers:
+```json
+{
+  "Content-Type": "application/json",
+  "Accept": "application/json",
+  "Authorization": "Bearer {profile_completion_token}",
+  "X-Requested-With": "XMLHttpRequest"
+}
+```
+
+### Token Types
+- **Profile Completion Token**: Limited scope token with `profile:complete` permission
+- **Full Access Token**: Complete access token after profile completion
+
+---
+
+## Profile Completion Flow
+
+### Step-by-Step Process
+
+1. **Email Verification** → User receives profile completion token
+2. **Fetch Reference Data** → Get all available options for preferences
+3. **Complete Profile** → Submit all required profile information
+4. **Receive Full Token** → Get complete access token for app usage
+
+### Profile Completion Requirements
+
+The following fields are **mandatory** for profile completion:
+
+#### Basic Information
+- `country_id` - User's country (ID from countries table)
+- `city_id` - User's city (ID from cities table)
+- `gender` - User's gender (ID from genders table)
+- `birth_date` - User's birth date (YYYY-MM-DD format)
+- `min_age_preference` - Minimum age preference (18-100)
+- `max_age_preference` - Maximum age preference (18-100, must be >= min_age_preference)
+- `profile_bio` - User's bio (max 500 characters)
+- `height` - User's height in cm (100-250)
+- `weight` - User's weight in kg (30-200)
+- `smoke` - Smoking preference (boolean)
+- `drink` - Drinking preference (boolean)
+- `gym` - Gym/fitness preference (boolean)
+
+#### Multi-Select Preferences (Arrays)
+- `music_genres` - Music genres (array of IDs, min 1)
+- `educations` - Education levels (array of IDs, min 1)
+- `jobs` - Job/profession types (array of IDs, min 1)
+- `languages` - Languages spoken (array of IDs, min 1)
+- `interests` - Personal interests (array of IDs, min 1)
+- `preferred_genders` - Preferred genders for matching (array of IDs, min 1)
+- `relation_goals` - Relationship goals (array of IDs, min 1)
+
+---
+
+## Reference Data APIs
+
+All reference data endpoints are **public** and do not require authentication.
+
+### 1. Get Countries
+
+**Endpoint**: `GET /api/countries`
+
+**Description**: Get all available countries for profile completion.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "United States",
+      "code": "USA",
+      "phone_code": "+1"
+    },
+    {
+      "id": 2,
+      "name": "United Kingdom",
+      "code": "GBR",
+      "phone_code": "+44"
+    },
+    {
+      "id": 3,
+      "name": "Canada",
+      "code": "CAN",
+      "phone_code": "+1"
+    }
+  ]
+}
+```
+
+### 2. Get Cities by Country
+
+**Endpoint**: `GET /api/cities/country/{countryId}`
+
+**Description**: Get all cities for a specific country.
+
+**Authentication**: Not required
+
+**Parameters**:
+- `countryId` (path) - The ID of the country
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "New York",
+      "state_province": "New York"
+    },
+    {
+      "id": 2,
+      "name": "Los Angeles",
+      "state_province": "California"
+    },
+    {
+      "id": 3,
+      "name": "Chicago",
+      "state_province": "Illinois"
+    }
+  ]
+}
+```
+
+### 3. Get All Cities
+
+**Endpoint**: `GET /api/cities`
+
+**Description**: Get all available cities (optionally filtered by country).
+
+**Authentication**: Not required
+
+**Query Parameters**:
+- `country_id` (optional) - Filter cities by country ID
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "New York",
+      "country_id": 1,
+      "state_province": "New York",
+      "country": {
+        "id": 1,
+        "name": "United States",
+        "code": "USA"
+      }
+    }
+  ]
+}
+```
+
+### 4. Get Genders
+
+**Endpoint**: `GET /api/genders`
+
+**Description**: Get all available gender options.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "Man",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Woman",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "Non-binary",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "Transgender",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 5. Get Preferred Genders
+
+**Endpoint**: `GET /api/preferred-genders`
+
+**Description**: Get all available preferred gender options for matching.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "Men",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Women",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "Non-binary",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "Transgender",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 6. Get Jobs/Professions
+
+**Endpoint**: `GET /api/jobs`
+
+**Description**: Get all available job/profession options.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "Software Engineer",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Doctor",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "Teacher",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "Artist",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 7. Get Education Levels
+
+**Endpoint**: `GET /api/education`
+
+**Description**: Get all available education level options.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "High School",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Bachelor's Degree",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "Master's Degree",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "PhD",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 8. Get Interests
+
+**Endpoint**: `GET /api/interests`
+
+**Description**: Get all available interest options.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "Music",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Travel",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "Sports",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "Art",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 9. Get Languages
+
+**Endpoint**: `GET /api/languages`
+
+**Description**: Get all available language options.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "English",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Spanish",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "French",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "German",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 10. Get Music Genres
+
+**Endpoint**: `GET /api/music-genres`
+
+**Description**: Get all available music genre options.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "Pop",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "title": "Rock",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "title": "Hip-Hop",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "title": "Electronic",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 11. Get Relationship Goals
+
+**Endpoint**: `GET /api/relation-goals`
+
+**Description**: Get all available relationship goal options.
+
+**Authentication**: Not required
+
+**Success Response** (200):
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "title": "Long-term relationship",
+      "image_url": "https://api.lgbtinder.com/storage/relation_goals/long-term.png"
+    },
+    {
+      "id": 2,
+      "title": "Casual dating",
+      "image_url": "https://api.lgbtinder.com/storage/relation_goals/casual.png"
+    },
+    {
+      "id": 3,
+      "title": "Friendship",
+      "image_url": "https://api.lgbtinder.com/storage/relation_goals/friendship.png"
+    }
+  ]
+}
+```
+
+---
+
+## Profile Completion API
+
+### Complete Profile Registration
+
+**Endpoint**: `POST /api/auth/complete-registration`
+
+**Description**: Complete the user's profile with all required information.
+
+**Authentication**: Required - Profile completion token with `profile:complete` scope
+
+**Request Body**:
+```json
+{
+  "device_name": "iPhone 15 Pro",
+  "country_id": 1,
+  "city_id": 1,
+  "gender": 1,
+  "birth_date": "1995-06-15",
+  "min_age_preference": 21,
+  "max_age_preference": 35,
+  "profile_bio": "Love traveling, music, and meeting new people! Looking for someone to share adventures with.",
+  "height": 175,
+  "weight": 70,
+  "smoke": false,
+  "drink": true,
+  "gym": true,
+  "music_genres": [1, 3, 5],
+  "educations": [2, 3],
+  "jobs": [1, 4],
+  "languages": [1, 2],
+  "interests": [1, 2, 3, 7],
+  "preferred_genders": [1, 3],
+  "relation_goals": [1, 2]
+}
+```
+
+**Request Validation**:
+- `device_name`: Required, string
+- `country_id`: Required, integer, exists in countries table
+- `city_id`: Required, integer, exists in cities table
+- `gender`: Required, integer, exists in genders table
+- `birth_date`: Required, date format
+- `min_age_preference`: Required, integer, min 18, max 100
+- `max_age_preference`: Required, integer, min 18, max 100, must be >= min_age_preference
+- `profile_bio`: Required, string, max 500 characters
+- `height`: Required, integer, min 100, max 250
+- `weight`: Required, integer, min 30, max 200
+- `smoke`: Required, boolean
+- `drink`: Required, boolean
+- `gym`: Required, boolean
+- `music_genres`: Required, array, min 1 item, each item must exist in music_genres table
+- `educations`: Required, array, min 1 item, each item must exist in educations table
+- `jobs`: Required, array, min 1 item, each item must exist in user_jobs table
+- `languages`: Required, array, min 1 item, each item must exist in languages table
+- `interests`: Required, array, min 1 item, each item must exist in interests table
+- `preferred_genders`: Required, array, min 1 item, each item must exist in preferred_genders table
+- `relation_goals`: Required, array, min 1 item, each item must exist in relation_goals table
+
+**Success Response** (200):
+```json
+{
+  "status": true,
+  "message": "Profile completed successfully",
+  "data": {
+    "user": {
+      "id": 1,
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@example.com",
+      "profile_completed": true,
+      "country_id": 1,
+      "city_id": 1,
+      "gender": 1,
+      "birth_date": "1995-06-15",
+      "min_age_preference": 21,
+      "max_age_preference": 35,
+      "profile_bio": "Love traveling, music, and meeting new people!",
+      "height": 175,
+      "weight": 70,
+      "smoke": false,
+      "drink": true,
+      "gym": true
+    },
+    "token": {
+      "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...",
+      "token_type": "Bearer",
+      "expires_in": 3600,
+      "scopes": ["*"]
+    }
+  }
+}
+```
+
+**Error Responses**:
+
+**Validation Error** (422):
+```json
+{
+  "status": false,
+  "message": "Validation error",
+  "errors": {
+    "country_id": ["The country id field is required."],
+    "city_id": ["The city id field is required."],
+    "profile_bio": ["The profile bio field is required."]
+  }
+}
+```
+
+**Unauthorized** (403):
+```json
+{
+  "status": false,
+  "message": "Unauthorized. This endpoint requires profile completion permission."
+}
+```
+
+**Email Not Verified** (403):
+```json
+{
+  "status": false,
+  "message": "Please verify your email address first."
+}
+```
+
+---
+
+## Request/Response Formats
+
+### Standard Response Format
+
+All API responses follow this format:
+
+```json
+{
+  "status": "success|error",
+  "message": "Human-readable message",
+  "data": {
+    // Response data
+  },
+  "errors": {
+    // Validation errors (only present on validation failure)
+  }
+}
+```
+
+### Error Response Format
+
+```json
+{
+  "status": "error",
+  "message": "Error description",
+  "error": "Technical error details (development only)"
+}
+```
+
+---
+
+## Error Handling
+
+### HTTP Status Codes
+
+- **200 OK**: Request successful
+- **201 Created**: Resource created successfully
+- **400 Bad Request**: Invalid request data
+- **401 Unauthorized**: Authentication required
+- **403 Forbidden**: Insufficient permissions
+- **404 Not Found**: Resource not found
+- **422 Unprocessable Entity**: Validation errors
+- **500 Internal Server Error**: Server error
+
+### Common Error Scenarios
+
+1. **Invalid Token**: Token expired or invalid
+2. **Missing Permissions**: Token doesn't have required scope
+3. **Validation Errors**: Required fields missing or invalid format
+4. **Email Not Verified**: User must verify email before profile completion
+5. **Profile Already Complete**: User has already completed profile
+
+---
+
+## Implementation Examples
+
+### Frontend Implementation Flow
+
+```javascript
+// 1. Fetch reference data
+const fetchReferenceData = async () => {
+  const [countries, genders, jobs, educations, interests, languages, musicGenres, preferredGenders, relationGoals] = await Promise.all([
+    fetch('/api/countries').then(r => r.json()),
+    fetch('/api/genders').then(r => r.json()),
+    fetch('/api/jobs').then(r => r.json()),
+    fetch('/api/education').then(r => r.json()),
+    fetch('/api/interests').then(r => r.json()),
+    fetch('/api/languages').then(r => r.json()),
+    fetch('/api/music-genres').then(r => r.json()),
+    fetch('/api/preferred-genders').then(r => r.json()),
+    fetch('/api/relation-goals').then(r => r.json())
+  ]);
+  
+  return {
+    countries: countries.data,
+    genders: genders.data,
+    jobs: jobs.data,
+    educations: educations.data,
+    interests: interests.data,
+    languages: languages.data,
+    musicGenres: musicGenres.data,
+    preferredGenders: preferredGenders.data,
+    relationGoals: relationGoals.data
+  };
+};
+
+// 2. Fetch cities when country is selected
+const fetchCitiesByCountry = async (countryId) => {
+  const response = await fetch(`/api/cities/country/${countryId}`);
+  const data = await response.json();
+  return data.data;
+};
+
+// 3. Complete profile registration
+const completeProfile = async (profileData, token) => {
+  const response = await fetch('/api/auth/complete-registration', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(profileData)
+  });
+  
+  const data = await response.json();
+  
+  if (data.status) {
+    // Store the new access token
+    localStorage.setItem('access_token', data.data.token.access_token);
+    return data.data;
+  } else {
+    throw new Error(data.message);
+  }
+};
+```
+
+### React Component Example
+
+```jsx
+import React, { useState, useEffect } from 'react';
+
+const ProfileCompletion = ({ token }) => {
+  const [referenceData, setReferenceData] = useState({});
+  const [cities, setCities] = useState([]);
+  const [formData, setFormData] = useState({
+    country_id: '',
+    city_id: '',
+    gender: '',
+    birth_date: '',
+    min_age_preference: 18,
+    max_age_preference: 35,
+    profile_bio: '',
+    height: '',
+    weight: '',
+    smoke: false,
+    drink: false,
+    gym: false,
+    music_genres: [],
+    educations: [],
+    jobs: [],
+    languages: [],
+    interests: [],
+    preferred_genders: [],
+    relation_goals: []
+  });
+
+  useEffect(() => {
+    fetchReferenceData().then(setReferenceData);
+  }, []);
+
+  const handleCountryChange = async (countryId) => {
+    setFormData(prev => ({ ...prev, country_id: countryId, city_id: '' }));
+    const citiesData = await fetchCitiesByCountry(countryId);
+    setCities(citiesData);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const result = await completeProfile(formData, token);
+      console.log('Profile completed:', result);
+    } catch (error) {
+      console.error('Profile completion failed:', error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Country Selection */}
+      <div>
+        <label>Country</label>
+        <select 
+          value={formData.country_id} 
+          onChange={(e) => handleCountryChange(e.target.value)}
+          required
+        >
+          <option value="">Select Country</option>
+          {referenceData.countries?.map(country => (
+            <option key={country.id} value={country.id}>
+              {country.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* City Selection */}
+      <div>
+        <label>City</label>
+        <select 
+          value={formData.city_id} 
+          onChange={(e) => setFormData(prev => ({ ...prev, city_id: e.target.value }))}
+          required
+          disabled={!formData.country_id}
+        >
+          <option value="">Select City</option>
+          {cities.map(city => (
+            <option key={city.id} value={city.id}>
+              {city.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Other form fields... */}
+      
+      <button type="submit">Complete Profile</button>
+    </form>
+  );
+};
+```
+
+---
+
+## Notes
+
+1. **Country-City Relationship**: Cities are filtered by country selection for better UX
+2. **No Phone Number Required**: Phone number and country code are no longer mandatory
+3. **Reference Data Caching**: Consider caching reference data on the frontend for better performance
+4. **Token Management**: Store the new access token securely after profile completion
+5. **Validation**: All multi-select arrays must contain at least one item
+6. **Age Preferences**: Maximum age preference must be greater than or equal to minimum age preference
+
+This documentation provides a complete guide for implementing the profile completion system with country/city selection and all required reference data endpoints.

@@ -1,124 +1,83 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../config/api_config.dart';
-import '../utils/error_handler.dart';
-import 'package:flutter/foundation.dart';
+import '../models/api_models/common_models.dart';
 
+/// Rate Limiting Service
+/// 
+/// This service handles rate limiting for API requests, including:
+/// - Tracking request counts per endpoint
+/// - Implementing exponential backoff
+/// - Managing rate limit headers
+/// - Providing retry mechanisms
 class RateLimitingService {
-  static final RateLimitingService _instance = RateLimitingService._internal();
-  factory RateLimitingService() => _instance;
-  RateLimitingService._internal();
-
-  // Rate limit tracking
-  final Map<String, RateLimitInfo> _rateLimits = {};
-  final Map<String, List<DateTime>> _requestHistory = {};
-  
-  // Default rate limits (requests per time window)
-  static const Map<String, RateLimitConfig> _defaultLimits = {
-    'auth': RateLimitConfig(requests: 5, windowMinutes: 1),
-    'profile': RateLimitConfig(requests: 10, windowMinutes: 1),
-    'matching': RateLimitConfig(requests: 20, windowMinutes: 1),
-    'likes': RateLimitConfig(requests: 50, windowMinutes: 1),
-    'chat': RateLimitConfig(requests: 30, windowMinutes: 1),
-    'calls': RateLimitConfig(requests: 10, windowMinutes: 1),
-    'stories': RateLimitConfig(requests: 10, windowMinutes: 1),
-    'feeds': RateLimitConfig(requests: 15, windowMinutes: 1),
-    'notifications': RateLimitConfig(requests: 20, windowMinutes: 1),
-    'reports': RateLimitConfig(requests: 5, windowMinutes: 1),
-    'verification': RateLimitConfig(requests: 3, windowMinutes: 1),
-    'analytics': RateLimitConfig(requests: 10, windowMinutes: 1),
-    'safety': RateLimitConfig(requests: 5, windowMinutes: 1),
-    'reference_data': RateLimitConfig(requests: 50, windowMinutes: 1),
-    'profile_wizard': RateLimitConfig(requests: 10, windowMinutes: 1),
-    'subscription': RateLimitConfig(requests: 5, windowMinutes: 1),
-    'payment': RateLimitConfig(requests: 3, windowMinutes: 1),
-    'superlike_packs': RateLimitConfig(requests: 5, windowMinutes: 1),
-    'user_management': RateLimitConfig(requests: 10, windowMinutes: 1),
-    'general': RateLimitConfig(requests: 100, windowMinutes: 1),
+  static final Map<String, List<DateTime>> _requestHistory = {};
+  static final Map<String, int> _rateLimits = {
+    'auth': 10, // 10 requests per minute for auth endpoints
+    'likes': 30, // 30 requests per minute for like endpoints
+    'default': 60, // 60 requests per minute for other endpoints
   };
+  
+  static const int _windowSizeMinutes = 1;
+  static const int _maxRetries = 3;
+  static const int _baseDelayMs = 1000;
 
-  /// Rate limit configuration
-  static class RateLimitConfig {
-    final int requests;
-    final int windowMinutes;
-    
-    const RateLimitConfig({
-      required this.requests,
-      required this.windowMinutes,
-    });
+  // ============================================================================
+  // RATE LIMIT TRACKING
+  // ============================================================================
+
+  /// Get rate limit for endpoint category
+  static int getRateLimit(String endpointCategory) {
+    return _rateLimits[endpointCategory] ?? _rateLimits['default']!;
   }
 
-  /// Rate limit information
-  static class RateLimitInfo {
-    final int limit;
-    final int remaining;
-    final DateTime resetTime;
-    final int retryAfter;
+  /// Check if request is within rate limit
+  static bool isWithinRateLimit(String endpointCategory) {
+    final now = DateTime.now();
+    final windowStart = now.subtract(Duration(minutes: _windowSizeMinutes));
     
-    RateLimitInfo({
-      required this.limit,
-      required this.remaining,
-      required this.resetTime,
-      this.retryAfter = 0,
-    });
-  }
-
-  /// Check if a request is allowed for the given endpoint
-  Future<bool> isRequestAllowed(String endpoint, {String? userId}) async {
-    final key = _getRateLimitKey(endpoint, userId);
-    final config = _getRateLimitConfig(endpoint);
+    // Get request history for this endpoint category
+    final requests = _requestHistory[endpointCategory] ?? [];
     
-    // Clean old requests
-    _cleanOldRequests(key, config.windowMinutes);
+    // Remove old requests outside the window
+    requests.removeWhere((requestTime) => requestTime.isBefore(windowStart));
     
-    // Check if we're within the limit
-    final requestCount = _requestHistory[key]?.length ?? 0;
-    if (requestCount >= config.requests) {
-      debugPrint('Rate limit exceeded for $endpoint: $requestCount/${config.requests}');
-      return false;
-    }
+    // Update the request history
+    _requestHistory[endpointCategory] = requests;
     
-    return true;
+    // Check if we're within the rate limit
+    return requests.length < getRateLimit(endpointCategory);
   }
 
   /// Record a request for rate limiting
-  void recordRequest(String endpoint, {String? userId}) {
-    final key = _getRateLimitKey(endpoint, userId);
+  static void recordRequest(String endpointCategory) {
     final now = DateTime.now();
-    
-    _requestHistory[key] ??= [];
-    _requestHistory[key]!.add(now);
-    
-    debugPrint('Recorded request for $endpoint. Total requests: ${_requestHistory[key]!.length}');
+    final requests = _requestHistory[endpointCategory] ?? [];
+    requests.add(now);
+    _requestHistory[endpointCategory] = requests;
   }
 
-  /// Get remaining requests for an endpoint
-  int getRemainingRequests(String endpoint, {String? userId}) {
-    final key = _getRateLimitKey(endpoint, userId);
-    final config = _getRateLimitConfig(endpoint);
+  /// Get remaining requests for endpoint category
+  static int getRemainingRequests(String endpointCategory) {
+    final now = DateTime.now();
+    final windowStart = now.subtract(Duration(minutes: _windowSizeMinutes));
     
-    _cleanOldRequests(key, config.windowMinutes);
-    final requestCount = _requestHistory[key]?.length ?? 0;
+    final requests = _requestHistory[endpointCategory] ?? [];
+    final recentRequests = requests.where((requestTime) => 
+        requestTime.isAfter(windowStart)).length;
     
-    return (config.requests - requestCount).clamp(0, config.requests);
+    return getRateLimit(endpointCategory) - recentRequests;
   }
 
   /// Get time until rate limit resets
-  Duration getTimeUntilReset(String endpoint, {String? userId}) {
-    final key = _getRateLimitKey(endpoint, userId);
-    final config = _getRateLimitConfig(endpoint);
-    
-    _cleanOldRequests(key, config.windowMinutes);
-    final requests = _requestHistory[key];
-    
-    if (requests == null || requests.isEmpty) {
-      return Duration.zero;
-    }
-    
-    final oldestRequest = requests.first;
-    final resetTime = oldestRequest.add(Duration(minutes: config.windowMinutes));
+  static Duration getTimeUntilReset(String endpointCategory) {
     final now = DateTime.now();
+    final requests = _requestHistory[endpointCategory] ?? [];
+    
+    if (requests.isEmpty) return Duration.zero;
+    
+    final oldestRequest = requests.reduce((a, b) => a.isBefore(b) ? a : b);
+    final resetTime = oldestRequest.add(Duration(minutes: _windowSizeMinutes));
     
     if (resetTime.isAfter(now)) {
       return resetTime.difference(now);
@@ -127,242 +86,275 @@ class RateLimitingService {
     return Duration.zero;
   }
 
-  /// Handle rate limit response from server
-  void handleServerRateLimit(String endpoint, Map<String, dynamic> response, {String? userId}) {
-    final key = _getRateLimitKey(endpoint, userId);
-    
-    // Extract rate limit info from response headers or body
-    final limit = response['limit'] as int? ?? 100;
-    final remaining = response['remaining'] as int? ?? 0;
-    final resetTime = response['reset_time'] != null 
-        ? DateTime.parse(response['reset_time']) 
-        : DateTime.now().add(Duration(minutes: 1));
-    final retryAfter = response['retry_after'] as int? ?? 60;
-    
-    _rateLimits[key] = RateLimitInfo(
-      limit: limit,
-      remaining: remaining,
-      resetTime: resetTime,
-      retryAfter: retryAfter,
-    );
-    
-    debugPrint('Server rate limit info for $endpoint: $remaining/$limit remaining, resets at $resetTime');
-  }
+  // ============================================================================
+  // RATE LIMIT HEADERS
+  // ============================================================================
 
-  /// Wait for rate limit to reset
-  Future<void> waitForRateLimitReset(String endpoint, {String? userId}) async {
-    final timeUntilReset = getTimeUntilReset(endpoint, userId: userId);
-    if (timeUntilReset > Duration.zero) {
-      debugPrint('Waiting ${timeUntilReset.inSeconds} seconds for rate limit reset on $endpoint');
-      await Future.delayed(timeUntilReset);
+  /// Parse rate limit headers from response
+  static RateLimitInfo? parseRateLimitHeaders(http.Response response) {
+    final limit = response.headers['x-ratelimit-limit'];
+    final remaining = response.headers['x-ratelimit-remaining'];
+    final reset = response.headers['x-ratelimit-reset'];
+    final retryAfter = response.headers['retry-after'];
+
+    if (limit != null || remaining != null || reset != null || retryAfter != null) {
+      return RateLimitInfo(
+        limit: limit != null ? int.tryParse(limit) : null,
+        remaining: remaining != null ? int.tryParse(remaining) : null,
+        reset: reset != null ? int.tryParse(reset) : null,
+        retryAfter: retryAfter != null ? int.tryParse(retryAfter) : null,
+      );
     }
+
+    return null;
   }
 
-  /// Clear rate limit data for an endpoint
-  void clearRateLimit(String endpoint, {String? userId}) {
-    final key = _getRateLimitKey(endpoint, userId);
-    _requestHistory.remove(key);
-    _rateLimits.remove(key);
-    debugPrint('Cleared rate limit data for $endpoint');
+  /// Check if response indicates rate limiting
+  static bool isRateLimited(http.Response response) {
+    return response.statusCode == 429;
   }
 
-  /// Clear all rate limit data
-  void clearAllRateLimits() {
-    _requestHistory.clear();
-    _rateLimits.clear();
-    debugPrint('Cleared all rate limit data');
-  }
-
-  /// Get rate limit status for all endpoints
-  Map<String, Map<String, dynamic>> getAllRateLimitStatus() {
-    final status = <String, Map<String, dynamic>>{};
-    
-    for (final endpoint in _defaultLimits.keys) {
-      final config = _getRateLimitConfig(endpoint);
-      final remaining = getRemainingRequests(endpoint);
-      final timeUntilReset = getTimeUntilReset(endpoint);
-      
-      status[endpoint] = {
-        'limit': config.requests,
-        'remaining': remaining,
-        'window_minutes': config.windowMinutes,
-        'time_until_reset_seconds': timeUntilReset.inSeconds,
-        'is_allowed': remaining > 0,
-      };
-    }
-    
-    return status;
-  }
-
-  /// Make an HTTP request with rate limiting
-  Future<http.Response> makeRateLimitedRequest(
-    String endpoint,
-    Future<http.Response> Function() requestFunction, {
-    String? userId,
-    bool retryOnRateLimit = true,
-    int maxRetries = 3,
-  }) async {
-    int attempts = 0;
-    
-    while (attempts < maxRetries) {
-      // Check if request is allowed
-      if (!await isRequestAllowed(endpoint, userId: userId)) {
-        if (retryOnRateLimit) {
-          final waitTime = getTimeUntilReset(endpoint, userId: userId);
-          debugPrint('Rate limit exceeded for $endpoint, waiting ${waitTime.inSeconds} seconds');
-          await Future.delayed(waitTime);
-          attempts++;
-          continue;
-        } else {
-          throw RateLimitException(
-            'Rate limit exceeded for $endpoint',
-            cooldownSeconds: getTimeUntilReset(endpoint, userId: userId).inSeconds,
-          );
-        }
+  /// Get retry after duration from response
+  static Duration getRetryAfterDuration(http.Response response) {
+    final retryAfter = response.headers['retry-after'];
+    if (retryAfter != null) {
+      final seconds = int.tryParse(retryAfter);
+      if (seconds != null) {
+        return Duration(seconds: seconds);
       }
-      
+    }
+    return Duration(seconds: 60); // Default 60 seconds
+  }
+
+  // ============================================================================
+  // EXPONENTIAL BACKOFF
+  // ============================================================================
+
+  /// Calculate exponential backoff delay
+  static Duration calculateBackoffDelay(int attempt) {
+    final delayMs = _baseDelayMs * (1 << (attempt - 1)); // 1, 2, 4, 8 seconds
+    return Duration(milliseconds: delayMs);
+  }
+
+  /// Wait for exponential backoff delay
+  static Future<void> waitForBackoff(int attempt) async {
+    final delay = calculateBackoffDelay(attempt);
+    await Future.delayed(delay);
+  }
+
+  // ============================================================================
+  // REQUEST WITH RATE LIMITING
+  // ============================================================================
+
+  /// Make HTTP request with rate limiting and retry logic
+  static Future<http.Response> makeRequestWithRateLimit(
+    Future<http.Response> Function() requestFunction,
+    String endpointCategory, {
+    int maxRetries = _maxRetries,
+    bool enableRetry = true,
+  }) async {
+    // Check rate limit before making request
+    if (!isWithinRateLimit(endpointCategory)) {
+      final timeUntilReset = getTimeUntilReset(endpointCategory);
+      throw RateLimitExceededException(
+        'Rate limit exceeded for $endpointCategory. Try again in ${timeUntilReset.inSeconds} seconds.',
+        timeUntilReset,
+      );
+    }
+
+    int attempt = 1;
+    while (attempt <= maxRetries) {
       try {
         // Record the request
-        recordRequest(endpoint, userId: userId);
+        recordRequest(endpointCategory);
         
         // Make the request
         final response = await requestFunction();
         
-        // Handle rate limit response
-        if (response.statusCode == 429) {
-          final responseData = jsonDecode(response.body);
-          handleServerRateLimit(endpoint, responseData, userId: userId);
-          
-          if (retryOnRateLimit && attempts < maxRetries - 1) {
-            final retryAfter = responseData['retry_after'] as int? ?? 60;
-            debugPrint('Server rate limit hit, waiting $retryAfter seconds');
-            await Future.delayed(Duration(seconds: retryAfter));
-            attempts++;
+        // Check if rate limited
+        if (isRateLimited(response)) {
+          if (enableRetry && attempt < maxRetries) {
+            final retryAfter = getRetryAfterDuration(response);
+            await Future.delayed(retryAfter);
+            attempt++;
             continue;
           } else {
-            throw RateLimitException(
-              'Server rate limit exceeded for $endpoint',
-              cooldownSeconds: responseData['retry_after'] as int? ?? 60,
+            throw RateLimitExceededException(
+              'Rate limit exceeded. Server requested retry after ${getRetryAfterDuration(response).inSeconds} seconds.',
+              getRetryAfterDuration(response),
             );
           }
         }
         
         return response;
       } catch (e) {
-        if (e is RateLimitException) {
+        if (e is RateLimitExceededException) {
           rethrow;
         }
         
-        // For other errors, don't retry
-        rethrow;
+        if (enableRetry && attempt < maxRetries) {
+          await waitForBackoff(attempt);
+          attempt++;
+        } else {
+          rethrow;
+        }
       }
     }
     
-    throw RateLimitException('Max retries exceeded for $endpoint');
+    throw Exception('Max retries exceeded');
   }
 
-  /// Get rate limit key for tracking
-  String _getRateLimitKey(String endpoint, String? userId) {
-    return userId != null ? '${endpoint}_$userId' : endpoint;
+  // ============================================================================
+  // ENDPOINT CATEGORIZATION
+  // ============================================================================
+
+  /// Get endpoint category from URL
+  static String getEndpointCategory(String url) {
+    if (url.contains('/auth/')) return 'auth';
+    if (url.contains('/likes/')) return 'likes';
+    return 'default';
   }
 
-  /// Get rate limit configuration for endpoint
-  RateLimitConfig _getRateLimitConfig(String endpoint) {
-    // Try to find specific endpoint config
-    for (final key in _defaultLimits.keys) {
-      if (endpoint.contains(key)) {
-        return _defaultLimits[key]!;
-      }
-    }
+  /// Get endpoint category from endpoint path
+  static String getEndpointCategoryFromPath(String endpoint) {
+    if (endpoint.startsWith('/auth/')) return 'auth';
+    if (endpoint.startsWith('/likes/')) return 'likes';
+    return 'default';
+  }
+
+  // ============================================================================
+  // RATE LIMIT STATUS
+  // ============================================================================
+
+  /// Get rate limit status for all endpoint categories
+  static Map<String, RateLimitStatus> getAllRateLimitStatus() {
+    final status = <String, RateLimitStatus>{};
     
-    // Default to general config
-    return _defaultLimits['general']!;
-  }
-
-  /// Clean old requests outside the time window
-  void _cleanOldRequests(String key, int windowMinutes) {
-    final requests = _requestHistory[key];
-    if (requests == null) return;
-    
-    final cutoff = DateTime.now().subtract(Duration(minutes: windowMinutes));
-    _requestHistory[key] = requests.where((time) => time.isAfter(cutoff)).toList();
-  }
-
-  /// Set custom rate limit for an endpoint
-  void setCustomRateLimit(String endpoint, int requests, int windowMinutes) {
-    _defaultLimits[endpoint] = RateLimitConfig(
-      requests: requests,
-      windowMinutes: windowMinutes,
-    );
-    debugPrint('Set custom rate limit for $endpoint: $requests requests per $windowMinutes minutes');
-  }
-
-  /// Get rate limit statistics
-  Map<String, dynamic> getRateLimitStatistics() {
-    final stats = <String, dynamic>{};
-    
-    for (final endpoint in _defaultLimits.keys) {
-      final config = _getRateLimitConfig(endpoint);
-      final remaining = getRemainingRequests(endpoint);
-      final timeUntilReset = getTimeUntilReset(endpoint);
-      
-      stats[endpoint] = {
-        'config': {
-          'requests': config.requests,
-          'window_minutes': config.windowMinutes,
-        },
-        'current': {
-          'remaining': remaining,
-          'time_until_reset_seconds': timeUntilReset.inSeconds,
-          'is_allowed': remaining > 0,
-        },
-      };
-    }
-    
-    return stats;
-  }
-
-  /// Check if endpoint is rate limited
-  bool isRateLimited(String endpoint, {String? userId}) {
-    return getRemainingRequests(endpoint, userId: userId) <= 0;
-  }
-
-  /// Get next allowed request time
-  DateTime getNextAllowedRequestTime(String endpoint, {String? userId}) {
-    final timeUntilReset = getTimeUntilReset(endpoint, userId: userId);
-    return DateTime.now().add(timeUntilReset);
-  }
-
-  /// Reset rate limit for testing
-  void resetRateLimit(String endpoint, {String? userId}) {
-    final key = _getRateLimitKey(endpoint, userId);
-    _requestHistory.remove(key);
-    _rateLimits.remove(key);
-  }
-
-  /// Get rate limit info from server response headers
-  RateLimitInfo? parseRateLimitHeaders(Map<String, String> headers) {
-    final limit = headers['x-ratelimit-limit'];
-    final remaining = headers['x-ratelimit-remaining'];
-    final reset = headers['x-ratelimit-reset'];
-    final retryAfter = headers['retry-after'];
-    
-    if (limit != null && remaining != null && reset != null) {
-      return RateLimitInfo(
-        limit: int.parse(limit),
-        remaining: int.parse(remaining),
-        resetTime: DateTime.fromMillisecondsSinceEpoch(int.parse(reset) * 1000),
-        retryAfter: retryAfter != null ? int.parse(retryAfter) : 0,
+    for (final category in _rateLimits.keys) {
+      status[category] = RateLimitStatus(
+        category: category,
+        limit: getRateLimit(category),
+        remaining: getRemainingRequests(category),
+        resetTime: getTimeUntilReset(category),
+        isWithinLimit: isWithinRateLimit(category),
       );
     }
     
+    return status;
+  }
+
+  /// Clear rate limit history for endpoint category
+  static void clearRateLimitHistory(String endpointCategory) {
+    _requestHistory.remove(endpointCategory);
+  }
+
+  /// Clear all rate limit history
+  static void clearAllRateLimitHistory() {
+    _requestHistory.clear();
+  }
+
+  // ============================================================================
+  // UTILITY METHODS
+  // ============================================================================
+
+  /// Check if we should wait before making request
+  static bool shouldWait(String endpointCategory) {
+    return !isWithinRateLimit(endpointCategory);
+  }
+
+  /// Get wait time before making request
+  static Duration getWaitTime(String endpointCategory) {
+    return getTimeUntilReset(endpointCategory);
+  }
+
+  /// Format rate limit status for display
+  static String formatRateLimitStatus(String endpointCategory) {
+    final remaining = getRemainingRequests(endpointCategory);
+    final limit = getRateLimit(endpointCategory);
+    final resetTime = getTimeUntilReset(endpointCategory);
+    
+    if (resetTime.inSeconds > 0) {
+      return '$remaining/$limit requests remaining (resets in ${resetTime.inSeconds}s)';
+    } else {
+      return '$remaining/$limit requests remaining';
+    }
+  }
+}
+
+// ============================================================================
+// RATE LIMIT DATA MODELS
+// ============================================================================
+
+/// Rate limit information from response headers
+class RateLimitInfo {
+  final int? limit;
+  final int? remaining;
+  final int? reset;
+  final int? retryAfter;
+
+  const RateLimitInfo({
+    this.limit,
+    this.remaining,
+    this.reset,
+    this.retryAfter,
+  });
+
+  /// Get reset time as DateTime
+  DateTime? get resetTime {
+    if (reset != null) {
+      return DateTime.fromMillisecondsSinceEpoch(reset! * 1000);
+    }
     return null;
   }
 
-  /// Apply rate limit info from server
-  void applyServerRateLimitInfo(String endpoint, RateLimitInfo info, {String? userId}) {
-    final key = _getRateLimitKey(endpoint, userId);
-    _rateLimits[key] = info;
-    debugPrint('Applied server rate limit info for $endpoint: ${info.remaining}/${info.limit} remaining');
+  /// Get retry after duration
+  Duration? get retryAfterDuration {
+    if (retryAfter != null) {
+      return Duration(seconds: retryAfter!);
+    }
+    return null;
   }
+}
+
+/// Rate limit status for endpoint category
+class RateLimitStatus {
+  final String category;
+  final int limit;
+  final int remaining;
+  final Duration resetTime;
+  final bool isWithinLimit;
+
+  const RateLimitStatus({
+    required this.category,
+    required this.limit,
+    required this.remaining,
+    required this.resetTime,
+    required this.isWithinLimit,
+  });
+
+  /// Get usage percentage
+  double get usagePercentage {
+    return ((limit - remaining) / limit) * 100;
+  }
+
+  /// Check if rate limit is critical (90%+ usage)
+  bool get isCritical {
+    return usagePercentage >= 90;
+  }
+
+  /// Check if rate limit is warning (75%+ usage)
+  bool get isWarning {
+    return usagePercentage >= 75;
+  }
+}
+
+/// Rate limit exceeded exception
+class RateLimitExceededException implements Exception {
+  final String message;
+  final Duration retryAfter;
+
+  const RateLimitExceededException(this.message, this.retryAfter);
+
+  @override
+  String toString() => 'RateLimitExceededException: $message';
 }

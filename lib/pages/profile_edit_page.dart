@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/models.dart';
-import '../providers/profile_provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../models/api_models/user_models.dart';
+import '../providers/profile_state_provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../components/profile/edit/edit_header.dart';
 import '../components/profile/edit/form_inputs.dart';
 import '../components/profile/edit/photo_management.dart';
-import '../utils/validation.dart';
-import '../utils/error_handler.dart';
-import '../utils/success_feedback.dart';
+import '../components/error_handling/error_snackbar.dart';
+import '../components/loading/loading_widgets.dart';
+import '../components/offline/offline_wrapper.dart';
+import '../services/validation_service.dart';
+import '../services/analytics_service.dart';
+import '../services/error_monitoring_service.dart';
+import '../services/media_picker_service.dart';
+import '../services/profile_api_service.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({Key? key}) : super(key: key);
@@ -25,11 +32,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   bool _isSaving = false;
 
   // Form controllers
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _bioController = TextEditingController();
-  final _jobController = TextEditingController();
-  final _companyController = TextEditingController();
-  final _schoolController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
   final _locationController = TextEditingController();
 
   @override
@@ -40,24 +47,24 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _bioController.dispose();
-    _jobController.dispose();
-    _companyController.dispose();
-    _schoolController.dispose();
+    _heightController.dispose();
+    _weightController.dispose();
     _locationController.dispose();
     super.dispose();
   }
 
   void _initializeForm() {
-    final profileProvider = context.read<ProfileProvider>();
-    _editingUser = profileProvider.user?.copyWith() ?? User.empty();
+    final profileProvider = context.read<ProfileStateProvider>();
+    _editingUser = profileProvider.currentUser ?? User.empty();
     
-    _nameController.text = _editingUser.name ?? '';
+    _firstNameController.text = _editingUser.firstName ?? '';
+    _lastNameController.text = _editingUser.lastName ?? '';
     _bioController.text = _editingUser.bio ?? '';
-    _jobController.text = _editingUser.job ?? '';
-    _companyController.text = _editingUser.company ?? '';
-    _schoolController.text = _editingUser.school ?? '';
+    _heightController.text = _editingUser.height?.toString() ?? '';
+    _weightController.text = _editingUser.weight?.toString() ?? '';
     _locationController.text = _editingUser.location ?? '';
   }
 
@@ -69,9 +76,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
   }
 
-  void _onImagesChanged(List<UserImage> images) {
+  void _onImagesChanged(List<String> images) {
     setState(() {
-      _editingUser = _editingUser.copyWith(images: images);
+      _editingUser = _editingUser.copyWith(profilePictures: images);
       _hasChanges = true;
     });
   }
@@ -79,38 +86,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Future<void> _saveProfile() async {
     // Validate form
     if (!_formKey.currentState!.validate()) {
-      ErrorHandler.showErrorSnackBar(
+      ErrorSnackBar.show(
         context,
-        message: 'Please fix the errors in the form before saving.',
+        error: Exception('Please fix the errors in the form before saving.'),
+        context: 'profile_edit_validation',
       );
-      return;
-    }
-
-    // Validate profile data
-    final validationErrors = ValidationUtils.validateProfile(
-      name: _nameController.text.trim(),
-      birthDate: _editingUser.birthDate,
-      gender: _editingUser.gender,
-      location: _locationController.text.trim(),
-      bio: _bioController.text.trim(),
-      jobTitle: _jobController.text.trim(),
-      company: _companyController.text.trim(),
-      school: _schoolController.text.trim(),
-      photos: _editingUser.images,
-      interestedIn: _editingUser.interestedIn,
-      minAge: _editingUser.preferences?.minAge,
-      maxAge: _editingUser.preferences?.maxAge,
-      maxDistance: _editingUser.preferences?.maxDistance,
-    );
-
-    if (validationErrors.isNotEmpty) {
-      final firstError = validationErrors.values.first;
-      if (firstError != null) {
-        ErrorHandler.showErrorSnackBar(
-          context,
-          message: firstError,
-        );
-      }
       return;
     }
 
@@ -119,426 +99,559 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     });
 
     try {
-      // Show loading indicator
-      SuccessFeedback.showLoadingIndicator(
-        context,
-        message: 'Saving profile...',
+      await AnalyticsService.trackEvent(
+        action: 'profile_save_attempt',
+        category: 'profile',
       );
 
-      // Update user data from form controllers
-      _editingUser = _editingUser.copyWith(
-        name: ValidationUtils.sanitizeText(_nameController.text),
-        bio: ValidationUtils.sanitizeText(_bioController.text),
-        job: ValidationUtils.sanitizeText(_jobController.text),
-        company: ValidationUtils.sanitizeText(_companyController.text),
-        school: ValidationUtils.sanitizeText(_schoolController.text),
-        location: ValidationUtils.sanitizeText(_locationController.text),
-      );
-
-      final profileProvider = context.read<ProfileProvider>();
+      final profileProvider = context.read<ProfileStateProvider>();
       
-      // Use retry mechanism for API call
-      await ErrorHandler.retryOperation(
-        operation: () => profileProvider.updateProfile(_editingUser.toJson()),
-        maxRetries: 3,
-        shouldRetry: ErrorHandler.isRetryableError,
+      // Create updated user object
+      final updatedUser = _editingUser.copyWith(
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        bio: _bioController.text.trim(),
+        height: int.tryParse(_heightController.text.trim()),
+        weight: int.tryParse(_weightController.text.trim()),
+        location: _locationController.text.trim(),
       );
 
-      setState(() {
-        _hasChanges = false;
-        _isSaving = false;
-      });
-
-      // Hide loading indicator
-      Navigator.of(context).pop();
+      // Update profile
+      await profileProvider.updateProfile(updatedUser);
 
       if (mounted) {
-        // Show success feedback with haptic
-        SuccessFeedback.showSuccessWithHaptic(
+        await AnalyticsService.trackEvent(
+          action: 'profile_save_success',
+          category: 'profile',
+        );
+
+        ErrorSnackBar.showSuccess(
           context,
           message: 'Profile updated successfully!',
         );
+
         Navigator.pop(context);
       }
     } catch (e) {
-      setState(() {
-        _isSaving = false;
-      });
+      await AnalyticsService.trackEvent(
+        action: 'profile_save_failed',
+        category: 'profile',
+      );
 
-      // Hide loading indicator if still showing
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'ProfileEditPage._saveProfile',
+      );
 
       if (mounted) {
-        // Show error with retry option
-        final errorMessage = ErrorHandler.getErrorMessage(e);
-        final shouldRetry = await ErrorHandler.showRetryDialog(
+        ErrorSnackBar.show(
           context,
-          message: errorMessage,
-          title: 'Save Failed',
+          error: e,
+          context: 'profile_save',
+          onAction: _saveProfile,
+          actionText: 'Try Again',
         );
-
-        if (shouldRetry) {
-          _saveProfile();
-        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
   }
 
   void _addPhoto() {
-    // TODO: Implement photo upload functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Photo upload feature coming soon!'),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.navbarBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.textSecondary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              
+              // Photo options
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.white),
+                title: Text(
+                  'Take Photo',
+                  style: AppTypography.body2.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.white),
+                title: Text(
+                  'Choose from Gallery',
+                  style: AppTypography.body2.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final mediaPickerService = MediaPickerService();
+      final image = await mediaPickerService.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 90,
+      );
+
+      if (image != null) {
+        await _uploadProfilePicture(image);
+      }
+    } catch (e) {
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'ProfileEditPage._pickImage',
+      );
+
+      if (mounted) {
+        ErrorSnackBar.show(
+          context,
+          error: e,
+          context: 'pick_image',
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadProfilePicture(File image) async {
+    final profileProvider = context.read<ProfileStateProvider>();
+    
+    try {
+      await AnalyticsService.trackEvent(
+        action: 'profile_picture_upload',
+        category: 'profile',
+      );
+
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppColors.navbarBackground,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Uploading photo...',
+                style: AppTypography.body1.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Upload the image
+      final success = await profileProvider.uploadProfilePicture(image);
+      
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        
+        if (success) {
+          // Update local user data
+          setState(() {
+            _editingUser = profileProvider.currentUser!;
+            _hasChanges = true;
+          });
+          
+          ErrorSnackBar.showInfo(
+            context,
+            message: 'Photo uploaded successfully!',
+          );
+        } else {
+          ErrorSnackBar.show(
+            context,
+            error: Exception('Failed to upload photo'),
+            context: 'upload_photo',
+            onAction: () => _uploadProfilePicture(image),
+            actionText: 'Retry',
+          );
+        }
+      }
+    } catch (e) {
+      await AnalyticsService.trackEvent(
+        action: 'profile_picture_upload_failed',
+        category: 'profile',
+      );
+
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'ProfileEditPage._uploadProfilePicture',
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        
+        ErrorSnackBar.show(
+          context,
+          error: e,
+          context: 'upload_photo',
+          onAction: () => _uploadProfilePicture(image),
+          actionText: 'Retry',
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            EditHeader(
-              title: 'Edit Profile',
-              onBackPressed: () => Navigator.pop(context),
-              onSavePressed: _hasChanges ? _saveProfile : null,
-              isSaveEnabled: _hasChanges,
-              isSaving: _isSaving,
-              completionPercentage: _calculateCompletionPercentage(),
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
+          'Edit Profile',
+          style: AppTypography.heading2.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        actions: [
+          if (_hasChanges)
+            TextButton(
+              onPressed: _isSaving ? null : _saveProfile,
+              child: _isSaving
+                  ? LoadingWidgets.button(
+                      text: 'Saving...',
+                      color: AppColors.primary,
+                    )
+                  : Text(
+                      'Save',
+                      style: AppTypography.button.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
             ),
-            
-            // Form content
-            Expanded(
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Photos section
-                      PhotoManagement(
-                        images: _editingUser.images ?? [],
-                        onImagesChanged: _onImagesChanged,
-                        onAddPhoto: _addPhoto,
+        ],
+      ),
+      body: OfflineWrapper(
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile Photo Section
+                _buildPhotoSection(),
+                const SizedBox(height: 24),
+                
+                // Basic Information Section
+                _buildBasicInfoSection(),
+                const SizedBox(height: 24),
+                
+                // Physical Information Section
+                _buildPhysicalInfoSection(),
+                const SizedBox(height: 24),
+                
+                // Location Section
+                _buildLocationSection(),
+                const SizedBox(height: 24),
+                
+                // Bio Section
+                _buildBioSection(),
+                const SizedBox(height: 32),
+                
+                // Save Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _saveProfile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Basic Information
-                      _buildSectionHeader('Basic Information'),
-                      const SizedBox(height: 16),
-                      
-                      ProfileTextInput(
-                        label: 'Name',
-                        value: _nameController.text,
-                        onChanged: (value) {
-                          _nameController.text = value;
-                          _onFieldChanged();
-                        },
-                        isRequired: true,
-                        maxLength: 50,
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileDatePicker(
-                        label: 'Birth Date',
-                        selectedDate: _editingUser.birthDate,
-                        isRequired: true,
-                        onDateSelected: (date) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(birthDate: date);
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileDropdownInput<Gender>(
-                        label: 'Gender',
-                        selectedValue: _editingUser.gender != null 
-                            ? _getMockGenders().firstWhere(
-                                (g) => g.title == _editingUser.gender,
-                                orElse: () => _getMockGenders().first,
-                              )
-                            : null,
-                        options: _getMockGenders(),
-                        isRequired: true,
-                        onChanged: (gender) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(gender: gender?.title);
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileMultiSelectInput<Gender>(
-                        label: 'Interested In',
-                        selectedValues: _editingUser.interestedIn ?? [],
-                        options: _getMockGenders(),
-                        isRequired: true,
-                        onChanged: (genders) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(interestedIn: genders);
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // About Me
-                      _buildSectionHeader('About Me'),
-                      const SizedBox(height: 16),
-                      
-                      ProfileTextInput(
-                        label: 'Bio',
-                        value: _bioController.text,
-                        onChanged: (value) {
-                          _bioController.text = value;
-                          _onFieldChanged();
-                        },
-                        maxLines: 4,
-                        maxLength: 500,
-                        hint: 'Tell others about yourself...',
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileDropdownInput<RelationshipGoal>(
-                        label: 'Looking for',
-                        selectedValue: _editingUser.relationshipGoal,
-                        options: _getMockRelationshipGoals(),
-                        onChanged: (goal) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(relationshipGoal: goal);
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Work & Education
-                      _buildSectionHeader('Work & Education'),
-                      const SizedBox(height: 16),
-                      
-                      ProfileTextInput(
-                        label: 'Job Title',
-                        value: _jobController.text,
-                        onChanged: (value) {
-                          _jobController.text = value;
-                          _onFieldChanged();
-                        },
-                        maxLength: 100,
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileTextInput(
-                        label: 'Company',
-                        value: _companyController.text,
-                        onChanged: (value) {
-                          _companyController.text = value;
-                          _onFieldChanged();
-                        },
-                        maxLength: 100,
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileTextInput(
-                        label: 'School',
-                        value: _schoolController.text,
-                        onChanged: (value) {
-                          _schoolController.text = value;
-                          _onFieldChanged();
-                        },
-                        maxLength: 100,
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Location
-                      _buildSectionHeader('Location'),
-                      const SizedBox(height: 16),
-                      
-                      ProfileTextInput(
-                        label: 'Location',
-                        value: _locationController.text,
-                        onChanged: (value) {
-                          _locationController.text = value;
-                          _onFieldChanged();
-                        },
-                        maxLength: 100,
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileRangeSlider(
-                        label: 'Distance Range (km)',
-                        value: RangeValues(
-                          (_editingUser.preferences?.maxDistance ?? 50).toDouble(),
-                          (_editingUser.preferences?.maxDistance ?? 100).toDouble(),
-                        ),
-                        min: 1,
-                        max: 500,
-                        divisions: 499,
-                        displayText: (value) => '${value.round()} km',
-                        onChanged: (range) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(
-                              preferences: (_editingUser.preferences ?? UserPreferences.empty()).copyWith(
-                                maxDistance: range.end.round().toDouble(),
-                              ),
-                            );
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Age Preferences
-                      _buildSectionHeader('Age Preferences'),
-                      const SizedBox(height: 16),
-                      
-                      ProfileRangeSlider(
-                        label: 'Age Range',
-                        value: RangeValues(
-                          (_editingUser.preferences?.minAge ?? 18).toDouble(),
-                          (_editingUser.preferences?.maxAge ?? 50).toDouble(),
-                        ),
-                        min: 18,
-                        max: 100,
-                        divisions: 82,
-                        displayText: (value) => '${value.round()} years',
-                        onChanged: (range) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(
-                              preferences: (_editingUser.preferences ?? UserPreferences.empty()).copyWith(
-                                minAge: range.start.round(),
-                                maxAge: range.end.round(),
-                              ),
-                            );
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Privacy Settings
-                      _buildSectionHeader('Privacy Settings'),
-                      const SizedBox(height: 16),
-                      
-                      ProfileToggleSwitch(
-                        label: 'Show my age',
-                        description: 'Other users will see your exact age',
-                        value: _editingUser.settings?.showAge ?? true,
-                        onChanged: (value) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(
-                              settings: (_editingUser.settings ?? UserSettings.empty()).copyWith(
-                                showAge: value,
-                              ),
-                            );
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      ProfileToggleSwitch(
-                        label: 'Show my distance',
-                        description: 'Other users will see your approximate distance',
-                        value: _editingUser.settings?.showDistance ?? true,
-                        onChanged: (value) {
-                          setState(() {
-                            _editingUser = _editingUser.copyWith(
-                              settings: (_editingUser.settings ?? UserSettings.empty()).copyWith(
-                                showDistance: value,
-                              ),
-                            );
-                            _onFieldChanged();
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 32),
-                    ],
+                    ),
+                    child: _isSaving
+                        ? LoadingWidgets.button(
+                            text: 'Saving Profile...',
+                            color: Colors.white,
+                          )
+                        : Text(
+                            'Save Profile',
+                            style: AppTypography.button.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: AppTypography.h6.copyWith(
-        color: AppColors.textPrimary,
-        fontWeight: FontWeight.w600,
-      ),
+  Widget _buildPhotoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Profile Photos',
+          style: AppTypography.heading3.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.add_photo_alternate,
+                  size: 32,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Add Photos',
+                  style: AppTypography.body2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  int _calculateCompletionPercentage() {
-    int completedFields = 0;
-    int totalFields = 0;
-
-    // Basic Information (4 required fields)
-    totalFields += 4;
-    if (_editingUser.name?.isNotEmpty == true) completedFields++;
-    if (_editingUser.birthDate != null) completedFields++;
-    if (_editingUser.gender != null) completedFields++;
-    if (_editingUser.interestedIn?.isNotEmpty == true) completedFields++;
-
-    // About Me (1 optional field)
-    totalFields += 1;
-    if (_editingUser.bio?.isNotEmpty == true) completedFields++;
-
-    // Photos (at least 1 required)
-    totalFields += 1;
-    if (_editingUser.images?.isNotEmpty == true) completedFields++;
-
-    return ((completedFields / totalFields) * 100).round();
+  Widget _buildBasicInfoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Basic Information',
+          style: AppTypography.heading3.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _firstNameController,
+                onChanged: (_) => _onFieldChanged(),
+                decoration: InputDecoration(
+                  labelText: 'First Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'First name is required';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _lastNameController,
+                onChanged: (_) => _onFieldChanged(),
+                decoration: InputDecoration(
+                  labelText: 'Last Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Last name is required';
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
-  // Mock data methods - these would be replaced with actual API calls
-  List<Gender> _getMockGenders() {
-    return [
-      Gender(id: 1, name: 'Man'),
-      Gender(id: 2, name: 'Woman'),
-      Gender(id: 3, name: 'Non-binary'),
-      Gender(id: 4, name: 'Gender fluid'),
-      Gender(id: 5, name: 'Trans man'),
-      Gender(id: 6, name: 'Trans woman'),
-      Gender(id: 7, name: 'Other'),
-    ];
+  Widget _buildPhysicalInfoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Physical Information',
+          style: AppTypography.heading3.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _heightController,
+                onChanged: (_) => _onFieldChanged(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Height (cm)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    final height = int.tryParse(value);
+                    if (height == null || height < 100 || height > 250) {
+                      return 'Please enter a valid height';
+                    }
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _weightController,
+                onChanged: (_) => _onFieldChanged(),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Weight (kg)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    final weight = int.tryParse(value);
+                    if (weight == null || weight < 30 || weight > 200) {
+                      return 'Please enter a valid weight';
+                    }
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
-  List<RelationshipGoal> _getMockRelationshipGoals() {
-    return [
-      RelationshipGoal(id: 1, name: 'Long-term relationship'),
-      RelationshipGoal(id: 2, name: 'Short-term relationship'),
-      RelationshipGoal(id: 3, name: 'Casual dating'),
-      RelationshipGoal(id: 4, name: 'Friendship'),
-      RelationshipGoal(id: 5, name: 'Marriage'),
-    ];
+  Widget _buildLocationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Location',
+          style: AppTypography.heading3.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _locationController,
+          onChanged: (_) => _onFieldChanged(),
+          decoration: InputDecoration(
+            labelText: 'Location',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBioSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Bio',
+          style: AppTypography.heading3.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _bioController,
+          onChanged: (_) => _onFieldChanged(),
+          maxLines: 4,
+          decoration: InputDecoration(
+            labelText: 'Tell us about yourself',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          validator: (value) {
+            if (value != null && value.length > 500) {
+              return 'Bio must be less than 500 characters';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
   }
 }

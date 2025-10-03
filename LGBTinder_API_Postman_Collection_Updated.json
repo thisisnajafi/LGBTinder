@@ -1,0 +1,799 @@
+{
+  "info": {
+    "name": "LGBTinder API Collection - Updated",
+    "description": "Complete API collection for LGBTinder dating application with all endpoints and request/response examples",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "profile_completion_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"referral_code\": \"ABC123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": true,\n  \"message\": \"Registration successful! Please check your email for verification code.\",\n  \"data\": {\n    \"user_id\": 1,\n    \"email\": \"john.doe@example.com\",\n    \"email_sent\": true,\n    \"resend_available_at\": \"2024-01-01 12:02:00\",\n    \"hourly_attempts_remaining\": 2\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Check User State",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/check-user-state",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "check-user-state"]
+            }
+          },
+          "response": [
+            {
+              "name": "Email Verification Required",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john.doe@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/check-user-state",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "check-user-state"]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": false,\n  \"message\": \"Email verification required\",\n  \"data\": {\n    \"user_state\": \"email_verification_required\",\n    \"user_id\": 1,\n    \"email\": \"john.doe@example.com\",\n    \"needs_verification\": true\n  }\n}"
+            },
+            {
+              "name": "Profile Completion Required",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john.doe@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/check-user-state",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "check-user-state"]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": false,\n  \"message\": \"Profile completion required\",\n  \"data\": {\n    \"user_state\": \"profile_completion_required\",\n    \"user_id\": 1,\n    \"email\": \"john.doe@example.com\",\n    \"token\": \"profile_completion_token_here\",\n    \"token_type\": \"Bearer\",\n    \"profile_completion_status\": {\n      \"is_complete\": false,\n      \"missing_fields\": [\"country\", \"city\", \"gender\", \"birth_date\"]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Email Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/send-verification",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "send-verification"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/send-verification",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "send-verification"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": true,\n  \"message\": \"Email verified successfully! Please complete your profile.\",\n  \"data\": {\n    \"user_id\": 1,\n    \"email\": \"john.doe@example.com\",\n    \"token\": \"profile_completion_token_here\",\n    \"token_type\": \"Bearer\",\n    \"profile_completion_required\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Complete Profile Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{profile_completion_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_name\": \"iPhone 15 Pro\",\n  \"country_id\": 1,\n  \"city_id\": 1,\n  \"gender\": 1,\n  \"birth_date\": \"1995-06-15\",\n  \"min_age_preference\": 21,\n  \"max_age_preference\": 35,\n  \"profile_bio\": \"Love traveling, music, and meeting new people! Looking for someone to share adventures with.\",\n  \"height\": 175,\n  \"weight\": 70,\n  \"smoke\": false,\n  \"drink\": true,\n  \"gym\": true,\n  \"music_genres\": [1, 3, 5],\n  \"educations\": [2, 3],\n  \"jobs\": [1, 4],\n  \"languages\": [1, 2],\n  \"interests\": [1, 2, 3, 7],\n  \"preferred_genders\": [1, 3],\n  \"relation_goals\": [1, 2]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/complete-registration",
+              "host": ["{{base_url}}"],
+              "path": ["complete-registration"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{profile_completion_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"device_name\": \"iPhone 15 Pro\",\n  \"country_id\": 1,\n  \"city_id\": 1,\n  \"gender\": 1,\n  \"birth_date\": \"1995-06-15\",\n  \"min_age_preference\": 21,\n  \"max_age_preference\": 35,\n  \"profile_bio\": \"Love traveling, music, and meeting new people!\",\n  \"height\": 175,\n  \"weight\": 70,\n  \"smoke\": false,\n  \"drink\": true,\n  \"gym\": true,\n  \"music_genres\": [1, 3, 5],\n  \"educations\": [2, 3],\n  \"jobs\": [1, 4],\n  \"languages\": [1, 2],\n  \"interests\": [1, 2, 3, 7],\n  \"preferred_genders\": [1, 3],\n  \"relation_goals\": [1, 2]\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/complete-registration",
+                  "host": ["{{base_url}}"],
+                  "path": ["complete-registration"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": true,\n  \"message\": \"Profile completed successfully!\",\n  \"data\": {\n    \"user\": {\n      \"id\": 1,\n      \"name\": \"John Doe\",\n      \"email\": \"john.doe@example.com\",\n      \"country_id\": 1,\n      \"city_id\": 1,\n      \"country\": \"United States\",\n      \"city\": \"New York\",\n      \"gender\": 1,\n      \"birth_date\": \"1995-06-15\",\n      \"profile_bio\": \"Love traveling, music, and meeting new people!\",\n      \"height\": 175,\n      \"weight\": 70,\n      \"smoke\": false,\n      \"drink\": true,\n      \"gym\": true,\n      \"min_age_preference\": 21,\n      \"max_age_preference\": 35\n    },\n    \"token\": \"full_access_token_here\",\n    \"token_type\": \"Bearer\",\n    \"profile_completed\": true,\n    \"needs_profile_completion\": false,\n    \"user_state\": \"ready_for_app\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reference Data",
+      "item": [
+        {
+          "name": "Get Countries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/countries",
+              "host": ["{{base_url}}"],
+              "path": ["countries"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/countries",
+                  "host": ["{{base_url}}"],
+                  "path": ["countries"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"United States\",\n      \"code\": \"USA\",\n      \"phone_code\": \"+1\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"United Kingdom\",\n      \"code\": \"GBR\",\n      \"phone_code\": \"+44\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Canada\",\n      \"code\": \"CAN\",\n      \"phone_code\": \"+1\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Cities by Country",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cities/country/1",
+              "host": ["{{base_url}}"],
+              "path": ["cities", "country", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/cities/country/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["cities", "country", "1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"New York\",\n      \"state_province\": \"New York\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Los Angeles\",\n      \"state_province\": \"California\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Chicago\",\n      \"state_province\": \"Illinois\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Genders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/genders",
+              "host": ["{{base_url}}"],
+              "path": ["genders"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/genders",
+                  "host": ["{{base_url}}"],
+                  "path": ["genders"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"Man\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Woman\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Non-binary\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Transgender\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/jobs",
+                  "host": ["{{base_url}}"],
+                  "path": ["jobs"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"Software Engineer\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Doctor\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Teacher\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Artist\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Education Levels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/education",
+              "host": ["{{base_url}}"],
+              "path": ["education"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/education",
+                  "host": ["{{base_url}}"],
+                  "path": ["education"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"High School\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Bachelor's Degree\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Master's Degree\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 4,\n      \"title\": \"PhD\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Interests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/interests",
+              "host": ["{{base_url}}"],
+              "path": ["interests"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/interests",
+                  "host": ["{{base_url}}"],
+                  "path": ["interests"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"Music\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Travel\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Sports\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Art\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Languages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/languages",
+              "host": ["{{base_url}}"],
+              "path": ["languages"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/languages",
+                  "host": ["{{base_url}}"],
+                  "path": ["languages"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"English\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Spanish\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"French\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 4,\n      \"title\": \"German\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Music Genres",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/music-genres",
+              "host": ["{{base_url}}"],
+              "path": ["music-genres"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/music-genres",
+                  "host": ["{{base_url}}"],
+                  "path": ["music-genres"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"Pop\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Rock\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Hip-Hop\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Electronic\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Relationship Goals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/relation-goals",
+              "host": ["{{base_url}}"],
+              "path": ["relation-goals"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/relation-goals",
+                  "host": ["{{base_url}}"],
+                  "path": ["relation-goals"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"Long-term relationship\",\n      \"image_url\": \"https://api.lgbtinder.com/storage/relation_goals/long-term.png\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Casual dating\",\n      \"image_url\": \"https://api.lgbtinder.com/storage/relation_goals/casual.png\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Friendship\",\n      \"image_url\": \"https://api.lgbtinder.com/storage/relation_goals/friendship.png\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Preferred Genders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/preferred-genders",
+              "host": ["{{base_url}}"],
+              "path": ["preferred-genders"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/preferred-genders",
+                  "host": ["{{base_url}}"],
+                  "path": ["preferred-genders"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"Men\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Women\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Non-binary\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Transgender\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

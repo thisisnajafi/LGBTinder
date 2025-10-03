@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../providers/profile_provider.dart';
 import '../theme/colors.dart';
@@ -8,6 +10,8 @@ import '../components/profile/edit/form_inputs.dart';
 import '../utils/validation.dart';
 import '../utils/error_handler.dart';
 import '../utils/success_feedback.dart';
+import '../services/media_picker_service.dart';
+import '../services/profile_api_service.dart';
 
 class ProfileWizardPage extends StatefulWidget {
   const ProfileWizardPage({Key? key}) : super(key: key);
@@ -882,13 +886,153 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> {
   }
 
   void _addPhotos() {
-    // TODO: Implement photo upload functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Photo upload feature coming soon!'),
-        backgroundColor: AppColors.primary,
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.navbarBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.textSecondary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              
+              // Photo options
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.white),
+                title: Text(
+                  'Take Photo',
+                  style: AppTypography.body2.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.white),
+                title: Text(
+                  'Choose from Gallery',
+                  style: AppTypography.body2.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final mediaPickerService = MediaPickerService();
+      final image = await mediaPickerService.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 90,
+      );
+
+      if (image != null) {
+        await _uploadProfilePicture(image);
+      }
+    } catch (e) {
+      ErrorHandler.showErrorSnackBar(
+        context,
+        message: 'Failed to pick image: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<void> _uploadProfilePicture(File image) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppColors.navbarBackground,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Uploading photo...',
+                style: AppTypography.body1.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Upload the image using ProfileApiService
+      final profileApiService = ProfileApiService();
+      final response = await profileApiService.uploadProfilePicture(
+        ProfilePictureUploadRequest(
+          image: image,
+        ),
+      );
+      
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        
+        if (response.success) {
+          // Update local user data
+          setState(() {
+            _wizardUser = _wizardUser.copyWith(
+              profilePictures: [..._wizardUser.profilePictures, response.data.pictureUrl],
+            );
+          });
+          
+          SuccessFeedback.showSuccessSnackBar(
+            context,
+            message: 'Photo uploaded successfully!',
+          );
+        } else {
+          ErrorHandler.showErrorSnackBar(
+            context,
+            message: 'Failed to upload photo: ${response.message}',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        
+        ErrorHandler.showErrorSnackBar(
+          context,
+          message: 'Failed to upload photo: ${e.toString()}',
+        );
+      }
+    }
   }
 
   Future<void> _completeProfile() async {

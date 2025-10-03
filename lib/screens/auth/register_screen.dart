@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
-import '../../providers/auth_provider.dart';
-import '../../models/auth_requests.dart';
-import '../../utils/validation.dart';
-import '../../utils/registration_validator.dart';
-import '../../utils/api_error_handler.dart';
+import '../../providers/app_state_provider.dart';
+import '../../models/user_state_models.dart';
+import '../../services/validation_service.dart';
+import '../../services/analytics_service.dart';
+import '../../services/error_monitoring_service.dart';
+import '../../components/error_handling/error_snackbar.dart';
+import '../../components/loading/loading_widgets.dart';
 import 'email_verification_screen.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -64,35 +67,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _validateEmail() {
     setState(() {
-      _isEmailValid = RegistrationValidator.validateEmail(_emailController.text) == null;
+      _isEmailValid = ValidationService.isValidEmail(_emailController.text.trim());
     });
   }
 
   void _validatePassword() {
     setState(() {
-      _isPasswordValid = RegistrationValidator.validatePassword(_passwordController.text) == null;
+      _isPasswordValid = ValidationService.isValidPassword(_passwordController.text);
     });
     _validateConfirmPassword();
   }
 
   void _validateConfirmPassword() {
     setState(() {
-      _isConfirmPasswordValid = RegistrationValidator.validateConfirmPassword(
-        _confirmPasswordController.text, 
-        _passwordController.text
-      ) == null;
+      _isConfirmPasswordValid = _confirmPasswordController.text == _passwordController.text && 
+                               _confirmPasswordController.text.isNotEmpty;
     });
   }
 
   void _validateFirstName() {
     setState(() {
-      _isFirstNameValid = RegistrationValidator.validateFirstName(_firstNameController.text) == null;
+      _isFirstNameValid = ValidationService.isValidName(_firstNameController.text);
     });
   }
 
   void _validateLastName() {
     setState(() {
-      _isLastNameValid = RegistrationValidator.validateLastName(_lastNameController.text) == null;
+      _isLastNameValid = ValidationService.isValidName(_lastNameController.text);
     });
   }
 
@@ -132,10 +133,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _handleRegister() async {
     print('🚀 Registration attempt started');
-    print('📋 Form validation: ${_formKey.currentState!.validate()}');
-    print('📋 Terms accepted: $_isTermsAccepted');
-    print('📋 Password requirements: ${_hasMinLength && _hasUppercase && _hasLowercase && _hasNumber && _hasSpecialChar}');
     
+    // Validate form
     if (!_formKey.currentState!.validate()) {
       print('❌ Form validation failed');
       return;
@@ -165,39 +164,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    // Validate registration data
+    final validationResult = ValidationService.validateRegistration(
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!validationResult.isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(validationResult.errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
+      // Track registration attempt
+      await AnalyticsService.trackAuthEvent(
+        action: 'register_attempt',
+        success: false, // Will be updated based on result
+      );
+
       print('🔄 Creating registration request...');
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final appState = Provider.of<AppStateProvider>(context, listen: false);
       
-      final request = RegisterRequest(
+      print('📝 Registration data: firstName=${_firstNameController.text.trim()}, lastName=${_lastNameController.text.trim()}, email=${_emailController.text.trim()}');
+      print('🔐 Password length: ${_passwordController.text.length}');
+      print('🔐 Passwords match: ${_passwordController.text == _confirmPasswordController.text}');
+      
+      print('📡 Calling app state provider register...');
+      final result = await appState.register(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        passwordConfirmation: _confirmPasswordController.text,
       );
-
-      print('📝 Registration data: firstName=${request.firstName}, lastName=${request.lastName}, email=${request.email}');
-      print('🔐 Password length: ${_passwordController.text.length}');
-      print('🔐 Passwords match: ${_passwordController.text == _confirmPasswordController.text}');
+      print('📡 App state provider result: ${result.success}');
       
-      print('📡 Calling auth provider register...');
-      final success = await authProvider.register(request);
-      print('📡 Auth provider result: $success');
-      
-      if (success && mounted) {
+      if (result.success && mounted) {
         print('✅ Registration successful, navigating to verification');
+        
+        // Track successful registration
+        await AnalyticsService.trackAuthEvent(
+          action: 'register_success',
+          success: true,
+        );
+
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Account created successfully! Please check your email for verification.'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
+        ErrorSnackBar.showSuccess(
+          context,
+          message: 'Account created successfully! Please check your email for verification.',
         );
         
         // Navigate to verification screen
@@ -210,30 +234,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
         );
-      } else {
-        print('❌ Registration failed but no exception thrown');
-        print('❌ Auth provider error: ${authProvider.authError}');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to create account. Please check your information and try again.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 4),
-            ),
-          );
-        }
+      } else if (mounted) {
+        // Track failed registration
+        await AnalyticsService.trackAuthEvent(
+          action: 'register_failed',
+          success: false,
+          errorType: 'validation_error',
+        );
+
+               // Show error message
+               ErrorSnackBar.show(
+                 context,
+                 error: Exception(result.message),
+                 context: 'register',
+                 onAction: _handleRegister,
+                 actionText: 'Try Again',
+               );
       }
     } catch (e) {
       print('💥 Registration exception: ${e.toString()}');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to create account. Please check your internet connection and try again.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 4),
-          ),
-        );
-      }
+      
+      // Track failed registration
+      await AnalyticsService.trackAuthEvent(
+        action: 'register_failed',
+        success: false,
+        errorType: e.runtimeType.toString(),
+      );
+
+      // Log error
+      await ErrorMonitoringService.logAuthError(
+        errorType: AuthErrorType.unknownError,
+        errorMessage: 'Registration failed',
+        details: e.toString(),
+      );
+
+             if (mounted) {
+               ErrorSnackBar.show(
+                 context,
+                 error: e,
+                 context: 'register',
+                 onAction: _handleRegister,
+                 actionText: 'Try Again',
+               );
+             }
     } finally {
       if (mounted) {
         setState(() {
@@ -324,7 +367,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    validator: (value) => RegistrationValidator.validateFirstName(value),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'First name is required';
+                      }
+                      if (!ValidationService.isValidName(value.trim())) {
+                        return 'First name must be at least 2 characters and contain only letters';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   
@@ -368,7 +419,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    validator: (value) => RegistrationValidator.validateLastName(value),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Last name is required';
+                      }
+                      if (!ValidationService.isValidName(value.trim())) {
+                        return 'Last name must be at least 2 characters and contain only letters';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   
@@ -413,7 +472,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    validator: (value) => RegistrationValidator.validateEmail(value),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Email is required';
+                      }
+                      if (!ValidationService.isValidEmail(value.trim())) {
+                        return 'Please enter a valid email address';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   
@@ -463,7 +530,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    validator: (value) => RegistrationValidator.validatePassword(value),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Password is required';
+                      }
+                      if (!ValidationService.isValidPassword(value)) {
+                        return 'Password must be at least 8 characters with uppercase, lowercase, and number';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 12),
                   
@@ -542,7 +617,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.1),
                     ),
-                    validator: (value) => RegistrationValidator.validateConfirmPassword(value, _passwordController.text),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please confirm your password';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Passwords do not match';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 32),
                   
@@ -606,29 +689,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         elevation: _isLoading ? 0 : 2,
                       ),
                       child: _isLoading
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'Creating Account...',
-                                  style: AppTypography.button.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
+                          ? LoadingWidgets.button(
+                              text: 'Creating Account...',
+                              color: Colors.white,
                             )
                           : Text(
                               'Create Account',
@@ -653,7 +716,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
                         child: Text(
                           'Sign In',
                           style: AppTypography.body2.copyWith(

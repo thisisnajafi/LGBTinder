@@ -7,6 +7,7 @@ import '../models/auth_user.dart';
 import '../models/auth_requests.dart';
 import '../models/auth_responses.dart';
 import '../services/auth_service.dart';
+import '../services/email_verification_service.dart';
 import '../services/jwt_token_service.dart';
 import '../utils/error_handler.dart';
 
@@ -43,6 +44,9 @@ class AuthProvider extends ChangeNotifier {
   Future<String?> get accessToken => _tokenService.getAccessToken();
   Future<String?> get refreshToken => _tokenService.getRefreshToken();
   Future<DateTime?> get tokenExpiry => _tokenService.getTokenExpiry();
+  
+  // Synchronous token getter for immediate use
+  Future<String?> getAccessToken() async => await _tokenService.getAccessToken();
   
   // Check if token is expired
   Future<bool> get isTokenExpired => _tokenService.isAccessTokenExpired();
@@ -112,7 +116,7 @@ class AuthProvider extends ChangeNotifier {
       print('📡 AuthService.login() response received');
       
       // Store authentication data
-      await _storeAuthData(
+      await storeAuthData(
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
         user: response.user,
@@ -174,7 +178,7 @@ class AuthProvider extends ChangeNotifier {
       
       if (response.success && response.accessToken != null && response.refreshToken != null) {
         // Store authentication data
-        await _storeAuthData(
+        await storeAuthData(
           accessToken: response.accessToken!,
           refreshToken: response.refreshToken!,
           user: response.user,
@@ -300,18 +304,21 @@ class AuthProvider extends ChangeNotifier {
       
       if (response.status) {
         print('✅ Verification successful in AuthProvider');
-        // Store authentication data if available
+        // Store the profile completion token if available
         if (response.data?.token != null) {
-          await _storeAuthData(
-            accessToken: response.data!.token,
-            refreshToken: response.data!.token, // Use same token for now
+          await storeAuthData(
+            accessToken: response.data!.token!,
+            refreshToken: response.data!.token!, // Use same token for now
             user: null, // User data not available in this response
             expiresIn: 3600, // Default 1 hour
           );
           
           _isAuthenticated = true;
           _startTokenRefreshTimer();
+          print('🔑 Profile completion token stored');
         }
+        
+        print('📋 Profile completion needed: ${response.data?.needsProfileCompletion}');
         
         notifyListeners();
         return response;
@@ -330,6 +337,87 @@ class AuthProvider extends ChangeNotifier {
       rethrow;
     } finally {
       print('🏁 AuthProvider.verifyCode() completed');
+      _setLoading(false);
+    }
+  }
+
+  /// Send login code to email
+  Future<EmailVerificationResponse> sendLoginCode(String email) async {
+    try {
+      print('🏁 AuthProvider.sendLoginCode() started');
+      print('📧 Email: $email');
+      _setLoading(true);
+      _clearError();
+      
+      print('📡 Calling EmailVerificationService.sendLoginCode()...');
+      final response = await EmailVerificationService.sendLoginCode(email);
+      print('📡 EmailVerificationService.sendLoginCode() response: $response');
+      
+      if (response.status) {
+        print('✅ Login code sent successfully in AuthProvider');
+        notifyListeners();
+        return response;
+      } else {
+        print('❌ Failed to send login code: ${response.message}');
+        _setError(response.message);
+        return response;
+      }
+    } on AppException catch (e) {
+      print('💥 AuthProvider sendLoginCode AppException: ${e.message}');
+      _setError(e.message);
+      rethrow;
+    } catch (e) {
+      print('💥 AuthProvider sendLoginCode Exception: $e');
+      _setError('Network error. Please check your internet connection.');
+      rethrow;
+    } finally {
+      print('🏁 AuthProvider.sendLoginCode() completed');
+      _setLoading(false);
+    }
+  }
+
+  /// Verify login code
+  Future<LoginCodeResponse> verifyLoginCode(String email, String code) async {
+    try {
+      print('🏁 AuthProvider.verifyLoginCode() started');
+      print('📧 Email: $email');
+      print('🔢 Code: $code');
+      _setLoading(true);
+      _clearError();
+      
+      print('📡 Calling EmailVerificationService.verifyLoginCode()...');
+      final response = await EmailVerificationService.verifyLoginCode(email, code);
+      print('📡 EmailVerificationService.verifyLoginCode() response: $response');
+      
+      if (response.status && response.data != null) {
+        print('✅ Login code verification successful in AuthProvider');
+        // Store authentication data
+        await storeAuthData(
+          accessToken: response.data!.token,
+          refreshToken: response.data!.token, // Use same token for now
+          user: response.data!.user,
+          expiresIn: response.data!.expiresIn,
+        );
+        
+        _isAuthenticated = true;
+        _startTokenRefreshTimer();
+        notifyListeners();
+        return response;
+      } else {
+        print('❌ Login code verification failed: ${response.message}');
+        _setError(response.message);
+        return response;
+      }
+    } on AppException catch (e) {
+      print('💥 AuthProvider verifyLoginCode AppException: ${e.message}');
+      _setError(e.message);
+      rethrow;
+    } catch (e) {
+      print('💥 AuthProvider verifyLoginCode Exception: $e');
+      _setError('Network error. Please check your internet connection.');
+      rethrow;
+    } finally {
+      print('🏁 AuthProvider.verifyLoginCode() completed');
       _setLoading(false);
     }
   }
@@ -419,7 +507,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Store authentication data in secure storage
-  Future<void> _storeAuthData({
+  Future<void> storeAuthData({
     required String accessToken,
     required String refreshToken,
     required AuthUser? user,

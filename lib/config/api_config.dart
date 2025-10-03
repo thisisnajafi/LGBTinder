@@ -31,6 +31,7 @@ class ApiConfig {
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String verifyCode = '/auth/send-verification';
+  static const String sendLoginCode = '/auth/send-login-code';
   static const String verifyLoginCode = '/auth/verify-login-code';
   // static const String refreshToken = '/auth/refresh-token'; // Not implemented in backend
   static const String checkEmail = '/auth/check-email';

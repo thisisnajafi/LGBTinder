@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../components/profile/profile_header.dart';
 import '../components/profile/profile_info_sections.dart';
 import '../components/profile/photo_gallery.dart';
 import '../components/profile/safety_verification_section.dart';
-
-import '../providers/profile_provider.dart';
-import '../models/models.dart';
-import '../utils/error_handler.dart';
-import '../utils/success_feedback.dart';
-import '../services/skeleton_loader_service.dart';
+import '../components/error_handling/error_display_widget.dart';
+import '../components/loading/loading_widgets.dart';
+import '../components/loading/skeleton_loader.dart';
+import '../components/offline/offline_wrapper.dart';
+import '../providers/profile_state_provider.dart';
+import '../models/api_models/user_models.dart';
+import '../services/analytics_service.dart';
+import '../services/error_monitoring_service.dart';
+import '../screens/safety_settings_screen.dart';
 import 'profile_edit_page.dart';
 import 'profile_wizard_page.dart';
 
@@ -29,31 +33,76 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     // Initialize profile data when page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileProvider>().initialize();
+      _loadProfile();
     });
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      await AnalyticsService.trackEvent(
+        action: 'profile_view',
+        category: 'profile',
+      );
+      
+      final profileProvider = context.read<ProfileStateProvider>();
+      await profileProvider.loadCurrentUser();
+    } catch (e) {
+      await ErrorMonitoringService.logError(
+        error: e,
+        context: 'ProfilePage._loadProfile',
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.appBackground,
-      body: Consumer<ProfileProvider>(
-        builder: (context, profileProvider, child) {
-          if (profileProvider.isLoadingProfile) {
-            return _buildLoadingState();
-          }
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
+          'Profile',
+          style: AppTypography.heading2.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileEditPage(),
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.edit,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+      body: OfflineWrapper(
+        child: Consumer<ProfileStateProvider>(
+          builder: (context, profileProvider, child) {
+            if (profileProvider.isLoading) {
+              return _buildLoadingState();
+            }
 
-          if (profileProvider.profileError != null) {
-            return _buildErrorState(profileProvider.profileError!);
-          }
+            if (profileProvider.error != null) {
+              return _buildErrorState(profileProvider.error!);
+            }
 
-          final user = profileProvider.user;
-          if (user == null) {
-            return _buildEmptyState();
-          }
+            final user = profileProvider.currentUser;
+            if (user == null) {
+              return _buildEmptyState();
+            }
 
-          return _buildProfileContent(user, profileProvider);
-        },
+            return _buildProfileContent(user, profileProvider);
+          },
+        ),
       ),
     );
   }
@@ -64,165 +113,63 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         children: [
           // Profile header skeleton
-          SkeletonLoaderService().createSkeletonCard(
-            width: double.infinity,
+          SkeletonCard(
             height: 200,
-            padding: const EdgeInsets.all(20),
+            showHeader: true,
+            showContent: true,
+            contentLines: 2,
           ),
           const SizedBox(height: 20),
           
           // Profile info sections skeleton
-          SkeletonLoaderService().createSkeletonCard(
-            width: double.infinity,
+          SkeletonCard(
             height: 150,
-            padding: const EdgeInsets.all(20),
+            showHeader: false,
+            showContent: true,
+            contentLines: 3,
           ),
           const SizedBox(height: 20),
           
           // Photo gallery skeleton
-          SkeletonLoaderService().createSkeletonCard(
-            width: double.infinity,
+          SkeletonCard(
             height: 120,
-            padding: const EdgeInsets.all(20),
+            showHeader: true,
+            showContent: false,
           ),
           const SizedBox(height: 20),
           
           // Safety verification skeleton
-          SkeletonLoaderService().createSkeletonCard(
-            width: double.infinity,
+          SkeletonCard(
             height: 100,
-            padding: const EdgeInsets.all(20),
+            showHeader: true,
+            showContent: true,
+            contentLines: 2,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState(String error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Error loading profile',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            ErrorHandler.getErrorMessage(error),
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                await ErrorHandler.retryOperation(
-                  operation: () => context.read<ProfileProvider>().loadProfile(),
-                  maxRetries: 3,
-                  shouldRetry: ErrorHandler.isRetryableError,
-                );
-              } catch (e) {
-                if (mounted) {
-                  ErrorHandler.showErrorSnackBar(
-                    context,
-                    message: ErrorHandler.getErrorMessage(e),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Retry'),
-          ),
-        ],
-      ),
+  Widget _buildErrorState(dynamic error) {
+    return ErrorDisplayWidget(
+      error: error,
+      context: 'load_profile',
+      onRetry: _loadProfile,
+      isFullScreen: true,
     );
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withOpacity(0.2),
-                  AppColors.secondaryLight.withOpacity(0.2),
-                ],
-              ),
-            ),
-            child: Icon(
-              Icons.person_outline,
-              size: 60,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'No Profile Found',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Create your profile to get started',
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileWizardPage()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              'Create Profile',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
+    return EmptyStateWidget(
+      title: 'No Profile Found',
+      message: 'Your profile information could not be loaded. Please try again.',
+      icon: Icons.person_outline,
+      onAction: _loadProfile,
+      actionText: 'Retry',
     );
   }
 
-  Widget _buildProfileContent(User user, ProfileProvider profileProvider) {
+  Widget _buildProfileContent(User user, ProfileStateProvider profileProvider) {
     return CustomScrollView(
       slivers: [
         // App Bar
@@ -520,13 +467,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // Action Methods
 
   void _showSettings() {
-    // TODO: Navigate to settings page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Settings page coming soon!'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+    Navigator.pushNamed(context, '/settings');
   }
 
   void _saveProfile() {
@@ -756,11 +697,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showPrivacySettings() {
-    // TODO: Navigate to privacy settings page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Privacy settings page coming soon!'),
-        backgroundColor: AppColors.primary,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SafetySettingsScreen(),
       ),
     );
   }
