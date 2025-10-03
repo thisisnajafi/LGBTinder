@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../models/api_models/common_models.dart';
 import '../models/api_models/chat_models.dart';
 import '../models/api_models/matching_models.dart';
+import '../models/websocket_connection_state.dart';
 import '../services/token_management_service.dart';
 import '../config/api_config.dart';
 
@@ -21,15 +22,17 @@ class WebSocketStateProvider extends ChangeNotifier {
 
   // Real-time data
   Map<int, bool> _typingUsers = {}; // userId -> isTyping
+  Map<int, bool> _onlineUsers = {}; // userId -> isOnline
   List<MessageData> _recentMessages = [];
-  List<Match> _newMatches = [];
+  List<MatchData> _newMatches = [];
   Map<int, int> _unreadCounts = {}; // userId -> unread count
 
   // Event streams
   final StreamController<WebSocketEvent> _eventController = StreamController<WebSocketEvent>.broadcast();
   final StreamController<MessageData> _messageController = StreamController<MessageData>.broadcast();
-  final StreamController<Match> _matchController = StreamController<Match>.broadcast();
+  final StreamController<MatchData> _matchController = StreamController<MatchData>.broadcast();
   final StreamController<Map<String, dynamic>> _typingController = StreamController<Map<String, dynamic>>.broadcast();
+  final Map<String, StreamController<WebSocketEvent>> _eventControllers = {};
 
   // Getters
   bool get isConnected => _isConnected;
@@ -37,13 +40,21 @@ class WebSocketStateProvider extends ChangeNotifier {
   String? get connectionError => _connectionError;
   Map<int, bool> get typingUsers => _typingUsers;
   List<MessageData> get recentMessages => _recentMessages;
-  List<Match> get newMatches => _newMatches;
+  List<MatchData> get newMatches => _newMatches;
   Map<int, int> get unreadCounts => _unreadCounts;
+
+  // Connection state getter
+  WebSocketConnectionState get connectionState {
+    if (_isConnected) return WebSocketConnectionState.connected;
+    if (_isConnecting) return WebSocketConnectionState.connecting;
+    if (_connectionError != null) return WebSocketConnectionState.error;
+    return WebSocketConnectionState.disconnected;
+  }
 
   // Stream getters
   Stream<WebSocketEvent> get eventStream => _eventController.stream;
   Stream<MessageData> get messageStream => _messageController.stream;
-  Stream<Match> get matchStream => _matchController.stream;
+  Stream<MatchData> get matchStream => _matchController.stream;
   Stream<Map<String, dynamic>> get typingStream => _typingController.stream;
 
   // Initialize WebSocket connection
@@ -65,7 +76,7 @@ class WebSocketStateProvider extends ChangeNotifier {
         throw Exception('No authentication token found');
       }
 
-      final wsUrl = ApiConfig.websocketUrl;
+      final wsUrl = ApiConfig.getWebSocketUrl();
       final uri = Uri.parse('$wsUrl?token=$token');
       
       _webSocket = await WebSocket.connect(uri.toString());
@@ -216,7 +227,7 @@ class WebSocketStateProvider extends ChangeNotifier {
   // Handle new match event
   void _handleNewMatch(Map<String, dynamic> data) {
     try {
-      final match = Match.fromJson(data);
+      final match = MatchData.fromJson(data);
       _newMatches.add(match);
       _matchController.add(match);
       notifyListeners();
@@ -363,6 +374,26 @@ class WebSocketStateProvider extends ChangeNotifier {
     _newMatches.clear();
     _unreadCounts.clear();
     notifyListeners();
+  }
+
+  // Event listener management
+  void addEventListener(String eventType, void Function(WebSocketEvent) handler) {
+    _eventControllers[eventType]?.stream.listen(handler);
+  }
+
+  void removeEventListener(String eventType, void Function(WebSocketEvent) handler) {
+    // In a real implementation, you'd need to store subscriptions to remove them
+    // For now, we'll just ignore removal calls
+  }
+
+  // Typing users management
+  List<int> getTypingUsers(int chatId) {
+    return _typingUsers.keys.where((userId) => _typingUsers[userId] == true).toList();
+  }
+
+  // User online status
+  bool isUserOnline(int userId) {
+    return _onlineUsers[userId] ?? false;
   }
 
   // Dispose method

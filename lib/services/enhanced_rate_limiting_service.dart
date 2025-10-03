@@ -27,7 +27,7 @@ class EnhancedRateLimitingService {
       return true;
     }
     
-    final timeDifference = now.difference(lastRequestTime).inMinutes;
+    final timeDifference = now.difference(_lastRequestTime[key]!).inMinutes;
     if (timeDifference >= 2) { // 2 minute cool down
       _requestCounts[key] = 1;
       _lastRequestTime[key] = now;

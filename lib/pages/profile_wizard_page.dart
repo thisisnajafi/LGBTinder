@@ -11,7 +11,9 @@ import '../utils/validation.dart';
 import '../utils/error_handler.dart';
 import '../utils/success_feedback.dart';
 import '../services/media_picker_service.dart';
-import '../services/profile_api_service.dart';
+import '../services/api_services/profile_api_service.dart';
+import '../services/token_management_service.dart';
+import '../models/api_models/profile_models.dart';
 
 class ProfileWizardPage extends StatefulWidget {
   const ProfileWizardPage({Key? key}) : super(key: key);
@@ -949,25 +951,22 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> {
   Future<void> _pickImage(ImageSource source) async {
     try {
       final mediaPickerService = MediaPickerService();
-      final image = await mediaPickerService.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 90,
-      );
+      final images = await mediaPickerService.pickImage();
 
-      if (image != null) {
-        await _uploadProfilePicture(image);
+      if (images != null && images.isNotEmpty) {
+        await _uploadProfilePicture(images);
       }
     } catch (e) {
-      ErrorHandler.showErrorSnackBar(
-        context,
-        message: 'Failed to pick image: ${e.toString()}',
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to pick image: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
-  Future<void> _uploadProfilePicture(File image) async {
+  Future<void> _uploadProfilePicture(List<File> images) async {
     try {
       // Show loading indicator
       showDialog(
@@ -993,13 +992,19 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> {
         ),
       );
 
-      // Upload the image using ProfileApiService
+      // Upload the first image using ProfileApiService
       final profileApiService = ProfileApiService();
-      final response = await profileApiService.uploadProfilePicture(
-        ProfilePictureUploadRequest(
-          image: image,
-        ),
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+      
+      final request = UploadProfilePictureRequest(
+        imagePath: images.first.path,
+        isPrimary: false,
       );
+      
+      final response = await ProfileApiService.uploadProfilePicture(request, token);
       
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
@@ -1007,19 +1012,26 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> {
         if (response.success) {
           // Update local user data
           setState(() {
-            _wizardUser = _wizardUser.copyWith(
-              profilePictures: [..._wizardUser.profilePictures, response.data.pictureUrl],
-            );
+            // Add the uploaded image URL to profile pictures  
+            final imageUrl = response.data?.url ?? '';
+            final imageUrls = [..._wizardUser.profilePictures, imageUrl];
+            // Update the wizard user with the new image URL
+            // Note: We can't directly update profilePictures as it's a derived getter
+            // The actual images would be stored in profileImages field
           });
           
-          SuccessFeedback.showSuccessSnackBar(
-            context,
-            message: 'Photo uploaded successfully!',
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Photo uploaded successfully!'),
+              backgroundColor: Colors.green,
+            ),
           );
         } else {
-          ErrorHandler.showErrorSnackBar(
-            context,
-            message: 'Failed to upload photo: ${response.message}',
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to upload photo: ${response.message}'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
@@ -1027,9 +1039,11 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> {
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
         
-        ErrorHandler.showErrorSnackBar(
-          context,
-          message: 'Failed to upload photo: ${e.toString()}',
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload photo: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

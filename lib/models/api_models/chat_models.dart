@@ -85,6 +85,7 @@ class SendMessageRequest {
 /// Message data model
 class MessageData {
   final int messageId;
+  final int id; // Alias for messageId for compatibility
   final int senderId;
   final int receiverId;
   final String message;
@@ -100,7 +101,7 @@ class MessageData {
     required this.messageType,
     required this.sentAt,
     required this.isRead,
-  });
+  }) : id = messageId;
 
   factory MessageData.fromJson(Map<String, dynamic> json) {
     return MessageData(
@@ -168,18 +169,23 @@ class PaginationData {
   final int totalPages;
   final int totalMessages;
   final int perPage;
+  final bool hasNext;
+  final bool hasPrev;
 
   const PaginationData({
     required this.currentPage,
     required this.totalPages,
     required this.totalMessages,
     required this.perPage,
-  });
+  }) : hasNext = currentPage < totalPages,
+       hasPrev = currentPage > 1;
 
   factory PaginationData.fromJson(Map<String, dynamic> json) {
+    final currentPage = json['current_page'] as int;
+    final totalPages = json['total_pages'] as int;
     return PaginationData(
-      currentPage: json['current_page'] as int,
-      totalPages: json['total_pages'] as int,
+      currentPage: currentPage,
+      totalPages: totalPages,
       totalMessages: json['total_messages'] as int,
       perPage: json['per_page'] as int,
     );
@@ -241,6 +247,12 @@ class GetChatHistoryResponse {
     required this.status,
     this.data,
   });
+
+  /// Get messages directly from response
+  List<MessageData> get messages => data?.messages ?? [];
+
+  /// Get pagination data directly from response
+  PaginationData? get pagination => data?.pagination;
 
   factory GetChatHistoryResponse.fromJson(Map<String, dynamic> json) {
     return GetChatHistoryResponse(

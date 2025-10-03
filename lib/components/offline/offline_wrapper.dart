@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/connectivity_provider.dart';
 import '../../services/offline_service.dart';
+import '../../theme/app_colors.dart';
 import 'offline_indicator.dart';
 
 /// A wrapper widget that provides offline functionality to its child

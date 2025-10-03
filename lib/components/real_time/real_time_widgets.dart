@@ -4,6 +4,7 @@ import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../providers/websocket_state_provider.dart';
 import '../../models/api_models/common_models.dart';
+import '../../models/websocket_connection_state.dart';
 
 /// A widget that shows real-time connection status
 class RealTimeConnectionStatus extends StatelessWidget {
@@ -99,6 +100,12 @@ class RealTimeConnectionStatus extends StatelessWidget {
             ),
           ),
         );
+      case WebSocketConnectionState.error:
+        return Icon(
+          Icons.error,
+          size: 16,
+          color: AppColors.error,
+        );
     }
   }
 
@@ -110,6 +117,8 @@ class RealTimeConnectionStatus extends StatelessWidget {
         return (disconnectedColor ?? AppColors.error).withOpacity(0.1);
       case WebSocketConnectionState.connecting:
         return (connectingColor ?? AppColors.warning).withOpacity(0.1);
+      case WebSocketConnectionState.error:
+        return AppColors.error.withOpacity(0.1);
     }
   }
 
@@ -121,6 +130,8 @@ class RealTimeConnectionStatus extends StatelessWidget {
         return disconnectedColor ?? AppColors.error;
       case WebSocketConnectionState.connecting:
         return connectingColor ?? AppColors.warning;
+      case WebSocketConnectionState.error:
+        return AppColors.error;
     }
   }
 
@@ -132,6 +143,8 @@ class RealTimeConnectionStatus extends StatelessWidget {
         return disconnectedText ?? 'Disconnected';
       case WebSocketConnectionState.connecting:
         return connectingText ?? 'Connecting...';
+      case WebSocketConnectionState.error:
+        return 'Error';
     }
   }
 }
@@ -179,7 +192,7 @@ class RealTimeEventNotification extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            icon ?? _getEventIcon(event.type),
+            icon ?? _getEventIcon(event.event.value),
             color: textColor ?? AppColors.textPrimary,
             size: 24,
           ),
@@ -189,7 +202,7 @@ class RealTimeEventNotification extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _getEventTitle(event.type),
+                  _getEventTitle(event.event.value),
                   style: AppTypography.subtitle2.copyWith(
                     color: textColor ?? AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -258,7 +271,7 @@ class RealTimeEventNotification extends StatelessWidget {
   }
 
   String _getEventMessage(WebSocketEvent event) {
-    switch (event.type) {
+    switch (event.event.value) {
       case 'message':
         return 'You have a new message';
       case 'match':

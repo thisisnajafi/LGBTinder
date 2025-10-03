@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/websocket_state_provider.dart';
 import '../../models/api_models/common_models.dart';
+import '../../models/websocket_connection_state.dart';
+import '../../theme/app_colors.dart';
 import 'real_time_widgets.dart';
 
 /// A widget that listens to real-time events and updates the UI accordingly
@@ -60,15 +62,15 @@ class _RealTimeListenerState extends State<RealTimeListener> {
     }
     
     // Update last event time
-    _lastEventTimes[event.type] = DateTime.now();
+    _lastEventTimes[event.event.value] = DateTime.now();
   }
 
   bool _shouldShowNotification(WebSocketEvent event) {
     // Don't show notifications for typing events
-    if (event.type == 'typing') return false;
+    if (event.event.value == 'user.typing') return false;
     
     // Don't show duplicate notifications within 5 seconds
-    final lastTime = _lastEventTimes[event.type];
+    final lastTime = _lastEventTimes[event.event.value];
     if (lastTime != null) {
       final timeDiff = DateTime.now().difference(lastTime);
       if (timeDiff.inSeconds < 5) return false;
@@ -241,8 +243,6 @@ class RealTimeConnectionWidget extends StatelessWidget {
                 showWhenConnected: false,
                 showWhenDisconnected: true,
                 showWhenConnecting: true,
-                backgroundColor: backgroundColor,
-                textColor: textColor,
               ),
             Expanded(
               child: Stack(
@@ -292,10 +292,10 @@ class RealTimeTypingIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<WebSocketStateProvider>(
       builder: (context, websocketProvider, child) {
-        final typingUsers = websocketProvider.getTypingUsers(chatId);
+        final typingUsers = websocketProvider.getTypingUsers(int.parse(chatId));
         
         return TypingIndicator(
-          typingUsers: typingUsers,
+          typingUsers: typingUsers.map((id) => id.toString()).toList(),
           currentUserId: currentUserId,
           dotColor: dotColor,
           dotSize: dotSize,
@@ -331,7 +331,7 @@ class RealTimeOnlineStatus extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<WebSocketStateProvider>(
       builder: (context, websocketProvider, child) {
-        final isOnline = websocketProvider.isUserOnline(userId);
+        final isOnline = websocketProvider.isUserOnline(int.parse(userId));
         
         return OnlineStatusIndicator(
           isOnline: isOnline,

@@ -247,26 +247,26 @@ class TokenManagementService {
         final data = jsonDecode(response.body);
         
         if (data['success'] == true && data['data'] != null) {
-          final authResult = AuthResult.fromJson(data['data']);
+          final authData = data['data'];
           
           // Store the new tokens
-          await storeTokens(
-            accessToken: authResult.token,
-            refreshToken: authResult.refreshToken,
+          await storeTokenData(
+            accessToken: authData['token'],
+            refreshToken: authData['refresh_token'],
             tokenType: 'Bearer',
-            expiresIn: 3600, // Default 1 hour
+            expiresAt: DateTime.now().add(Duration(hours: 1)), // Default 1 hour
           );
           
-          return authResult.token;
+          return authData['token'];
         }
       }
       
       // If refresh fails, clear tokens and return null
-      await clearTokens();
+      await clearAllTokens();
       return null;
     } catch (e) {
       // If refresh fails, clear tokens and return null
-      await clearTokens();
+      await clearAllTokens();
       return null;
     }
   }

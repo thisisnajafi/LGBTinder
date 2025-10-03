@@ -308,7 +308,7 @@ class CallService {
   }
 
   /// Send call signal (for WebRTC)
-  Future<void> sendCallSignal(String callId, Map<String, dynamic> signal) async {
+  Future<void> sendCallSignal(String callId, Map<String, dynamic> signal, {String? accessToken}) async {
     try {
       await _apiService.post('/calls/$callId/signals', signal);
     } catch (e) {
@@ -320,7 +320,7 @@ class CallService {
   }
 
   /// Get call signals (for WebRTC)
-  Future<List<Map<String, dynamic>>> getCallSignals(String callId) async {
+  Future<List<Map<String, dynamic>>> getCallSignals(String callId, {String? accessToken}) async {
     try {
       final response = await _apiService.get('/calls/$callId/signals');
       final List<dynamic> signalsData = response['signals'] ?? [];
@@ -531,31 +531,6 @@ class CallService {
     }
   }
 
-  /// Send call signal for WebRTC
-  Future<void> sendCallSignal(String callId, Map<String, dynamic> signal, {String? accessToken}) async {
-    try {
-      await _apiService.post('/calls/$callId/signals', signal);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error sending call signal for $callId: $e');
-      }
-      rethrow;
-    }
-  }
-
-  /// Get call signals for WebRTC
-  Future<List<Map<String, dynamic>>> getCallSignals(String callId, {String? accessToken}) async {
-    try {
-      final response = await _apiService.get('/calls/$callId/signals');
-      final List<dynamic> signalsData = response['data'] ?? response['signals'] ?? [];
-      return signalsData.cast<Map<String, dynamic>>();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching call signals for $callId: $e');
-      }
-      rethrow;
-    }
-  }
 
   /// Block user from calling
   Future<void> blockUserFromCalling(String userId, {String? accessToken}) async {

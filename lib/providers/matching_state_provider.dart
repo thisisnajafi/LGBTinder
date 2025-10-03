@@ -9,7 +9,7 @@ import '../models/user_state_models.dart';
 
 class MatchingStateProvider extends ChangeNotifier {
   // State variables
-  List<Match> _matches = [];
+  List<MatchData> _matches = [];
   List<User> _potentialMatches = [];
   bool _isLoading = false;
   bool _isLiking = false;
@@ -18,7 +18,7 @@ class MatchingStateProvider extends ChangeNotifier {
   int? _lastLikedUserId;
 
   // Getters
-  List<Match> get matches => _matches;
+  List<MatchData> get matches => _matches;
   List<User> get potentialMatches => _potentialMatches;
   bool get isLoading => _isLoading;
   bool get isLiking => _isLiking;
@@ -45,7 +45,8 @@ class MatchingStateProvider extends ChangeNotifier {
         );
       }
 
-      _matches = await MatchingApiService.getMatches(token);
+      final response = await MatchingApiService.getMatches(token);
+      _matches = response.data;
       notifyListeners();
     } catch (e) {
       _handleError(e);
@@ -73,12 +74,12 @@ class MatchingStateProvider extends ChangeNotifier {
       // Check rate limiting
       await RateLimitingService.checkRateLimit('likes');
 
-      final request = LikeRequest(targetUserId: targetUserId);
+      final request = LikeUserRequest(targetUserId: targetUserId);
       final response = await MatchingApiService.likeUser(request, token);
 
       if (response.status) {
         // If it's a match, refresh matches to get the new match
-        if (response.data != null && response.data!['is_match'] == true) {
+        if (response.data != null && response.data!.isMatch) {
           await loadMatches();
         }
         notifyListeners();
@@ -109,7 +110,7 @@ class MatchingStateProvider extends ChangeNotifier {
   }
 
   // Get match by ID
-  Match? getMatchById(int matchId) {
+  MatchData? getMatchById(int matchId) {
     try {
       return _matches.firstWhere((match) => match.matchId == matchId);
     } catch (e) {
@@ -118,7 +119,7 @@ class MatchingStateProvider extends ChangeNotifier {
   }
 
   // Get match by user ID
-  Match? getMatchByUserId(int userId) {
+  MatchData? getMatchByUserId(int userId) {
     try {
       return _matches.firstWhere((match) => match.user.id == userId);
     } catch (e) {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 /// Profile-related API models
 
 /// User profile model
@@ -237,10 +239,14 @@ class UpdateProfileResponse {
 class UploadProfilePictureRequest {
   final String imagePath;
   final bool isPrimary;
+  final Map<String, String> fields;
+  final Map<String, File> files;
 
   const UploadProfilePictureRequest({
     required this.imagePath,
     this.isPrimary = false,
+    this.fields = const {},
+    this.files = const {},
   });
 
   factory UploadProfilePictureRequest.fromJson(Map<String, dynamic> json) {

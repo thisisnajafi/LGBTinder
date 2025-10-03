@@ -75,6 +75,73 @@ class StripePaymentService {
     }
   }
 
+  /// Create a payment method
+  static Future<Map<String, dynamic>> createPaymentMethod({
+    required Map<String, dynamic> paymentMethodData,
+    required String accessToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.stripeCreatePaymentMethod)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(paymentMethodData),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to create payment method: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+        throw NetworkException('Network error while creating payment method: $e');
+    }
+  }
+
+  /// Attach a payment method to customer
+  static Future<Map<String, dynamic>> attachPaymentMethod({
+    required String paymentMethodId,
+    required String customerId,
+    required String accessToken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.getUrl(ApiConfig.stripeAttachPaymentMethod)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'payment_method_id': paymentMethodId,
+          'customer_id': customerId,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        throw AuthException('Authentication required');
+      } else {
+        throw ApiException('Failed to attach payment method: ${response.statusCode}');
+      }
+    } on AuthException {
+      rethrow;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+        throw NetworkException('Network error while attaching payment method: $e');
+    }
+  }
+
   /// Create a customer
   static Future<Map<String, dynamic>> createCustomer({
     required String email,

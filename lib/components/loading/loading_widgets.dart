@@ -139,7 +139,7 @@ class LoadingWidgets {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
-      child: const Center(
+      child: Center(
         child: circular(),
       ),
     );
@@ -157,7 +157,7 @@ class LoadingWidgets {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
-      child: const Center(
+      child: Center(
         child: circular(size: 20.0),
       ),
     );
@@ -174,7 +174,7 @@ class LoadingWidgets {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
-      child: const Center(
+      child: Center(
         child: circular(size: 24.0),
       ),
     );

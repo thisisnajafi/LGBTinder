@@ -4,6 +4,7 @@ import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../models/api_models/user_models.dart';
 import '../services/reporting_service.dart';
+import '../models/api_models/report_models.dart';
 import '../providers/auth_provider.dart';
 import '../components/error_handling/error_display_widget.dart';
 import '../components/loading/loading_widgets.dart';
@@ -17,7 +18,7 @@ class ReportHistoryScreen extends StatefulWidget {
 }
 
 class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
-  List<Report> _reports = [];
+  List<ReportData> _reports = [];
   bool _isLoading = true;
   String? _error;
   String _selectedFilter = 'All';
@@ -57,7 +58,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
     }
   }
 
-  Future<void> _cancelReport(Report report) async {
+      Future<void> _cancelReport(ReportData report) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final accessToken = await authProvider.accessToken;
@@ -67,8 +68,8 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
       }
 
       await ReportingService.cancelReport(
-        reportId: report.id,
-        accessToken: accessToken,
+        accessToken,
+        report.id,
       );
 
       setState(() {
@@ -91,7 +92,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
     }
   }
 
-  void _showCancelConfirmation(Report report) {
+  void _showCancelConfirmation(ReportData report) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -151,13 +152,13 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
   Widget _buildBody() {
     if (_isLoading) {
       return LoadingWidgets.fullScreen(
-        message: 'Loading report history...',
+        text: 'Loading report history...',
       );
     }
 
     if (_error != null) {
       return ErrorDisplayWidget(
-        message: _error!,
+        error: _error!,
         onRetry: _loadReportHistory,
         retryText: 'Retry',
       );
@@ -179,7 +180,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: _ filterOptions.map((filter) {
+          children: _filterOptions.map((filter) {
             final isSelected = _selectedFilter == filter;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -212,7 +213,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
   Widget _buildReportList() {
     final filteredReports = _reports.where((report) {
       if (_selectedFilter == 'All') return true;
-      return report.type.toLowerCase().contains(_selectedFilter toLowerCase());
+      return report.reportType.toLowerCase().contains(_selectedFilter.toLowerCase());
     }).toList();
 
     if (filteredReports.isEmpty) {
@@ -265,7 +266,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
     );
   }
 
-  Widget _buildReportCard(Report report) {
+  Widget _buildReportCard(ReportData report) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(16),
@@ -282,7 +283,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
           Row(
             children: [
               Icon(
-                _getReportIcon(report.type),
+                _getReportIcon(report.reportType),
                 color: _getStatusColor(report.status),
                 size: 24,
               ),
@@ -292,7 +293,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Reported ${report.type}',
+                      'Reported ${report.reportType}',
                       style: AppTypography.body1.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -300,7 +301,7 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Reason: ${report.reason}',
+                      'Type: ${report.reportType}',
                       style: AppTypography.body2.copyWith(
                         color: Colors.white70,
                       ),
@@ -417,31 +418,3 @@ class _ReportHistoryScreenState extends State<ReportHistoryScreen> {
   }
 }
 
-class Report {
-  final String id;
-  final String type;
-  final String reason;
-  final String? description;
-  final String status;
-  final DateTime createdAt;
-
-  Report({
-    required this.id,
-    required this.type,
-    required this.reason,
-    this.description,
-    required this.status,
-    required this.createdAt,
-  });
-
-  factory Report.fromJson(Map<String, dynamic> json) {
-    return Report(
-      id: json['id']?.toString() ?? '',
-      type: json['reportable_type'] ?? 'Unknown',
-      reason: json['reason'] ?? '',
-      description: json['description'],
-      status: json['status'] ?? 'pending',
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-    );
-  }
-}

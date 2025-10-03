@@ -87,8 +87,8 @@ class ChatStateProvider extends ChangeNotifier {
         _chatHistories[userId] = [...chatHistoryData.messages, ...existingMessages];
       }
 
-      _paginationData[userId] = chatHistoryData.pagination;
-      _hasMoreMessages[userId] = chatHistoryData.pagination.hasPrev;
+      _paginationData[userId] = chatHistoryData.pagination!;
+      _hasMoreMessages[userId] = chatHistoryData.pagination?.hasPrev ?? false;
 
       notifyListeners();
     } catch (e) {
@@ -120,7 +120,10 @@ class ChatStateProvider extends ChangeNotifier {
       final request = SendMessageRequest(
         receiverId: receiverId,
         message: message,
-        messageType: messageType,
+        messageType: MessageType.values.firstWhere(
+          (type) => type.value == messageType,
+          orElse: () => MessageType.text,
+        ),
       );
 
       final response = await ChatApiService.sendMessage(request, token);
@@ -128,11 +131,11 @@ class ChatStateProvider extends ChangeNotifier {
       if (response.status) {
         // Add the message to the local chat history
         final newMessage = MessageData(
-          id: response.data?['message_id'] ?? 0,
-          senderId: response.data?['sender_id'] ?? 0,
+          messageId: response.data?.messageId ?? 0,
+          senderId: response.data?.senderId ?? 0,
           receiverId: receiverId,
           message: message,
-          messageType: messageType,
+          messageType: MessageType.text,
           sentAt: DateTime.now().toIso8601String(),
           isRead: false,
         );

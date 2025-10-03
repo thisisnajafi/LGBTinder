@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../services/secure_error_handler.dart';
+import '../../services/exceptions.dart';
 import '../../models/api_models/common_models.dart';
 
 /// A reusable widget for displaying API errors consistently across the app

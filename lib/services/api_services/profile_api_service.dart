@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
 import '../../models/api_models/profile_models.dart';
+import '../../utils/profile_helper.dart';
 
 /// Profile Management API Service
 /// 
@@ -155,7 +156,7 @@ class ProfileApiService {
   ) async {
     try {
       final request = UploadProfilePictureRequest(
-        image: imageFile,
+        imagePath: imageFile.path,
         isPrimary: isPrimary,
       );
       final response = await uploadProfilePicture(request, token);

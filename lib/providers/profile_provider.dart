@@ -300,14 +300,15 @@ class ProfileProvider extends ChangeNotifier {
       final user = _user!;
       
       // Create verification status based on user data
-      _verification = VerificationStatus(
-        isEmailVerified: user.isVerified,
-        isPhoneVerified: false, // TODO: Add phone verification when available
-        isPhotoVerified: user.profilePictures.isNotEmpty,
-        isIdVerified: false, // TODO: Add ID verification when available
-        verificationLevel: _calculateVerificationLevel(user),
-        verifiedAt: user.isVerified ? DateTime.now() : null,
-        pendingVerifications: _getPendingVerifications(user),
+      _verification = UserVerification(
+        id: 0,
+        userId: user.id,
+        photoVerified: user.profilePictures.isNotEmpty,
+        idVerified: false, // TODO: Add ID verification when available
+        videoVerified: false,
+        verificationScore: _calculateVerificationScore(user),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
       
       notifyListeners();
@@ -318,15 +319,15 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-  String _calculateVerificationLevel(User user) {
-    int verifiedCount = 0;
+  int _calculateVerificationScore(User user) {
+    int score = 0;
     
-    if (user.isVerified) verifiedCount++;
-    if (user.profilePictures.isNotEmpty) verifiedCount++;
+    if (user.isVerified) score += 40; // Email verification
+    if (user.profilePictures.isNotEmpty) score += 30; // Photo upload
+    if (user.bio != null && user.bio!.isNotEmpty) score += 20; // Bio completion
+    if (user.age != null && user.age! >= 18) score += 10; // Age verification
     
-    if (verifiedCount >= 2) return 'high';
-    if (verifiedCount >= 1) return 'medium';
-    return 'low';
+    return score;
   }
 
   List<String> _getPendingVerifications(User user) {

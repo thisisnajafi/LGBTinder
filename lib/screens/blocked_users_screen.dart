@@ -151,13 +151,13 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   Widget _buildBody() {
     if (_isLoading) {
       return LoadingWidgets.fullScreen(
-        message: 'Loading blocked users...',
+        text: 'Loading blocked users...',
       );
     }
 
     if (_error != null) {
       return ErrorDisplayWidget(
-        message: _error!,
+        error: _error!,
         onRetry: _loadBlockedUsers,
         retryText: 'Retry',
       );
@@ -292,7 +292,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user.name,
+                  user.name ?? 'Unknown User',
                   style: AppTypography.body1.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

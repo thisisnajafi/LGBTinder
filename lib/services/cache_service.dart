@@ -19,6 +19,94 @@ class CacheService {
   // Cache version for invalidation
   static const String _cacheVersion = '1.0.0';
 
+  // Generic get method for compatibility
+  static Future<T?> get<T>(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = '$_cachePrefix$key';
+      final timestampKey = '$_cacheTimestampPrefix$key';
+      final versionKey = '$_cacheVersionPrefix$key';
+
+      // Check if cache exists
+      if (!prefs.containsKey(cacheKey)) {
+        return null;
+      }
+
+      // Check cache version
+      final cachedVersion = prefs.getString(versionKey);
+      if (cachedVersion != _cacheVersion) {
+        await _clearCacheForKey(key);
+        return null;
+      }
+
+      // Check cache expiration
+      final timestamp = prefs.getInt(timestampKey);
+      if (timestamp == null) {
+        await _clearCacheForKey(key);
+        return null;
+      }
+
+      final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      final now = DateTime.now();
+      
+      // Default to 1 hour expiration for generic cache
+      if (now.difference(cacheTime) > Duration(hours: 1)) {
+        await _clearCacheForKey(key);
+        return null;
+      }
+
+      // Get cached data
+      final cachedDataString = prefs.getString(cacheKey);
+      if (cachedDataString == null) {
+        await _clearCacheForKey(key);
+        return null;
+      }
+
+      final cachedData = json.decode(cachedDataString);
+      return cachedData as T?;
+    } catch (e) {
+      debugPrint('Cache get error for key $key: $e');
+      return null;
+    }
+  }
+
+  // Generic set method for compatibility
+  static Future<void> set(String key, dynamic data, {Duration? expiry}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = '$_cachePrefix$key';
+      final timestampKey = '$_cacheTimestampPrefix$key';
+      final versionKey = '$_cacheVersionPrefix$key';
+
+      final dataString = json.encode(data);
+      final now = DateTime.now().millisecondsSinceEpoch;
+
+      await prefs.setString(cacheKey, dataString);
+      await prefs.setInt(timestampKey, now);
+      await prefs.setString(versionKey, _cacheVersion);
+    } catch (e) {
+      debugPrint('Cache set error for key $key: $e');
+    }
+  }
+
+  // Generic clear method for compatibility
+  static Future<void> clear() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      
+      for (final key in keys) {
+        if (key.startsWith(_cachePrefix) || 
+            key.startsWith(_cacheTimestampPrefix) || 
+            key.startsWith(_cacheVersionPrefix)) {
+          await prefs.remove(key);
+        }
+      }
+    } catch (e) {
+      debugPrint('Cache clear error: $e');
+    }
+  }
+
   // Get cached data
   static Future<T?> getCachedData<T>(String key, T Function(Map<String, dynamic>) fromJson) async {
     try {

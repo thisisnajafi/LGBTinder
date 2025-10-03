@@ -231,6 +231,8 @@ class ApiConfig {
   static const String stripeCreatePaymentIntent = '/stripe/create-payment-intent';
   static const String stripeConfirmPayment = '/stripe/confirm-payment';
   static const String stripeCreateCustomer = '/stripe/create-customer';
+  static const String stripeCreatePaymentMethod = '/stripe/create-payment-method';
+  static const String stripeAttachPaymentMethod = '/stripe/attach-payment-method';
   static const String stripeCreateSetupIntent = '/stripe/create-setup-intent';
   
   // Missing Premium endpoints

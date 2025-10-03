@@ -13,7 +13,6 @@ class OfflineService {
   OfflineService._internal();
 
   final Connectivity _connectivity = Connectivity();
-  final CacheService _cacheService = CacheService();
   
   bool _isOnline = true;
   final List<VoidCallback> _connectivityListeners = [];
@@ -76,7 +75,7 @@ class OfflineService {
     try {
       if (_isOnline && !forceRefresh) {
         // Try to get from cache first
-        final cachedData = await _cacheService.get<T>(cacheKey);
+        final cachedData = await CacheService.get<T>(cacheKey);
         if (cachedData != null) {
           return cachedData;
         }
@@ -85,12 +84,12 @@ class OfflineService {
         final result = await onlineFunction();
         
         // Cache the result
-        await _cacheService.set(cacheKey, result, expiry: cacheExpiry);
+        await CacheService.set(cacheKey, result, expiry: cacheExpiry);
         
         return result;
       } else {
         // Use offline function or cached data
-        final cachedData = await _cacheService.get<T>(cacheKey);
+        final cachedData = await CacheService.get<T>(cacheKey);
         if (cachedData != null) {
           return cachedData;
         }
@@ -99,7 +98,7 @@ class OfflineService {
       }
     } catch (e) {
       // Fallback to cached data or offline function
-      final cachedData = await _cacheService.get<T>(cacheKey);
+      final cachedData = await CacheService.get<T>(cacheKey);
       if (cachedData != null) {
         return cachedData;
       }
@@ -128,7 +127,7 @@ class OfflineService {
         'endpoint': endpoint,
         'data': data,
         'method': method,
-        'headers': headers ?? {}},
+        'headers': headers ?? {},
         'timestamp': DateTime.now().millisecondsSinceEpoch,
       });
       
@@ -200,7 +199,7 @@ class OfflineService {
   /// Get offline data for a specific key
   Future<T?> getOfflineData<T>(String key) async {
     try {
-      return await _cacheService.get<T>(key);
+      return await CacheService.get<T>(key);
     } catch (e) {
       ErrorMonitoringService.logError(
         message: e.toString(),
@@ -213,7 +212,7 @@ class OfflineService {
   /// Set offline data for a specific key
   Future<void> setOfflineData<T>(String key, T data, {Duration? expiry}) async {
     try {
-      await _cacheService.set(key, data, expiry: expiry);
+      await CacheService.set(key, data, expiry: expiry);
     } catch (e) {
       ErrorMonitoringService.logError(
         message: e.toString(),
@@ -225,7 +224,7 @@ class OfflineService {
   /// Clear all offline data
   Future<void> clearOfflineData() async {
     try {
-      await _cacheService.clear();
+      await CacheService.clear();
       
       // Also clear queued requests
       final prefs = await SharedPreferences.getInstance();
