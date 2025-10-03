@@ -22,6 +22,9 @@ import 'screens/auth/forgot_password_screen.dart';
 import 'screens/auth/profile_completion_welcome_screen.dart';
 import 'screens/auth/profile_wizard_screen.dart';
 import 'screens/auth/profile_completion_screen.dart';
+import 'screens/onboarding/enhanced_onboarding_screen.dart';
+import 'screens/onboarding/onboarding_preferences_screen.dart';
+import 'services/onboarding_manager.dart';
 import 'pages/api_test_page.dart';
 import 'pages/discovery_page.dart';
 import 'screens/story_creation_screen.dart';
@@ -109,6 +112,13 @@ class LGBTinderApp extends StatelessWidget {
         routes: {
           '/': (context) => const AuthWrapper(),
           '/onboarding': (context) => const OnboardingPage(),
+          '/enhanced-onboarding': (context) => const EnhancedOnboardingScreen(),
+          '/onboarding-preferences': (context) => OnboardingPreferencesScreen(
+            initialPreferences: const OnboardingPreferences(),
+            onPreferencesChanged: (preferences) {
+              // Handle preferences change
+            },
+          ),
           '/welcome': (context) => const WelcomeScreen(),
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),

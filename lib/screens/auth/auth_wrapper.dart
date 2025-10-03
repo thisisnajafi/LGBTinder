@@ -6,21 +6,53 @@ import '../../pages/splash_page.dart';
 import '../../components/splash/optimized_splash_page.dart';
 import '../../components/splash/simple_splash_page.dart';
 import '../../pages/home_page.dart';
+import '../../screens/onboarding/enhanced_onboarding_screen.dart';
+import '../../services/onboarding_manager.dart';
 import 'welcome_screen.dart';
 import 'register_screen.dart';
 import 'email_verification_screen.dart';
 import 'profile_completion_screen.dart';
 
 /// Authentication wrapper that handles app state based on user state
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 
   @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isCheckingOnboarding = true;
+  bool _shouldShowOnboarding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboardingStatus();
+  }
+
+  Future<void> _checkOnboardingStatus() async {
+    final shouldShow = await OnboardingManager.shouldShowOnboarding();
+    if (mounted) {
+      setState(() {
+        _shouldShowOnboarding = shouldShow;
+        _isCheckingOnboarding = false;
+      });
+    }
+  @override
   Widget build(BuildContext context) {
+    // Show splash screen while checking onboarding status
+    if (_isCheckingOnboarding) {
+      return const SimpleSplashPage();
+    }
+
+    // Show enhanced onboarding if needed
+    if (_shouldShowOnboarding) {
+      return const EnhancedOnboardingScreen();
+    }
+
     return Consumer<AppStateProvider>(
       builder: (context, appState, child) {
-        // The SimpleSplashPage will handle initialization, so no need for additional callback
-        
         // Show simple splash screen while initializing
         if (appState.isLoading) {
           return const SimpleSplashPage();
