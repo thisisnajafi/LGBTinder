@@ -20,10 +20,15 @@ import '../screens/safety_settings_screen.dart';
 import '../screens/profile/advanced_profile_customization_screen.dart';
 import '../screens/profile/profile_completion_incentives_screen.dart';
 import '../screens/profile/profile_verification_screen.dart';
+import '../screens/profile/profile_analytics_screen.dart';
+import '../screens/profile/profile_sharing_screen.dart';
 import '../components/profile/customizable_profile_widget.dart';
 import '../services/profile_customization_service.dart';
 import '../services/gamification_service.dart';
 import '../services/profile_verification_service.dart';
+import '../services/profile_analytics_service.dart';
+import '../services/profile_sharing_service.dart';
+import '../services/profile_backup_service.dart';
 import 'profile_edit_page.dart';
 import 'profile_wizard_page.dart';
 
@@ -519,6 +524,46 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.analytics,
+                label: 'Analytics',
+                onTap: _showProfileAnalytics,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.settings,
+                label: 'Settings',
+                onTap: _showSettings,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.share,
+                label: 'Share Profile',
+                onTap: _showProfileSharing,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.backup,
+                label: 'Backup',
+                onTap: _showProfileBackup,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -840,5 +885,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showProfileVerification() {
     Navigator.pushNamed(context, '/profile-verification');
+  }
+
+  void _showProfileAnalytics() {
+    Navigator.pushNamed(context, '/profile-analytics');
+  }
+
+  void _showProfileSharing() {
+    Navigator.pushNamed(context, '/profile-sharing');
+  }
+
+  void _showProfileBackup() {
+    Navigator.pushNamed(context, '/profile-backup');
   }
 }

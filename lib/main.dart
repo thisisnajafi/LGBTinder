@@ -49,6 +49,9 @@ import 'screens/settings_screen.dart';
 import 'screens/profile/advanced_profile_customization_screen.dart';
 import 'screens/profile/profile_completion_incentives_screen.dart';
 import 'screens/profile/profile_verification_screen.dart';
+import 'screens/profile/profile_analytics_screen.dart';
+import 'screens/profile/profile_sharing_screen.dart';
+import 'screens/profile/profile_backup_screen.dart';
 import 'components/gamification/gamification_components.dart';
 import 'help_support_screen.dart';
 import 'screens/add_payment_method_screen.dart';
@@ -154,6 +157,9 @@ class LGBTinderApp extends StatelessWidget {
           '/advanced-profile-customization': (context) => const AdvancedProfileCustomizationScreen(),
           '/profile-completion-incentives': (context) => const ProfileCompletionIncentivesScreen(),
           '/profile-verification': (context) => const ProfileVerificationScreen(),
+          '/profile-analytics': (context) => const ProfileAnalyticsScreen(),
+          '/profile-sharing': (context) => const ProfileSharingScreen(),
+          '/profile-backup': (context) => const ProfileBackupScreen(),
           '/gamification-dashboard': (context) => const GamificationDashboard(),
           '/help-support': (context) => const HelpSupportScreen(),
           '/add-payment-method': (context) => const AddPaymentMethodScreen(),

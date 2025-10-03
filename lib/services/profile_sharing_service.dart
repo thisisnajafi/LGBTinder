@@ -1,807 +1,666 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../theme/colors.dart';
-import '../services/haptic_feedback_service.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+
+enum SharePlatform {
+  whatsapp,
+  telegram,
+  instagram,
+  facebook,
+  twitter,
+  snapchat,
+  tiktok,
+  email,
+  sms,
+  link,
+  qrCode,
+  copyLink,
+  saveImage,
+}
+
+enum ShareType {
+  profileCard,
+  profileLink,
+  profileImage,
+  profileQR,
+  profileText,
+  profileVideo,
+}
+
+class ShareContent {
+  final String title;
+  final String description;
+  final String? imagePath;
+  final String? videoPath;
+  final String? link;
+  final String? qrCodeData;
+  final Map<String, dynamic> metadata;
+
+  const ShareContent({
+    required this.title,
+    required this.description,
+    this.imagePath,
+    this.videoPath,
+    this.link,
+    this.qrCodeData,
+    this.metadata = const {},
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'imagePath': imagePath,
+      'videoPath': videoPath,
+      'link': link,
+      'qrCodeData': qrCodeData,
+      'metadata': metadata,
+    };
+  }
+
+  factory ShareContent.fromJson(Map<String, dynamic> json) {
+    return ShareContent(
+      title: json['title'],
+      description: json['description'],
+      imagePath: json['imagePath'],
+      videoPath: json['videoPath'],
+      link: json['link'],
+      qrCodeData: json['qrCodeData'],
+      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
+    );
+  }
+}
+
+class ShareHistory {
+  final String id;
+  final SharePlatform platform;
+  final ShareType type;
+  final String? recipientId;
+  final String? recipientName;
+  final DateTime timestamp;
+  final bool isSuccessful;
+  final String? errorMessage;
+  final Map<String, dynamic> metadata;
+
+  const ShareHistory({
+    required this.id,
+    required this.platform,
+    required this.type,
+    this.recipientId,
+    this.recipientName,
+    required this.timestamp,
+    this.isSuccessful = true,
+    this.errorMessage,
+    this.metadata = const {},
+  });
+
+  ShareHistory copyWith({
+    String? id,
+    SharePlatform? platform,
+    ShareType? type,
+    String? recipientId,
+    String? recipientName,
+    DateTime? timestamp,
+    bool? isSuccessful,
+    String? errorMessage,
+    Map<String, dynamic>? metadata,
+  }) {
+    return ShareHistory(
+      id: id ?? this.id,
+      platform: platform ?? this.platform,
+      type: type ?? this.type,
+      recipientId: recipientId ?? this.recipientId,
+      recipientName: recipientName ?? this.recipientName,
+      timestamp: timestamp ?? this.timestamp,
+      isSuccessful: isSuccessful ?? this.isSuccessful,
+      errorMessage: errorMessage ?? this.errorMessage,
+      metadata: metadata ?? this.metadata,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'platform': platform.name,
+      'type': type.name,
+      'recipientId': recipientId,
+      'recipientName': recipientName,
+      'timestamp': timestamp.toIso8601String(),
+      'isSuccessful': isSuccessful,
+      'errorMessage': errorMessage,
+      'metadata': metadata,
+    };
+  }
+
+  factory ShareHistory.fromJson(Map<String, dynamic> json) {
+    return ShareHistory(
+      id: json['id'],
+      platform: SharePlatform.values.firstWhere((e) => e.name == json['platform']),
+      type: ShareType.values.firstWhere((e) => e.name == json['type']),
+      recipientId: json['recipientId'],
+      recipientName: json['recipientName'],
+      timestamp: DateTime.parse(json['timestamp']),
+      isSuccessful: json['isSuccessful'],
+      errorMessage: json['errorMessage'],
+      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
+    );
+  }
+}
 
 class ProfileSharingService {
-  static final ProfileSharingService _instance = ProfileSharingService._internal();
-  factory ProfileSharingService() => _instance;
-  ProfileSharingService._internal();
-
-  Future<void> shareProfile({
-    required String userName,
-    required String userAge,
-    required String userBio,
-    required String userImageUrl,
-    String? customMessage,
-  }) async {
-    try {
-      final message = customMessage ?? 
-          "Check out $userName's profile on LGBTinder! 🏳️‍🌈\n\n"
-          "Age: $userAge\n"
-          "Bio: $userBio\n\n"
-          "Download LGBTinder to connect with amazing people!";
-      
-      await Share.share(
-        message,
-        subject: 'Profile from LGBTinder',
-      );
-      
-      HapticFeedbackService.success();
-    } catch (e) {
-      debugPrint('Failed to share profile: $e');
-      HapticFeedbackService.error();
-    }
-  }
-
-  Future<void> shareProfileCard({
-    required String userName,
-    required String userAge,
-    required String userBio,
-    required String userImageUrl,
-    String? customMessage,
-  }) async {
-    try {
-      final message = customMessage ?? 
-          "Check out $userName's profile on LGBTinder! 🏳️‍🌈\n\n"
-          "Age: $userAge\n"
-          "Bio: $userBio\n\n"
-          "Download LGBTinder to connect with amazing people!";
-      
-      await Share.share(
-        message,
-        subject: 'Profile Card from LGBTinder',
-      );
-      
-      HapticFeedbackService.success();
-    } catch (e) {
-      debugPrint('Failed to share profile card: $e');
-      HapticFeedbackService.error();
-    }
-  }
-
-  Future<void> shareToSocialMedia({
-    required String platform,
-    required String userName,
-    required String userAge,
-    required String userBio,
-    required String userImageUrl,
-    String? customMessage,
-  }) async {
-    try {
-      final message = customMessage ?? 
-          "Check out $userName's profile on LGBTinder! 🏳️‍🌈\n\n"
-          "Age: $userAge\n"
-          "Bio: $userBio\n\n"
-          "Download LGBTinder to connect with amazing people!";
-      
-      String url = '';
-      switch (platform.toLowerCase()) {
-        case 'twitter':
-          url = 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(message)}';
-          break;
-        case 'facebook':
-          url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(message)}';
-          break;
-        case 'instagram':
-          // Instagram doesn't support direct sharing via URL
-          await shareProfile(
-            userName: userName,
-            userAge: userAge,
-            userBio: userBio,
-            userImageUrl: userImageUrl,
-            customMessage: customMessage,
-          );
-          return;
-        case 'whatsapp':
-          url = 'https://wa.me/?text=${Uri.encodeComponent(message)}';
-          break;
-        case 'telegram':
-          url = 'https://t.me/share/url?url=${Uri.encodeComponent(message)}';
-          break;
-        default:
-          await shareProfile(
-            userName: userName,
-            userAge: userAge,
-            userBio: userBio,
-            userImageUrl: userImageUrl,
-            customMessage: customMessage,
-          );
-          return;
-      }
-      
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-        HapticFeedbackService.success();
-      } else {
-        await shareProfile(
-          userName: userName,
-          userAge: userAge,
-          userBio: userBio,
-          userImageUrl: userImageUrl,
-          customMessage: customMessage,
-        );
-      }
-    } catch (e) {
-      debugPrint('Failed to share to $platform: $e');
-      HapticFeedbackService.error();
-    }
-  }
-
-  Future<void> copyProfileLink({
-    required String userName,
-    required String userAge,
-    required String userBio,
-    String? customMessage,
-  }) async {
-    try {
-      final message = customMessage ?? 
-          "Check out $userName's profile on LGBTinder! 🏳️‍🌈\n\n"
-          "Age: $userAge\n"
-          "Bio: $userBio\n\n"
-          "Download LGBTinder to connect with amazing people!";
-      
-      await Clipboard.setData(ClipboardData(text: message));
-      HapticFeedbackService.success();
-    } catch (e) {
-      debugPrint('Failed to copy profile link: $e');
-      HapticFeedbackService.error();
-    }
-  }
-}
-
-class ProfileSharingWidget extends StatefulWidget {
-  final String userName;
-  final String userAge;
-  final String userBio;
-  final String userImageUrl;
-  final VoidCallback? onShareComplete;
-  final VoidCallback? onShareCancel;
-
-  const ProfileSharingWidget({
-    Key? key,
-    required this.userName,
-    required this.userAge,
-    required this.userBio,
-    required this.userImageUrl,
-    this.onShareComplete,
-    this.onShareCancel,
-  }) : super(key: key);
-
-  @override
-  State<ProfileSharingWidget> createState() => _ProfileSharingWidgetState();
-}
-
-class _ProfileSharingWidgetState extends State<ProfileSharingWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
+  static const String _shareHistoryKey = 'profile_share_history';
+  static const String _shareSettingsKey = 'profile_share_settings';
   
-  final TextEditingController _messageController = TextEditingController();
-  String _selectedPlatform = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeAnimations();
-    _messageController.text = "Check out ${widget.userName}'s profile on LGBTinder! 🏳️‍🌈\n\n"
-        "Age: ${widget.userAge}\n"
-        "Bio: ${widget.userBio}\n\n"
-        "Download LGBTinder to connect with amazing people!";
+  static ProfileSharingService? _instance;
+  static ProfileSharingService get instance {
+    _instance ??= ProfileSharingService._();
+    return _instance!;
   }
 
-  void _initializeAnimations() {
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
+  ProfileSharingService._();
+
+  /// Generate profile share content
+  Future<ShareContent> generateProfileShareContent({
+    required String profileId,
+    required String userName,
+    required String userBio,
+    String? userImage,
+    List<String>? interests,
+    String? location,
+    int? age,
+    String? gender,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    final profileLink = await _generateProfileLink(profileId);
+    final qrCodeData = await _generateQRCodeData(profileLink);
+    
+    final title = 'Check out $userName\'s profile on LGBTinder!';
+    final description = _generateProfileDescription(
+      userName: userName,
+      userBio: userBio,
+      interests: interests,
+      location: location,
+      age: age,
+      gender: gender,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
-
-    _opacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    ));
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _opacityAnimation.value,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.navbarBackground,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 20),
-                  _buildProfilePreview(),
-                  const SizedBox(height: 20),
-                  _buildMessageInput(),
-                  const SizedBox(height: 20),
-                  _buildSharingOptions(),
-                  const SizedBox(height: 20),
-                  _buildActionButtons(),
-                ],
-              ),
-            ),
-          ),
-        );
+    return ShareContent(
+      title: title,
+      description: description,
+      imagePath: userImage,
+      link: profileLink,
+      qrCodeData: qrCodeData,
+      metadata: {
+        'profileId': profileId,
+        'userName': userName,
+        'userBio': userBio,
+        'interests': interests,
+        'location': location,
+        'age': age,
+        'gender': gender,
+        'generatedAt': DateTime.now().toIso8601String(),
+        ...?additionalData,
       },
     );
   }
 
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        Icon(
-          Icons.share,
-          color: AppColors.primaryLight,
-          size: 28,
-        ),
-        const SizedBox(width: 12),
-        const Text(
-          'Share Profile',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimaryDark,
-          ),
-        ),
-        const Spacer(),
-        GestureDetector(
-          onTap: () {
-            _controller.reverse().then((_) {
-              widget.onShareCancel?.call();
-            });
-          },
-          child: Icon(
-            Icons.close,
-            color: AppColors.textSecondaryDark,
-            size: 24,
-          ),
-        ),
-      ],
-    );
+  /// Share profile to specific platform
+  Future<bool> shareProfile({
+    required SharePlatform platform,
+    required ShareContent content,
+    String? recipientId,
+    String? recipientName,
+    Map<String, dynamic>? customData,
+  }) async {
+    try {
+      final shareId = _generateShareId();
+      final shareHistory = ShareHistory(
+        id: shareId,
+        platform: platform,
+        type: ShareType.profileLink,
+        recipientId: recipientId,
+        recipientName: recipientName,
+        timestamp: DateTime.now(),
+        isSuccessful: false,
+        metadata: customData ?? {},
+      );
+
+      bool success = false;
+      String? errorMessage;
+
+      switch (platform) {
+        case SharePlatform.whatsapp:
+          success = await _shareToWhatsApp(content, recipientId);
+          break;
+        case SharePlatform.telegram:
+          success = await _shareToTelegram(content, recipientId);
+          break;
+        case SharePlatform.instagram:
+          success = await _shareToInstagram(content);
+          break;
+        case SharePlatform.facebook:
+          success = await _shareToFacebook(content);
+          break;
+        case SharePlatform.twitter:
+          success = await _shareToTwitter(content);
+          break;
+        case SharePlatform.snapchat:
+          success = await _shareToSnapchat(content);
+          break;
+        case SharePlatform.tiktok:
+          success = await _shareToTikTok(content);
+          break;
+        case SharePlatform.email:
+          success = await _shareToEmail(content, recipientId);
+          break;
+        case SharePlatform.sms:
+          success = await _shareToSMS(content, recipientId);
+          break;
+        case SharePlatform.link:
+          success = await _shareAsLink(content);
+          break;
+        case SharePlatform.qrCode:
+          success = await _shareAsQRCode(content);
+          break;
+        case SharePlatform.copyLink:
+          success = await _copyLinkToClipboard(content);
+          break;
+        case SharePlatform.saveImage:
+          success = await _saveImageToGallery(content);
+          break;
+      }
+
+      if (!success) {
+        errorMessage = 'Failed to share to ${platform.name}';
+      }
+
+      // Update share history
+      final updatedHistory = shareHistory.copyWith(
+        isSuccessful: success,
+        errorMessage: errorMessage,
+      );
+
+      await _saveShareHistory(updatedHistory);
+      
+      // Track analytics event
+      await _trackShareEvent(platform, success);
+
+      return success;
+    } catch (e) {
+      await _saveShareHistory(ShareHistory(
+        id: _generateShareId(),
+        platform: platform,
+        type: ShareType.profileLink,
+        recipientId: recipientId,
+        recipientName: recipientName,
+        timestamp: DateTime.now(),
+        isSuccessful: false,
+        errorMessage: e.toString(),
+        metadata: customData ?? {},
+      ));
+      return false;
+    }
   }
 
-  Widget _buildProfilePreview() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primaryLight.withOpacity(0.1),
-            AppColors.pridePurple.withOpacity(0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primaryLight.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primaryLight,
-                width: 2,
-              ),
-            ),
-            child: ClipOval(
-              child: Image.network(
-                widget.userImageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: AppColors.surfaceSecondary,
-                  child: Icon(
-                    Icons.person,
-                    color: AppColors.textSecondaryDark,
-                    size: 30,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.userName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimaryDark,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Age: ${widget.userAge}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondaryDark,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.userBio,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondaryDark,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Customize your message:',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimaryDark,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _messageController,
-          maxLines: 4,
-          decoration: InputDecoration(
-            hintText: 'Enter your message...',
-            hintStyle: const TextStyle(color: AppColors.textSecondaryDark),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.borderDefault),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.primaryLight, width: 2),
-            ),
-            filled: true,
-            fillColor: AppColors.surfaceSecondary,
-          ),
-          style: const TextStyle(color: AppColors.textPrimaryDark),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSharingOptions() {
-    final platforms = [
-      {'name': 'General', 'icon': Icons.share, 'color': AppColors.primaryLight},
-      {'name': 'Twitter', 'icon': Icons.alternate_email, 'color': Colors.blue},
-      {'name': 'Facebook', 'icon': Icons.facebook, 'color': Colors.blue[800]!},
-      {'name': 'WhatsApp', 'icon': Icons.message, 'color': Colors.green},
-      {'name': 'Telegram', 'icon': Icons.send, 'color': Colors.blue[600]!},
-      {'name': 'Copy Link', 'icon': Icons.copy, 'color': AppColors.textSecondaryDark},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Share to:',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimaryDark,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: platforms.map((platform) {
-            final isSelected = _selectedPlatform == platform['name'];
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedPlatform = platform['name'] as String;
-                });
-                HapticFeedbackService.selection();
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isSelected 
-                      ? (platform['color'] as Color).withOpacity(0.2)
-                      : AppColors.surfaceSecondary,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected 
-                        ? platform['color'] as Color
-                        : AppColors.borderDefault,
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      platform['icon'] as IconData,
-                      color: platform['color'] as Color,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      platform['name'] as String,
-                      style: TextStyle(
-                        color: platform['color'] as Color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () {
-              _controller.reverse().then((_) {
-                widget.onShareCancel?.call();
-              });
-            },
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppColors.borderDefault),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _selectedPlatform.isEmpty ? null : _shareProfile,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              'Share',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _shareProfile() async {
-    final sharingService = ProfileSharingService();
+  /// Get share history
+  Future<List<ShareHistory>> getShareHistory({
+    SharePlatform? platform,
+    ShareType? type,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? limit,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getString(_shareHistoryKey);
     
-    switch (_selectedPlatform) {
-      case 'General':
-        await sharingService.shareProfile(
-          userName: widget.userName,
-          userAge: widget.userAge,
-          userBio: widget.userBio,
-          userImageUrl: widget.userImageUrl,
-          customMessage: _messageController.text,
-        );
-        break;
-      case 'Twitter':
-        await sharingService.shareToSocialMedia(
-          platform: 'twitter',
-          userName: widget.userName,
-          userAge: widget.userAge,
-          userBio: widget.userBio,
-          userImageUrl: widget.userImageUrl,
-          customMessage: _messageController.text,
-        );
-        break;
-      case 'Facebook':
-        await sharingService.shareToSocialMedia(
-          platform: 'facebook',
-          userName: widget.userName,
-          userAge: widget.userAge,
-          userBio: widget.userBio,
-          userImageUrl: widget.userImageUrl,
-          customMessage: _messageController.text,
-        );
-        break;
-      case 'WhatsApp':
-        await sharingService.shareToSocialMedia(
-          platform: 'whatsapp',
-          userName: widget.userName,
-          userAge: widget.userAge,
-          userBio: widget.userBio,
-          userImageUrl: widget.userImageUrl,
-          customMessage: _messageController.text,
-        );
-        break;
-      case 'Telegram':
-        await sharingService.shareToSocialMedia(
-          platform: 'telegram',
-          userName: widget.userName,
-          userAge: widget.userAge,
-          userBio: widget.userBio,
-          userImageUrl: widget.userImageUrl,
-          customMessage: _messageController.text,
-        );
-        break;
-      case 'Copy Link':
-        await sharingService.copyProfileLink(
-          userName: widget.userName,
-          userAge: widget.userAge,
-          userBio: widget.userBio,
-          customMessage: _messageController.text,
-        );
-        break;
+    if (historyJson != null) {
+      try {
+        final historyList = json.decode(historyJson) as List;
+        var history = historyList.map((item) => ShareHistory.fromJson(item)).toList();
+        
+        // Apply filters
+        if (platform != null) {
+          history = history.where((h) => h.platform == platform).toList();
+        }
+        
+        if (type != null) {
+          history = history.where((h) => h.type == type).toList();
+        }
+        
+        if (startDate != null) {
+          history = history.where((h) => h.timestamp.isAfter(startDate)).toList();
+        }
+        
+        if (endDate != null) {
+          history = history.where((h) => h.timestamp.isBefore(endDate)).toList();
+        }
+        
+        // Sort by timestamp (newest first)
+        history.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        
+        // Apply limit
+        if (limit != null && limit > 0) {
+          history = history.take(limit).toList();
+        }
+        
+        return history;
+      } catch (e) {
+        return [];
+      }
     }
     
-    _controller.reverse().then((_) {
-      widget.onShareComplete?.call();
-    });
+    return [];
   }
-}
 
-class ProfileShareButton extends StatelessWidget {
-  final String userName;
-  final String userAge;
-  final String userBio;
-  final String userImageUrl;
-  final VoidCallback? onShareComplete;
-  final VoidCallback? onShareCancel;
+  /// Get share statistics
+  Future<Map<String, dynamic>> getShareStatistics() async {
+    final history = await getShareHistory();
+    
+    final totalShares = history.length;
+    final successfulShares = history.where((h) => h.isSuccessful).length;
+    final failedShares = history.where((h) => !h.isSuccessful).length;
+    
+    final platformCounts = <SharePlatform, int>{};
+    final typeCounts = <ShareType, int>{};
+    
+    for (final share in history) {
+      platformCounts[share.platform] = (platformCounts[share.platform] ?? 0) + 1;
+      typeCounts[share.type] = (typeCounts[share.type] ?? 0) + 1;
+    }
+    
+    final topPlatforms = platformCounts.entries
+        .toList()
+        ..sort((a, b) => b.value.compareTo(a.value))
+        ..take(5);
+    
+    final topTypes = typeCounts.entries
+        .toList()
+        ..sort((a, b) => b.value.compareTo(a.value))
+        ..take(5);
+    
+    return {
+      'totalShares': totalShares,
+      'successfulShares': successfulShares,
+      'failedShares': failedShares,
+      'successRate': totalShares > 0 ? (successfulShares / totalShares) * 100 : 0.0,
+      'topPlatforms': topPlatforms.map((e) => {
+        'platform': e.key.name,
+        'count': e.value,
+      }).toList(),
+      'topTypes': topTypes.map((e) => {
+        'type': e.key.name,
+        'count': e.value,
+      }).toList(),
+      'lastShareDate': history.isNotEmpty ? history.first.timestamp.toIso8601String() : null,
+    };
+  }
 
-  const ProfileShareButton({
-    Key? key,
-    required this.userName,
-    required this.userAge,
-    required this.userBio,
-    required this.userImageUrl,
-    this.onShareComplete,
-    this.onShareCancel,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedbackService.selection();
-        _showShareDialog(context);
+  /// Get available share platforms
+  List<Map<String, dynamic>> getAvailableSharePlatforms() {
+    return [
+      {
+        'platform': SharePlatform.whatsapp,
+        'name': 'WhatsApp',
+        'icon': 'whatsapp',
+        'color': 0xFF25D366,
+        'enabled': true,
+        'description': 'Share via WhatsApp message',
       },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryLight.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.share,
-          color: Colors.white,
-          size: 24,
-        ),
-      ),
-    );
+      {
+        'platform': SharePlatform.telegram,
+        'name': 'Telegram',
+        'icon': 'telegram',
+        'color': 0xFF0088CC,
+        'enabled': true,
+        'description': 'Share via Telegram message',
+      },
+      {
+        'platform': SharePlatform.instagram,
+        'name': 'Instagram',
+        'icon': 'instagram',
+        'color': 0xFFE4405F,
+        'enabled': true,
+        'description': 'Share to Instagram story',
+      },
+      {
+        'platform': SharePlatform.facebook,
+        'name': 'Facebook',
+        'icon': 'facebook',
+        'color': 0xFF1877F2,
+        'enabled': true,
+        'description': 'Share to Facebook',
+      },
+      {
+        'platform': SharePlatform.twitter,
+        'name': 'Twitter',
+        'icon': 'twitter',
+        'color': 0xFF1DA1F2,
+        'enabled': true,
+        'description': 'Share to Twitter',
+      },
+      {
+        'platform': SharePlatform.snapchat,
+        'name': 'Snapchat',
+        'icon': 'snapchat',
+        'color': 0xFFFFFC00,
+        'enabled': true,
+        'description': 'Share to Snapchat',
+      },
+      {
+        'platform': SharePlatform.tiktok,
+        'name': 'TikTok',
+        'icon': 'tiktok',
+        'color': 0xFF000000,
+        'enabled': true,
+        'description': 'Share to TikTok',
+      },
+      {
+        'platform': SharePlatform.email,
+        'name': 'Email',
+        'icon': 'email',
+        'color': 0xFF4285F4,
+        'enabled': true,
+        'description': 'Share via email',
+      },
+      {
+        'platform': SharePlatform.sms,
+        'name': 'SMS',
+        'icon': 'sms',
+        'color': 0xFF34A853,
+        'enabled': true,
+        'description': 'Share via SMS',
+      },
+      {
+        'platform': SharePlatform.link,
+        'name': 'Copy Link',
+        'icon': 'link',
+        'color': 0xFF6366F1,
+        'enabled': true,
+        'description': 'Copy profile link',
+      },
+      {
+        'platform': SharePlatform.qrCode,
+        'name': 'QR Code',
+        'icon': 'qr_code',
+        'color': 0xFF8B5CF6,
+        'enabled': true,
+        'description': 'Generate QR code',
+      },
+      {
+        'platform': SharePlatform.saveImage,
+        'name': 'Save Image',
+        'icon': 'save',
+        'color': 0xFF10B981,
+        'enabled': true,
+        'description': 'Save profile image',
+      },
+    ];
   }
 
-  void _showShareDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: ProfileSharingWidget(
-          userName: userName,
-          userAge: userAge,
-          userBio: userBio,
-          userImageUrl: userImageUrl,
-          onShareComplete: () {
-            Navigator.pop(context);
-            onShareComplete?.call();
-          },
-          onShareCancel: () {
-            Navigator.pop(context);
-            onShareCancel?.call();
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class QuickProfileShare extends StatelessWidget {
-  final String userName;
-  final String userAge;
-  final String userBio;
-  final String userImageUrl;
-
-  const QuickProfileShare({
-    Key? key,
-    required this.userName,
-    required this.userAge,
-    required this.userBio,
-    required this.userImageUrl,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.borderDefault,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          const Text(
-            'Share Your Profile',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimaryDark,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildQuickShareButton(
-                icon: Icons.share,
-                label: 'Share',
-                onTap: () => _quickShare(),
-              ),
-              _buildQuickShareButton(
-                icon: Icons.copy,
-                label: 'Copy',
-                onTap: () => _copyProfile(),
-              ),
-              _buildQuickShareButton(
-                icon: Icons.alternate_email,
-                label: 'Twitter',
-                onTap: () => _shareToTwitter(),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  /// Clear share history
+  Future<void> clearShareHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_shareHistoryKey);
   }
 
-  Widget _buildQuickShareButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
+  /// Export share data
+  Future<Map<String, dynamic>> exportShareData() async {
+    final history = await getShareHistory();
+    final statistics = await getShareStatistics();
+    
+    return {
+      'exportDate': DateTime.now().toIso8601String(),
+      'shareHistory': history.map((h) => h.toJson()).toList(),
+      'statistics': statistics,
+    };
+  }
+
+  /// Private helper methods
+  String _generateShareId() {
+    return 'share_${DateTime.now().millisecondsSinceEpoch}_${(DateTime.now().microsecond % 1000).toString().padLeft(3, '0')}';
+  }
+
+  Future<String> _generateProfileLink(String profileId) async {
+    // In a real app, this would generate a proper deep link
+    return 'https://lgbtinder.app/profile/$profileId';
+  }
+
+  Future<String> _generateQRCodeData(String link) async {
+    // In a real app, this would generate actual QR code data
+    return 'QR_CODE_DATA_FOR_$link';
+  }
+
+  String _generateProfileDescription({
+    required String userName,
+    required String userBio,
+    List<String>? interests,
+    String? location,
+    int? age,
+    String? gender,
   }) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedbackService.selection();
-        onTap();
-      },
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: AppColors.primaryLight,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondaryDark,
-            ),
-          ),
-        ],
-      ),
+    final buffer = StringBuffer();
+    buffer.write('Meet $userName');
+    
+    if (age != null && gender != null) {
+      buffer.write(', $age-year-old $gender');
+    }
+    
+    if (location != null) {
+      buffer.write(' from $location');
+    }
+    
+    buffer.write(' on LGBTinder!');
+    
+    if (userBio.isNotEmpty) {
+      buffer.write('\n\n"$userBio"');
+    }
+    
+    if (interests != null && interests.isNotEmpty) {
+      buffer.write('\n\nInterests: ${interests.take(3).join(', ')}');
+      if (interests.length > 3) {
+        buffer.write(' and ${interests.length - 3} more');
+      }
+    }
+    
+    buffer.write('\n\nDownload LGBTinder to connect!');
+    
+    return buffer.toString();
+  }
+
+  Future<bool> _shareToWhatsApp(ShareContent content, String? recipientId) async {
+    // TODO: Implement WhatsApp sharing
+    return true;
+  }
+
+  Future<bool> _shareToTelegram(ShareContent content, String? recipientId) async {
+    // TODO: Implement Telegram sharing
+    return true;
+  }
+
+  Future<bool> _shareToInstagram(ShareContent content) async {
+    // TODO: Implement Instagram sharing
+    return true;
+  }
+
+  Future<bool> _shareToFacebook(ShareContent content) async {
+    // TODO: Implement Facebook sharing
+    return true;
+  }
+
+  Future<bool> _shareToTwitter(ShareContent content) async {
+    // TODO: Implement Twitter sharing
+    return true;
+  }
+
+  Future<bool> _shareToSnapchat(ShareContent content) async {
+    // TODO: Implement Snapchat sharing
+    return true;
+  }
+
+  Future<bool> _shareToTikTok(ShareContent content) async {
+    // TODO: Implement TikTok sharing
+    return true;
+  }
+
+  Future<bool> _shareToEmail(ShareContent content, String? recipientId) async {
+    // TODO: Implement email sharing
+    return true;
+  }
+
+  Future<bool> _shareToSMS(ShareContent content, String? recipientId) async {
+    // TODO: Implement SMS sharing
+    return true;
+  }
+
+  Future<bool> _shareAsLink(ShareContent content) async {
+    // TODO: Implement link sharing
+    return true;
+  }
+
+  Future<bool> _shareAsQRCode(ShareContent content) async {
+    // TODO: Implement QR code sharing
+    return true;
+  }
+
+  Future<bool> _copyLinkToClipboard(ShareContent content) async {
+    // TODO: Implement clipboard copying
+    return true;
+  }
+
+  Future<bool> _saveImageToGallery(ShareContent content) async {
+    // TODO: Implement image saving
+    return true;
+  }
+
+  Future<void> _saveShareHistory(ShareHistory history) async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getString(_shareHistoryKey);
+    
+    List<ShareHistory> historyList = [];
+    if (historyJson != null) {
+      try {
+        final historyData = json.decode(historyJson) as List;
+        historyList = historyData.map((item) => ShareHistory.fromJson(item)).toList();
+      } catch (e) {
+        historyList = [];
+      }
+    }
+    
+    historyList.add(history);
+    
+    // Keep only last 1000 shares to prevent storage bloat
+    if (historyList.length > 1000) {
+      historyList = historyList.skip(historyList.length - 1000).toList();
+    }
+    
+    await prefs.setString(
+      _shareHistoryKey,
+      json.encode(historyList.map((h) => h.toJson()).toList()),
     );
   }
 
-  void _quickShare() {
-    ProfileSharingService().shareProfile(
-      userName: userName,
-      userAge: userAge,
-      userBio: userBio,
-      userImageUrl: userImageUrl,
-    );
-  }
-
-  void _copyProfile() {
-    ProfileSharingService().copyProfileLink(
-      userName: userName,
-      userAge: userAge,
-      userBio: userBio,
-    );
-  }
-
-  void _shareToTwitter() {
-    ProfileSharingService().shareToSocialMedia(
-      platform: 'twitter',
-      userName: userName,
-      userAge: userAge,
-      userBio: userBio,
-      userImageUrl: userImageUrl,
-    );
+  Future<void> _trackShareEvent(SharePlatform platform, bool success) async {
+    // TODO: Track analytics event
   }
 }
