@@ -57,7 +57,7 @@ import 'help_support_screen.dart';
 import 'screens/add_payment_method_screen.dart';
 import 'screens/blocked_users_screen.dart';
 import 'screens/report_history_screen.dart';
-// import 'screens/audio_recorder_settings_screen.dart'; // Commented out - file removed
+import 'screens/audio_recorder_settings_screen.dart';
 import 'models/premium_plan.dart';
 import 'models/user.dart';
 import 'services/firebase_notification_service.dart';
@@ -141,8 +141,8 @@ class LGBTinderApp extends StatelessWidget {
           '/premium-features': (context) => const PremiumFeaturesScreen(),
           '/subscription-management': (context) => const SubscriptionManagementScreen(),
           '/payment': (context) => PaymentScreen(plan: PremiumPlan.fromJson({})),
-          // '/video-call': (context) => VideoCallScreen(otherUser: User.fromJson({})),  // Temporarily disabled
-          // '/voice-call': (context) => VoiceCallScreen(otherUser: User.fromJson({})),  // Temporarily disabled
+          '/video-call': (context) => VideoCallScreen(otherUser: User.fromJson({})),
+          '/voice-call': (context) => VoiceCallScreen(otherUser: User.fromJson({})),
           '/terms-of-service': (context) => const TermsOfServiceScreen(),
           '/privacy-policy': (context) => const PrivacyPolicyScreen(),
           '/accessibility-settings': (context) => const AccessibilitySettingsScreen(),
@@ -165,7 +165,7 @@ class LGBTinderApp extends StatelessWidget {
           '/add-payment-method': (context) => const AddPaymentMethodScreen(),
           '/blocked-users': (context) => const BlockedUsersScreen(),
           '/report-history': (context) => const ReportHistoryScreen(),
-          // '/audio-recorder-settings': (context) => const AudioRecorderSettingsScreen(), // Commented out - screen removed
+          '/audio-recorder-settings': (context) => const AudioRecorderSettingsScreen(),
           '/feed': (context) => const FeedPage(),
           '/main': (context) => const MainScreen(),
           '/api-test': (context) => const ApiTestPage(),

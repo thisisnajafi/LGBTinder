@@ -1,12 +1,9 @@
-// Temporarily disabled due to flutter_webrtc compatibility issues
-/*
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
-import '../services/webrtc_service.dart';
 import '../models/user.dart';
+import '../utils/haptic_feedback_service.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final User otherUser;
@@ -24,167 +21,145 @@ class VideoCallScreen extends StatefulWidget {
   State<VideoCallScreen> createState() => _VideoCallScreenState();
 }
 
-class _VideoCallScreenState extends State<VideoCallScreen> {
-  final WebRTCService _webrtcService = WebRTCService();
-  late RTCVideoRenderer _localRenderer;
-  late RTCVideoRenderer _remoteRenderer;
+class _VideoCallScreenState extends State<VideoCallScreen> with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _fadeController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _fadeAnimation;
+  
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
   bool _isSpeakerEnabled = false;
   bool _isCallActive = false;
   String _callState = 'initializing';
   String _connectionState = 'connecting';
+  Duration _callDuration = Duration.zero;
+  late DateTime _callStartTime;
 
   @override
   void initState() {
     super.initState();
-    _localRenderer = RTCVideoRenderer();
-    _remoteRenderer = RTCVideoRenderer();
-    _initializeRenderers();
+    _initializeAnimations();
     _initializeCall();
-    _setupStreams();
+    _startCallTimer();
   }
 
-  Future<void> _initializeRenderers() async {
-    await _localRenderer.initialize();
-    await _remoteRenderer.initialize();
-  }
-
-  Future<void> _initializeCall() async {
-    try {
-      await _webrtcService.initialize();
-      
-      if (widget.isIncoming) {
-        setState(() {
-          _callState = 'incoming';
-        });
-      } else {
-        await _startOutgoingCall();
-      }
-    } catch (e) {
-      setState(() {
-        _callState = 'error';
-      });
-      _showErrorDialog('Failed to initialize call: $e');
-    }
-  }
-
-  void _setupStreams() {
-    _webrtcService.callState.listen((state) {
-      setState(() {
-        _callState = state;
-        _isCallActive = state == 'connected' || state == 'answered';
-      });
-    });
-
-    _webrtcService.connectionState.listen((state) {
-      setState(() {
-        _connectionState = state;
-      });
-    });
-
-    _webrtcService.remoteStream.listen((stream) {
-      _remoteRenderer.srcObject = stream;
-    });
-
-    // Set local stream
-    if (_webrtcService.localStream != null) {
-      _localRenderer.srcObject = _webrtcService.localStream!;
-    }
-  }
-
-  Future<void> _startOutgoingCall() async {
-    try {
-      await _webrtcService.startCall(
-        roomId: widget.roomId ?? 'room_${DateTime.now().millisecondsSinceEpoch}',
-        userId: 'current_user_id', // This should come from auth provider
-        otherUserId: widget.otherUser.id.toString(),
-      );
-    } catch (e) {
-      _showErrorDialog('Failed to start call: $e');
-    }
-  }
-
-  Future<void> _answerCall() async {
-    try {
-      // In a real implementation, you would get the offer data from the incoming call
-      await _webrtcService.answerCall({
-        'roomId': widget.roomId ?? 'room_${DateTime.now().millisecondsSinceEpoch}',
-        'fromUserId': widget.otherUser.id.toString(),
-        'toUserId': 'current_user_id',
-        'offer': {}, // This would contain the actual offer data
-      });
-    } catch (e) {
-      _showErrorDialog('Failed to answer call: $e');
-    }
-  }
-
-  Future<void> _endCall() async {
-    try {
-      await _webrtcService.endCall();
-      Navigator.pop(context);
-    } catch (e) {
-      _showErrorDialog('Failed to end call: $e');
-    }
-  }
-
-  Future<void> _toggleCamera() async {
-    try {
-      await _webrtcService.toggleCamera();
-      setState(() {
-        _isVideoEnabled = !_isVideoEnabled;
-      });
-    } catch (e) {
-      _showErrorDialog('Failed to toggle camera: $e');
-    }
-  }
-
-  Future<void> _toggleMicrophone() async {
-    try {
-      await _webrtcService.toggleMicrophone();
-      setState(() {
-        _isAudioEnabled = !_isAudioEnabled;
-      });
-    } catch (e) {
-      _showErrorDialog('Failed to toggle microphone: $e');
-    }
-  }
-
-  Future<void> _switchCamera() async {
-    try {
-      await _webrtcService.switchCamera();
-    } catch (e) {
-      _showErrorDialog('Failed to switch camera: $e');
-    }
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.navbarBackground,
-        title: Text(
-          'Call Error',
-          style: AppTypography.h4.copyWith(color: Colors.white),
-        ),
-        content: Text(
-          message,
-          style: AppTypography.body1.copyWith(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: Text(
-              'OK',
-              style: AppTypography.body1.copyWith(color: AppColors.primary),
-            ),
-          ),
-        ],
-      ),
+  void _initializeAnimations() {
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
     );
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    ));
+
+    _pulseController.repeat(reverse: true);
+    _fadeController.forward();
+  }
+
+  void _initializeCall() {
+    if (widget.isIncoming) {
+      setState(() {
+        _callState = 'incoming';
+      });
+    } else {
+      _startOutgoingCall();
+    }
+  }
+
+  void _startOutgoingCall() {
+    setState(() {
+      _callState = 'calling';
+    });
+    
+    // Simulate call connection after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _callState = 'connected';
+          _isCallActive = true;
+          _connectionState = 'connected';
+          _callStartTime = DateTime.now();
+        });
+        HapticFeedbackService.mediumImpact();
+      }
+    });
+  }
+
+  void _answerCall() {
+    setState(() {
+      _callState = 'connected';
+      _isCallActive = true;
+      _connectionState = 'connected';
+      _callStartTime = DateTime.now();
+    });
+    HapticFeedbackService.mediumImpact();
+  }
+
+  void _endCall() {
+    HapticFeedbackService.heavyImpact();
+    Navigator.pop(context);
+  }
+
+  void _toggleCamera() {
+    setState(() {
+      _isVideoEnabled = !_isVideoEnabled;
+    });
+    HapticFeedbackService.lightImpact();
+  }
+
+  void _toggleMicrophone() {
+    setState(() {
+      _isAudioEnabled = !_isAudioEnabled;
+    });
+    HapticFeedbackService.lightImpact();
+  }
+
+  void _switchCamera() {
+    HapticFeedbackService.lightImpact();
+    // TODO: Implement camera switching when WebRTC is available
+  }
+
+  void _toggleSpeaker() {
+    setState(() {
+      _isSpeakerEnabled = !_isSpeakerEnabled;
+    });
+    HapticFeedbackService.lightImpact();
+  }
+
+  void _startCallTimer() {
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted && _isCallActive) {
+        setState(() {
+          _callDuration = DateTime.now().difference(_callStartTime);
+        });
+        _startCallTimer();
+      }
+    });
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$twoDigitMinutes:$twoDigitSeconds';
   }
 
   @override
@@ -194,36 +169,15 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Remote video (full screen)
-            if (_isCallActive)
-              RTCVideoView(
-                _remoteRenderer,
-                objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-              )
+            // Main video area
+            if (_isCallActive && _isVideoEnabled)
+              _buildVideoArea()
             else
               _buildCallingScreen(),
 
             // Local video (picture-in-picture)
             if (_isCallActive && _isVideoEnabled)
-              Positioned(
-                top: 50,
-                right: 20,
-                child: Container(
-                  width: 120,
-                  height: 160,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: RTCVideoView(
-                      _localRenderer,
-                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                    ),
-                  ),
-                ),
-              ),
+              _buildLocalVideo(),
 
             // Call controls
             _buildCallControls(),
@@ -231,6 +185,144 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             // Call status
             _buildCallStatus(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoArea() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryLight.withOpacity(0.8),
+            AppColors.secondaryLight.withOpacity(0.8),
+            AppColors.accent.withOpacity(0.6),
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Remote video placeholder
+          Center(
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(0),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.videocam_off,
+                    size: 80,
+                    color: Colors.white.withOpacity(0.7),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Video call feature coming soon',
+                    style: AppTypography.bodyLargeStyle.copyWith(
+                      color: Colors.white.withOpacity(0.8),
+                      fontWeight: AppTypography.medium,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'WebRTC integration in progress',
+                    style: AppTypography.bodyMediumStyle.copyWith(
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Connection status overlay
+          Positioned(
+            top: 20,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _connectionState == 'connected' ? Colors.green : Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _getConnectionStatusText(),
+                    style: AppTypography.bodyMediumStyle.copyWith(
+                      color: Colors.white,
+                      fontWeight: AppTypography.medium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocalVideo() {
+    return Positioned(
+      top: 50,
+      right: 20,
+      child: Container(
+        width: 120,
+        height: 160,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            color: Colors.grey[800],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
+                  size: 30,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'You',
+                  style: AppTypography.bodySmallStyle.copyWith(
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -245,56 +337,86 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.primary.withValues(alpha: 0.8),
-            AppColors.secondary.withValues(alpha: 0.8),
+            AppColors.primaryLight.withOpacity(0.9),
+            AppColors.secondaryLight.withOpacity(0.9),
+            AppColors.accent.withOpacity(0.7),
           ],
         ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // User avatar
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 4),
-            ),
-            child: ClipOval(
-              child: widget.otherUser.images?.isNotEmpty == true
-                  ? Image.network(
-                      widget.otherUser.images!.first.url,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.white,
+          // User avatar with pulse animation
+          AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _callState == 'calling' ? _pulseAnimation.value : 1.0,
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
-                    )
-                  : Icon(
-                      Icons.person,
-                      size: 60,
-                      color: Colors.white,
-                    ),
-            ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: widget.otherUser.images?.isNotEmpty == true
+                        ? Image.network(
+                            widget.otherUser.images!.first.url,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(),
+                          )
+                        : _buildDefaultAvatar(),
+                  ),
+                ),
+              );
+            },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           Text(
-            widget.otherUser.name ?? 'Unknown',
-            style: AppTypography.h4.copyWith(
+            widget.otherUser.firstName ?? 'Unknown',
+            style: AppTypography.headlineMediumStyle.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: AppTypography.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             _getCallStatusText(),
-            style: AppTypography.body1.copyWith(
-              color: Colors.white70,
+            style: AppTypography.bodyLargeStyle.copyWith(
+              color: Colors.white.withOpacity(0.8),
             ),
           ),
+          if (_isCallActive) ...[
+            const SizedBox(height: 16),
+            Text(
+              _formatDuration(_callDuration),
+              style: AppTypography.titleLargeStyle.copyWith(
+                color: Colors.white,
+                fontWeight: AppTypography.semiBold,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildDefaultAvatar() {
+    return Container(
+      color: Colors.grey[300],
+      child: Icon(
+        Icons.person,
+        size: 70,
+        color: Colors.grey[600],
       ),
     );
   }
@@ -304,93 +426,92 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       bottom: 40,
       left: 0,
       right: 0,
-      child: Column(
-        children: [
-          // Call duration and status
-          if (_isCallActive)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                _getConnectionStatusText(),
-                style: AppTypography.body2.copyWith(
-                  color: Colors.white,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Column(
+          children: [
+            // Call duration and status
+            if (_isCallActive)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _getConnectionStatusText(),
+                  style: AppTypography.bodyMediumStyle.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-          const SizedBox(height: 20),
-          
-          // Control buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Camera toggle
-              _buildControlButton(
-                icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
-                onPressed: _toggleCamera,
-                backgroundColor: _isVideoEnabled ? Colors.white24 : Colors.red,
-              ),
-              
-              // Microphone toggle
-              _buildControlButton(
-                icon: _isAudioEnabled ? Icons.mic : Icons.mic_off,
-                onPressed: _toggleMicrophone,
-                backgroundColor: _isAudioEnabled ? Colors.white24 : Colors.red,
-              ),
-              
-              // Switch camera
-              _buildControlButton(
-                icon: Icons.switch_camera,
-                onPressed: _switchCamera,
-                backgroundColor: Colors.white24,
-              ),
-              
-              // Speaker toggle
-              _buildControlButton(
-                icon: _isSpeakerEnabled ? Icons.volume_up : Icons.volume_down,
-                onPressed: () {
-                  setState(() {
-                    _isSpeakerEnabled = !_isSpeakerEnabled;
-                  });
-                },
-                backgroundColor: _isSpeakerEnabled ? AppColors.primary : Colors.white24,
-              ),
-              
-              // End call
-              _buildControlButton(
-                icon: Icons.call_end,
-                onPressed: _endCall,
-                backgroundColor: Colors.red,
-                isEndCall: true,
-              ),
-            ],
-          ),
-          
-          // Answer/Decline buttons for incoming calls
-          if (_callState == 'incoming') ...[
             const SizedBox(height: 20),
+            
+            // Control buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                // Camera toggle
+                _buildControlButton(
+                  icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
+                  onPressed: _toggleCamera,
+                  backgroundColor: _isVideoEnabled ? Colors.white.withOpacity(0.2) : Colors.red,
+                ),
+                
+                // Microphone toggle
+                _buildControlButton(
+                  icon: _isAudioEnabled ? Icons.mic : Icons.mic_off,
+                  onPressed: _toggleMicrophone,
+                  backgroundColor: _isAudioEnabled ? Colors.white.withOpacity(0.2) : Colors.red,
+                ),
+                
+                // Switch camera
+                _buildControlButton(
+                  icon: Icons.switch_camera,
+                  onPressed: _switchCamera,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                ),
+                
+                // Speaker toggle
+                _buildControlButton(
+                  icon: _isSpeakerEnabled ? Icons.volume_up : Icons.volume_down,
+                  onPressed: _toggleSpeaker,
+                  backgroundColor: _isSpeakerEnabled ? AppColors.primaryLight : Colors.white.withOpacity(0.2),
+                ),
+                
+                // End call
                 _buildControlButton(
                   icon: Icons.call_end,
                   onPressed: _endCall,
                   backgroundColor: Colors.red,
                   isEndCall: true,
                 ),
-                _buildControlButton(
-                  icon: Icons.call,
-                  onPressed: _answerCall,
-                  backgroundColor: Colors.green,
-                  isEndCall: true,
-                ),
               ],
             ),
+            
+            // Answer/Decline buttons for incoming calls
+            if (_callState == 'incoming') ...[
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildControlButton(
+                    icon: Icons.call_end,
+                    onPressed: _endCall,
+                    backgroundColor: Colors.red,
+                    isEndCall: true,
+                  ),
+                  _buildControlButton(
+                    icon: Icons.call,
+                    onPressed: _answerCall,
+                    backgroundColor: Colors.green,
+                    isEndCall: true,
+                  ),
+                ],
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -411,7 +532,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: Colors.black.withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -435,7 +556,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.red.withValues(alpha: 0.8),
+            color: Colors.red.withOpacity(0.8),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -445,7 +566,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               Expanded(
                 child: Text(
                   'Call failed. Please try again.',
-                  style: AppTypography.body1.copyWith(
+                  style: AppTypography.bodyLargeStyle.copyWith(
                     color: Colors.white,
                   ),
                 ),
@@ -495,10 +616,8 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   @override
   void dispose() {
-    _localRenderer.dispose();
-    _remoteRenderer.dispose();
-    _webrtcService.dispose();
+    _pulseController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 }
-*/
