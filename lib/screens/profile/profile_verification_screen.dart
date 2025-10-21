@@ -6,6 +6,8 @@ import '../services/profile_verification_service.dart';
 import '../services/haptic_feedback_service.dart';
 import '../components/verification/verification_components.dart';
 import '../components/buttons/animated_button.dart';
+import '../verification/id_verification_screen.dart';
+import '../verification/phone_verification_screen.dart';
 
 class ProfileVerificationScreen extends StatefulWidget {
   const ProfileVerificationScreen({Key? key}) : super(key: key);
@@ -851,19 +853,19 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
   }
 
   void _startIdentityVerification() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Identity verification coming soon!'),
-        backgroundColor: AppColors.feedbackInfo,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const IdVerificationScreen(),
       ),
     );
   }
 
   void _startPhoneVerification() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Phone verification coming soon!'),
-        backgroundColor: AppColors.feedbackInfo,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PhoneVerificationScreen(),
       ),
     );
   }
