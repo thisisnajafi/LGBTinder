@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
 
 class VerificationBadge extends StatelessWidget {
@@ -233,8 +234,7 @@ class VerificationBadgeList extends StatelessWidget {
           children: [
             Text(
               'Verification Status',
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimaryDark,
               ),
@@ -248,8 +248,7 @@ class VerificationBadgeList extends StatelessWidget {
               ),
               child: Text(
                 '$verifiedCount/$totalCount',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: AppTypography.bodySmall.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryLight,
                 ),
@@ -304,16 +303,14 @@ class VerificationProgress extends StatelessWidget {
           children: [
             const Text(
               'Verification Progress',
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimaryDark,
               ),
             ),
             Text(
               '${(progress * 100).round()}%',
-              style: const TextStyle(
-                fontSize: 12,
+              style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondaryDark,
               ),
             ),
@@ -405,8 +402,7 @@ class VerificationCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondaryDark,
                     ),
                   ),
@@ -493,8 +489,7 @@ class VerificationStatusIndicator extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
+          style: AppTypography.bodyMedium.copyWith(
             color: color,
             fontWeight: FontWeight.bold,
           ),

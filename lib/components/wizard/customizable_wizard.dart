@@ -211,7 +211,6 @@ class _CustomizableWizardState extends State<CustomizableWizard>
                 color: themeProvider.isDarkMode 
                     ? AppColors.textSecondaryDark 
                     : AppColors.textSecondary,
-                fontSize: 12,
               ),
             ),
         ],
@@ -248,7 +247,6 @@ class _CustomizableWizardState extends State<CustomizableWizard>
                   color: themeProvider.isDarkMode 
                       ? AppColors.textSecondaryDark 
                       : AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
               const Spacer(),
@@ -258,7 +256,6 @@ class _CustomizableWizardState extends State<CustomizableWizard>
                   color: themeProvider.isDarkMode 
                       ? AppColors.textSecondaryDark 
                       : AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
             ],
@@ -284,8 +281,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
         children: [
           Text(
             currentStep.description,
-            style: TextStyle(
-              fontSize: 16,
+            style: AppTypography.bodyLarge.copyWith(
               color: themeProvider.isDarkMode 
                   ? AppColors.textSecondaryDark 
                   : AppColors.textSecondary,
@@ -485,8 +481,7 @@ class WizardStepBuilder extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
+          style: AppTypography.titleLarge.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -494,8 +489,7 @@ class WizardStepBuilder extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           description,
-          style: const TextStyle(
-            fontSize: 14,
+          style: AppTypography.bodyMedium.copyWith(
             color: AppColors.textSecondaryDark,
           ),
         ),
@@ -660,7 +654,7 @@ class _WizardCustomizationScreenState extends State<WizardCustomizationScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: AppTypography.titleMedium.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
