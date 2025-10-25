@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class ProfileHeader extends StatelessWidget {
   final User user;
@@ -167,8 +168,7 @@ class ProfileHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 user.fullName,
-                style: const TextStyle(
-                  fontSize: 24,
+                style: AppTypography.headlineSmall.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -180,8 +180,7 @@ class ProfileHeader extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 '${user.age}',
-                style: const TextStyle(
-                  fontSize: 20,
+                style: AppTypography.titleLarge.copyWith(
                   fontWeight: FontWeight.w500,
                   color: Colors.grey,
                 ),
@@ -203,8 +202,7 @@ class ProfileHeader extends StatelessWidget {
               Expanded(
                 child: Text(
                   _buildLocationText(),
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
                     color: Colors.grey[600],
                   ),
                   maxLines: 1,
@@ -228,7 +226,6 @@ class ProfileHeader extends StatelessWidget {
                   'Online',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -245,7 +242,6 @@ class ProfileHeader extends StatelessWidget {
                   'Verified',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -265,7 +261,6 @@ class ProfileHeader extends StatelessWidget {
                   'Premium',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -316,8 +311,7 @@ class ProfileHeader extends StatelessWidget {
       ),
       child: Text(
         user.profileBio!,
-        style: const TextStyle(
-          fontSize: 16,
+        style: AppTypography.bodyLarge.copyWith(
           color: Colors.black87,
           height: 1.4,
         ),

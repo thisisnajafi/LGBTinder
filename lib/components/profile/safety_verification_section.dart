@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class SafetyVerificationSection extends StatelessWidget {
   final UserVerification? verification;
@@ -57,7 +58,7 @@ class SafetyVerificationSection extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'Safety & Verification',
-                style: const TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -112,8 +113,7 @@ class SafetyVerificationSection extends StatelessWidget {
               children: [
                 Text(
                   hasVerifiedProfile ? 'Verified Profile' : 'Verification In Progress',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: AppTypography.titleMedium.copyWith(
                     fontWeight: FontWeight.bold,
                     color: hasVerifiedProfile ? Colors.green[700] : Colors.orange[700],
                   ),
@@ -121,8 +121,7 @@ class SafetyVerificationSection extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '$score% Complete',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
                     color: Colors.grey[600],
                   ),
                 ),
@@ -215,8 +214,7 @@ class SafetyVerificationSection extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                     color: isVerified ? Colors.green[700] : Colors.grey[700],
                   ),
@@ -224,8 +222,7 @@ class SafetyVerificationSection extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 12,
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.grey[600],
                   ),
                 ),
@@ -243,8 +240,7 @@ class SafetyVerificationSection extends StatelessWidget {
               onPressed: onVerify,
               child: const Text(
                 'Verify Now',
-                style: TextStyle(
-                  fontSize: 12,
+                style: AppTypography.bodySmall.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -276,8 +272,7 @@ class SafetyVerificationSection extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Verification Not Available',
-            style: TextStyle(
-              fontSize: 16,
+            style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.w500,
               color: Colors.grey[600],
             ),
