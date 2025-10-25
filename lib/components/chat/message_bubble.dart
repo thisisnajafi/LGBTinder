@@ -90,7 +90,6 @@ class MessageBubble extends StatelessWidget {
                           _formatTime(message.timestamp),
                           style: AppTypography.caption.copyWith(
                             color: Colors.white.withOpacity(0.7),
-                            fontSize: 11,
                           ),
                         ),
                         
@@ -260,7 +259,6 @@ class MessageBubble extends StatelessWidget {
                       attachment.durationText,
                       style: AppTypography.caption.copyWith(
                         color: Colors.white,
-                        fontSize: 10,
                       ),
                     ),
                   ),
@@ -328,7 +326,6 @@ class MessageBubble extends StatelessWidget {
                       color: isOwnMessage 
                           ? Colors.white.withOpacity(0.8) 
                           : Colors.white.withOpacity(0.7),
-                      fontSize: 10,
                     ),
                   ),
                 ],
@@ -387,7 +384,6 @@ class MessageBubble extends StatelessWidget {
                       color: isOwnMessage 
                           ? Colors.white.withOpacity(0.8) 
                           : Colors.white.withOpacity(0.7),
-                      fontSize: 10,
                     ),
                   ),
               ],
@@ -443,7 +439,6 @@ class MessageBubble extends StatelessWidget {
                 message.content,
                 style: AppTypography.caption.copyWith(
                   color: Colors.white,
-                  fontSize: 10,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -502,7 +497,6 @@ class MessageBubble extends StatelessWidget {
                     color: isOwnMessage 
                         ? Colors.white.withOpacity(0.8) 
                         : Colors.white.withOpacity(0.7),
-                    fontSize: 10,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

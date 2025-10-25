@@ -238,7 +238,6 @@ class ChatListItem extends StatelessWidget {
           style: AppTypography.caption.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w600,
-            fontSize: 12,
           ),
         ),
       ),

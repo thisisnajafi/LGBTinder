@@ -107,7 +107,6 @@ class _TypingIndicatorState extends State<TypingIndicator>
                       _getTypingText(otherTypingUsers),
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.7),
-                        fontSize: 12,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
