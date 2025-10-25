@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../models/user_state_models.dart';
@@ -54,6 +56,210 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isPasswordValid = _passwordController.text.length >= 8;
     });
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    final appState = Provider.of<AppStateProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    try {
+      appState.setLoading(true);
+      
+      await AnalyticsService.trackAuthEvent(
+        action: 'google_login_attempt',
+        success: false,
+      );
+      
+      final result = await authProvider.loginWithGoogle();
+      
+      if (result == null) {
+        // User cancelled
+        return;
+      }
+      
+      if (result['success'] == true) {
+        await AnalyticsService.trackAuthEvent(
+          action: 'google_login_success',
+          success: true,
+        );
+        
+        if (mounted) {
+          if (result['needs_profile_completion'] == true) {
+            Navigator.pushReplacementNamed(context, '/profile-wizard');
+            ErrorSnackBar.showSuccess(
+              context,
+              message: 'Welcome! Please complete your profile.',
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+            ErrorSnackBar.showSuccess(
+              context,
+              message: 'Welcome back!',
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ErrorSnackBar.show(
+            context,
+            error: Exception(result['error'] ?? 'Google Sign-In failed'),
+            errorContext: 'google_login',
+          );
+        }
+      }
+    } catch (e) {
+      await AnalyticsService.trackAuthEvent(
+        action: 'google_login_failed',
+        success: false,
+        errorType: 'exception',
+      );
+      
+      if (mounted) {
+        ErrorSnackBar.show(
+          context,
+          error: e,
+          errorContext: 'google_login',
+        );
+      }
+    } finally {
+      appState.setLoading(false);
+    }
+  }
+
+  Future<void> _handleFacebookLogin() async {
+    final appState = Provider.of<AppStateProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    try {
+      appState.setLoading(true);
+      
+      await AnalyticsService.trackAuthEvent(
+        action: 'facebook_login_attempt',
+        success: false,
+      );
+      
+      final result = await authProvider.loginWithFacebook();
+      
+      if (result == null) {
+        // User cancelled
+        return;
+      }
+      
+      if (result['success'] == true) {
+        await AnalyticsService.trackAuthEvent(
+          action: 'facebook_login_success',
+          success: true,
+        );
+        
+        if (mounted) {
+          if (result['needs_profile_completion'] == true) {
+            Navigator.pushReplacementNamed(context, '/profile-wizard');
+            ErrorSnackBar.showSuccess(
+              context,
+              message: 'Welcome! Please complete your profile.',
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+            ErrorSnackBar.showSuccess(
+              context,
+              message: 'Welcome back!',
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ErrorSnackBar.show(
+            context,
+            error: Exception(result['error'] ?? 'Facebook Sign-In failed'),
+            errorContext: 'facebook_login',
+          );
+        }
+      }
+    } catch (e) {
+      await AnalyticsService.trackAuthEvent(
+        action: 'facebook_login_failed',
+        success: false,
+        errorType: 'exception',
+      );
+      
+      if (mounted) {
+        ErrorSnackBar.show(
+          context,
+          error: e,
+          errorContext: 'facebook_login',
+        );
+      }
+    } finally {
+      appState.setLoading(false);
+    }
+  }
+
+  Future<void> _handleAppleLogin() async {
+    final appState = Provider.of<AppStateProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    try {
+      appState.setLoading(true);
+      
+      await AnalyticsService.trackAuthEvent(
+        action: 'apple_login_attempt',
+        success: false,
+      );
+      
+      final result = await authProvider.loginWithApple();
+      
+      if (result == null) {
+        // User cancelled
+        return;
+      }
+      
+      if (result['success'] == true) {
+        await AnalyticsService.trackAuthEvent(
+          action: 'apple_login_success',
+          success: true,
+        );
+        
+        if (mounted) {
+          if (result['needs_profile_completion'] == true) {
+            Navigator.pushReplacementNamed(context, '/profile-wizard');
+            ErrorSnackBar.showSuccess(
+              context,
+              message: 'Welcome! Please complete your profile.',
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+            ErrorSnackBar.showSuccess(
+              context,
+              message: 'Welcome back!',
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ErrorSnackBar.show(
+            context,
+            error: Exception(result['error'] ?? 'Apple Sign-In failed'),
+            errorContext: 'apple_login',
+          );
+        }
+      }
+    } catch (e) {
+      await AnalyticsService.trackAuthEvent(
+        action: 'apple_login_failed',
+        success: false,
+        errorType: 'exception',
+      );
+      
+      if (mounted) {
+        ErrorSnackBar.show(
+          context,
+          error: e,
+          errorContext: 'apple_login',
+        );
+      }
+    } finally {
+      appState.setLoading(false);
+    }
   }
 
   Future<void> _handleLogin() async {
@@ -484,7 +690,55 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                   ),
+                  const SizedBox(height: 24),
+                  
+                  // OR Divider
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.white30)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: AppTypography.body2.copyWith(
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.white30)),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Social Login Buttons
+                  _buildSocialLoginButton(
+                    icon: Icons.g_mobiledata,
+                    label: 'Continue with Google',
+                    color: Colors.white,
+                    textColor: Colors.black87,
+                    onPressed: _handleGoogleLogin,
+                  ),
                   const SizedBox(height: 12),
+                  
+                  _buildSocialLoginButton(
+                    icon: Icons.facebook,
+                    label: 'Continue with Facebook',
+                    color: const Color(0xFF1877F2),
+                    textColor: Colors.white,
+                    onPressed: _handleFacebookLogin,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  if (Platform.isIOS)
+                    _buildSocialLoginButton(
+                      icon: Icons.apple,
+                      label: 'Continue with Apple',
+                      color: Colors.black,
+                      textColor: Colors.white,
+                      onPressed: _handleAppleLogin,
+                    ),
+                  if (Platform.isIOS) const SizedBox(height: 24),
+                  if (!Platform.isIOS) const SizedBox(height: 12),
                    
                    // Sign Up Link
                   Row(
@@ -519,6 +773,43 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSocialLoginButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Color textColor,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 28, color: textColor),
+        label: Text(
+          label,
+          style: AppTypography.button.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: textColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: color == Colors.white ? Colors.white30 : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          elevation: 0,
         ),
       ),
     );

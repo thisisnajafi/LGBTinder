@@ -636,6 +636,13 @@ class AuthProvider extends ChangeNotifier {
       // Ignore logout API errors
     }
     
+    // Sign out from social providers
+    try {
+      await SocialAuthService.signOutAll();
+    } catch (e) {
+      // Ignore social logout errors
+    }
+    
     // Clear all authentication data
     await _clearAuthData();
     
