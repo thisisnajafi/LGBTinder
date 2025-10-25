@@ -22,8 +22,8 @@ class ActionButtons extends StatelessWidget {
       children: [
         _buildActionButton(
           svgPath: 'assets/icons/All/broken/close-circle.svg',
-          color: const Color(0xFF8B5CF6), // Purple
-          glowColor: const Color(0xFF8B5CF6).withOpacity(0.4),
+          color: AppColors.secondary, // Purple
+          glowColor: AppColors.secondary.withOpacity(0.4),
           size: 60,
           onTap: onSkip,
           label: 'Skip',
@@ -70,9 +70,9 @@ class ActionButtons extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            const Color(0xFFFF6B35).withOpacity(0.3),
-                            const Color(0xFFFF8C42).withOpacity(0.2),
-                            const Color(0xFFFFD700).withOpacity(0.1),
+                            AppColors.superLikeOrangeRed.withOpacity(0.3),
+                            AppColors.superLikeOrange.withOpacity(0.2),
+                            AppColors.superLikeGold.withOpacity(0.1),
                           ],
                         ),
                       ),
@@ -90,23 +90,23 @@ class ActionButtons extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFFFF6B35), // Orange-red
-                      Color(0xFFFF8C42), // Orange
-                      Color(0xFFFFD700), // Gold
+                      AppColors.superLikeOrangeRed, // Orange-red
+                      AppColors.superLikeOrange, // Orange
+                      AppColors.superLikeGold, // Gold
                     ],
                   ),
                   border: Border.all(
-                    color: const Color(0xFFFFD700),
+                    color: AppColors.superLikeGold,
                     width: 3,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFF6B35).withOpacity(0.6),
+                      color: AppColors.superLikeOrangeRed.withOpacity(0.6),
                       blurRadius: 25,
                       spreadRadius: 5,
                     ),
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withOpacity(0.4),
+                      color: AppColors.superLikeGold.withOpacity(0.4),
                       blurRadius: 15,
                       spreadRadius: 2,
                     ),
@@ -164,7 +164,7 @@ class ActionButtons extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF1E293B), // Dark background
+              color: AppColors.cardBackgroundDark, // Dark background
               border: Border.all(
                 color: color,
                 width: 2,

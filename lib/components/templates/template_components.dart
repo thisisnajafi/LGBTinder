@@ -333,25 +333,25 @@ class TemplateCard extends StatelessWidget {
   Color _getCategoryColor(TemplateCategory category) {
     switch (category) {
       case TemplateCategory.minimalist:
-        return const Color(0xFF6366F1);
+        return AppColors.info; // Indigo-like blue
       case TemplateCategory.creative:
-        return const Color(0xFF8B5CF6);
+        return AppColors.secondary; // Purple
       case TemplateCategory.professional:
-        return const Color(0xFF3B82F6);
+        return AppColors.info; // Blue
       case TemplateCategory.casual:
-        return const Color(0xFF10B981);
+        return AppColors.successLight; // Green
       case TemplateCategory.artistic:
-        return const Color(0xFFF59E0B);
+        return AppColors.warning; // Amber
       case TemplateCategory.adventurous:
-        return const Color(0xFFEF4444);
+        return AppColors.errorLight; // Red
       case TemplateCategory.romantic:
-        return const Color(0xFFEC4899);
+        return AppColors.primaryLight; // Pink
       case TemplateCategory.quirky:
-        return const Color(0xFF84CC16);
+        return const Color(0xFF84CC16); // Lime (no exact match in AppColors)
       case TemplateCategory.elegant:
-        return const Color(0xFF6B7280);
+        return AppColors.textSecondaryLight; // Gray
       case TemplateCategory.modern:
-        return const Color(0xFF1F2937);
+        return AppColors.textPrimaryLight; // Dark gray
     }
   }
 
@@ -730,25 +730,25 @@ class TemplatePreviewModal extends StatelessWidget {
   Color _getCategoryColor(TemplateCategory category) {
     switch (category) {
       case TemplateCategory.minimalist:
-        return const Color(0xFF6366F1);
+        return AppColors.info; // Indigo-like blue
       case TemplateCategory.creative:
-        return const Color(0xFF8B5CF6);
+        return AppColors.secondary; // Purple
       case TemplateCategory.professional:
-        return const Color(0xFF3B82F6);
+        return AppColors.info; // Blue
       case TemplateCategory.casual:
-        return const Color(0xFF10B981);
+        return AppColors.successLight; // Green
       case TemplateCategory.artistic:
-        return const Color(0xFFF59E0B);
+        return AppColors.warning; // Amber
       case TemplateCategory.adventurous:
-        return const Color(0xFFEF4444);
+        return AppColors.errorLight; // Red
       case TemplateCategory.romantic:
-        return const Color(0xFFEC4899);
+        return AppColors.primaryLight; // Pink
       case TemplateCategory.quirky:
-        return const Color(0xFF84CC16);
+        return const Color(0xFF84CC16); // Lime (no exact match in AppColors)
       case TemplateCategory.elegant:
-        return const Color(0xFF6B7280);
+        return AppColors.textSecondaryLight; // Gray
       case TemplateCategory.modern:
-        return const Color(0xFF1F2937);
+        return AppColors.textPrimaryLight; // Dark gray
     }
   }
 

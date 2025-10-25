@@ -53,11 +53,11 @@ class LGBTGradientSystem {
   // Lesbian Pride Gradient
   static const LinearGradient lesbianPride = LinearGradient(
     colors: [
-      Color(0xFFD62900), // Dark orange
-      Color(0xFFFF9A56), // Light orange
-      Color(0xFFFFFFFF), // White
-      Color(0xFFD462A6), // Pink
-      Color(0xFFA50062), // Dark pink
+      AppColors.lesbianDarkOrange,
+      AppColors.lesbianLightOrange,
+      AppColors.lesbianWhite,
+      AppColors.lesbianPink,
+      AppColors.lesbianDarkPink,
     ],
     stops: [0.0, 0.25, 0.5, 0.75, 1.0],
     begin: Alignment.centerLeft,
@@ -67,12 +67,12 @@ class LGBTGradientSystem {
   // Gay Pride Gradient (Blue tones)
   static const LinearGradient gayPride = LinearGradient(
     colors: [
-      Color(0xFF0038A8), // Dark blue
-      Color(0xFF004CFF), // Blue
-      Color(0xFF00A8FF), // Light blue
-      Color(0xFF00A8FF), // Light blue
-      Color(0xFF004CFF), // Blue
-      Color(0xFF0038A8), // Dark blue
+      AppColors.gayDarkBlue,
+      AppColors.gayBlue,
+      AppColors.gayLightBlue,
+      AppColors.gayLightBlue,
+      AppColors.gayBlue,
+      AppColors.gayDarkBlue,
     ],
     stops: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
     begin: Alignment.centerLeft,
@@ -82,9 +82,9 @@ class LGBTGradientSystem {
   // Bisexual Pride Gradient
   static const LinearGradient bisexualPride = LinearGradient(
     colors: [
-      Color(0xFFD70070), // Pink
-      Color(0xFF9C4F96), // Purple
-      Color(0xFF0038A8), // Blue
+      AppColors.biPink,
+      AppColors.biPurple,
+      AppColors.biBlue,
     ],
     stops: [0.0, 0.5, 1.0],
     begin: Alignment.centerLeft,
@@ -94,9 +94,9 @@ class LGBTGradientSystem {
   // Pansexual Pride Gradient
   static const LinearGradient pansexualPride = LinearGradient(
     colors: [
-      Color(0xFFFF1B8D), // Pink
-      AppColors.prideYellow,
-      Color(0xFF1BB3FF), // Blue
+      AppColors.panPink,
+      AppColors.lgbtYellow,
+      AppColors.panBlue,
     ],
     stops: [0.0, 0.5, 1.0],
     begin: Alignment.centerLeft,
@@ -106,10 +106,10 @@ class LGBTGradientSystem {
   // Asexual Pride Gradient
   static const LinearGradient asexualPride = LinearGradient(
     colors: [
-      Color(0xFF000000), // Black
-      Color(0xFFA3A3A3), // Gray
-      Color(0xFFFFFFFF), // White
-      AppColors.pridePurple,
+      AppColors.aceBlack,
+      AppColors.aceGray,
+      AppColors.aceWhite,
+      AppColors.lgbtPurple,
     ],
     stops: [0.0, 0.33, 0.66, 1.0],
     begin: Alignment.centerLeft,

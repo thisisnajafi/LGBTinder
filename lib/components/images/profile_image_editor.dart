@@ -571,7 +571,7 @@ class ImageFilterPreview extends StatelessWidget {
       case ImageFilter.blur:
         return null; // Would need custom implementation
       case ImageFilter.sepia:
-        return const Color(0xFF8B4513).withOpacity(0.3);
+        return AppColors.sepiaBrown.withOpacity(0.3);
     }
   }
 

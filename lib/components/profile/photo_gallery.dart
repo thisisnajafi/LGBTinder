@@ -110,11 +110,11 @@ class PhotoGallery extends StatelessWidget {
                   color: image.isPrimary ? AppColors.primary : Colors.grey[300]!,
                   width: image.isPrimary ? 3 : 1,
                 ),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x1A000000), // Pre-computed Colors.black.withOpacity(0.1)
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 8,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),

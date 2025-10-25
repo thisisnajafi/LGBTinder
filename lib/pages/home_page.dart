@@ -853,13 +853,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                  colors: [AppColors.superLikeGold, AppColors.warningLight],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                    color: AppColors.superLikeGold.withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -1051,7 +1051,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               const Icon(
                 Icons.star,
-                color: Color(0xFFFFD700),
+                color: AppColors.superLikeGold,
                 size: 60,
               ),
               const SizedBox(height: 16),
@@ -1094,7 +1094,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                            colors: [AppColors.superLikeGold, AppColors.warningLight],
                           ),
                         ),
                         child: Center(

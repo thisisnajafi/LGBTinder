@@ -79,10 +79,10 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1a1a2e), // Navy
-              Color(0xFF16213e), // Dark navy
-              Color(0xFF0f3460), // Purple navy
-              Color(0xFF533483), // Purple
+              AppColors.splashNavy,
+              AppColors.splashDarkNavy,
+              AppColors.splashPurpleNavy,
+              AppColors.splashPurple,
             ],
           ),
         ),

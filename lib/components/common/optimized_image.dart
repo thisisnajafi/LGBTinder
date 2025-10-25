@@ -144,14 +144,14 @@ class OptimizedPhotoItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isPrimary ? const Color(0xFF6B46C1) : Colors.grey[300]!,
+            color: isPrimary ? AppColors.primaryDark : Theme.of(context).colorScheme.outline,
             width: isPrimary ? 3 : 1,
           ),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x1A000000),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),

@@ -23,6 +23,14 @@ class AppColors {
   // Accent Colors
   static const Color accent = Color(0xFF8B5CF6); // Purple-500
   
+  // Super Like Colors
+  static const Color superLikeOrangeRed = Color(0xFFFF6B35); // Orange-red for super like
+  static const Color superLikeOrange = Color(0xFFFF8C42); // Orange for super like
+  static const Color superLikeGold = Color(0xFFFFD700); // Gold for super like
+  
+  // Image Filter Colors
+  static const Color sepiaBrown = Color(0xFF8B4513); // Brown for sepia filter
+  
   // Info Colors
   static const Color info = Color(0xFF3B82F6); // Blue-500
 
@@ -47,10 +55,48 @@ class AppColors {
     lgbtBlue,
     lgbtPurple,
   ];
+  
+  // Lesbian Pride Flag Colors
+  static const Color lesbianDarkOrange = Color(0xFFD62900);
+  static const Color lesbianLightOrange = Color(0xFFFF9A56);
+  static const Color lesbianWhite = Color(0xFFFFFFFF);
+  static const Color lesbianPink = Color(0xFFD462A6);
+  static const Color lesbianDarkPink = Color(0xFFA50062);
+  
+  // Gay/MLM Pride Flag Colors
+  static const Color gayDarkBlue = Color(0xFF0038A8);
+  static const Color gayBlue = Color(0xFF004CFF);
+  static const Color gayLightBlue = Color(0xFF00A8FF);
+  
+  // Bisexual Pride Flag Colors
+  static const Color biPink = Color(0xFFD70070);
+  static const Color biPurple = Color(0xFF9C4F96);
+  static const Color biBlue = Color(0xFF0038A8);
+  
+  // Pansexual Pride Flag Colors
+  static const Color panPink = Color(0xFFFF1B8D);
+  static const Color panBlue = Color(0xFF1BB3FF);
+  
+  // Asexual Pride Flag Colors
+  static const Color aceBlack = Color(0xFF000000);
+  static const Color aceGray = Color(0xFFA3A3A3);
+  static const Color aceWhite = Color(0xFFFFFFFF);
 
   // App Background Colors
   static const Color appBackground = Color(0xFF080912); // Main app background
   static const Color navbarBackground = Color(0xFF131725); // Navbar background
+  
+  // Splash Screen Gradient Colors
+  static const Color splashNavy = Color(0xFF1a1a2e);
+  static const Color splashDarkNavy = Color(0xFF16213e);
+  static const Color splashPurpleNavy = Color(0xFF0f3460);
+  static const Color splashPurple = Color(0xFF533483);
+  
+  // Onboarding Gradient Colors
+  static const Color onboardingBlack = Color(0xFF000000);
+  static const Color onboardingDarkNavy = Color(0xFF0D0D1A);
+  static const Color onboardingDarkPurple = Color(0xFF1A0D1A);
+  static const Color onboardingDeepPurple = Color(0xFF2D1B2D);
 
   // Theme Background Colors
   static const Color backgroundLight = Color(0xFFF8F9FA); // Light background

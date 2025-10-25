@@ -77,10 +77,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF000000), // Black
-              Color(0xFF0D0D1A), // Very dark navy
-              Color(0xFF1A0D1A), // Dark purple-black
-              Color(0xFF2D1B2D), // Deep purple-black
+              AppColors.onboardingBlack,
+              AppColors.onboardingDarkNavy,
+              AppColors.onboardingDarkPurple,
+              AppColors.onboardingDeepPurple,
             ],
             stops: [0.0, 0.33, 0.66, 1.0],
           ),
