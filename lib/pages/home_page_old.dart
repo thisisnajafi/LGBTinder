@@ -858,13 +858,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                  colors: [AppColors.superLikeGold, AppColors.warningLight],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                    color: const AppColors.superLikeGold.withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -1059,7 +1059,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               const Icon(
                 Icons.star,
-                color: Color(0xFFFFD700),
+                color: AppColors.superLikeGold,
                 size: 60,
               ),
               const SizedBox(height: 16),
@@ -1102,7 +1102,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                            colors: [AppColors.superLikeGold, AppColors.warningLight],
                           ),
                         ),
                         child: Center(
@@ -1194,7 +1194,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _swipeLeft = true;
     });
-    _showSnackBar('Skipped', const Color(0xFF6B7280));
+    _showSnackBar('Skipped', const AppColors.textSecondaryLight);
     // Process the card swipe
     _onCardSwiped(false);
   }
@@ -1483,7 +1483,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           context: context,
           icon: Icons.close,
           gradient: const LinearGradient(
-            colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)], // Gray gradient
+            colors: [AppColors.textSecondaryLight, AppColors.textSecondaryDark], // Gray gradient
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -1498,7 +1498,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           context: context,
           icon: Icons.favorite,
           gradient: const LinearGradient(
-            colors: [Color(0xFFEF4444), Color(0xFFF87171)], // Red gradient
+            colors: [AppColors.errorLight, AppColors.errorDark], // Red gradient
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -1551,13 +1551,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
              decoration: BoxDecoration(
                shape: BoxShape.circle,
                gradient: const LinearGradient(
-                 colors: [Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFF8C00)], // Yellow gradient
+                 colors: [AppColors.superLikeGold, AppColors.warningLight, AppColors.lgbtOrange], // Yellow gradient
                  begin: Alignment.topLeft,
                  end: Alignment.bottomRight,
                ),
                boxShadow: [
                  BoxShadow(
-                   color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                   color: const AppColors.superLikeGold.withValues(alpha: 0.4),
                    blurRadius: 20,
                    offset: const Offset(0, 8),
                  ),
@@ -2045,7 +2045,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFF8C00)],
+                            colors: [AppColors.superLikeGold, AppColors.warningLight, AppColors.lgbtOrange],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -2141,13 +2141,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(28),
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                            colors: [AppColors.superLikeGold, AppColors.warningLight],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                              color: const AppColors.superLikeGold.withValues(alpha: 0.3),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             ),
@@ -2162,7 +2162,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 _showSuperLikeSheet = false;
                                 _superLikedProfile = null;
                               });
-                              _showSnackBar('Super like sent! ⭐', const Color(0xFFFFD700));
+                              _showSnackBar('Super like sent! ⭐', const AppColors.superLikeGold);
                             },
                             child: Center(
                               child: Row(
@@ -2222,7 +2222,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                  _showSuperLikeSheet = false;
                  _superLikedProfile = null;
                });
-               _showSnackBar('Super like sent! ⭐', const Color(0xFFFFD700));
+               _showSnackBar('Super like sent! ⭐', const AppColors.superLikeGold);
              },
              child: Container(
                padding: const EdgeInsets.all(16),
@@ -3134,7 +3134,7 @@ class _ProfileDetailSheetState extends State<_ProfileDetailSheet> with TickerPro
                  _buildSheetActionButton(
                    icon: Icons.close,
                    gradient: const LinearGradient(
-                     colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)],
+                     colors: [AppColors.textSecondaryLight, AppColors.textSecondaryDark],
                      begin: Alignment.topLeft,
                      end: Alignment.bottomRight,
                    ),
@@ -3148,7 +3148,7 @@ class _ProfileDetailSheetState extends State<_ProfileDetailSheet> with TickerPro
                  _buildSheetActionButton(
                    icon: Icons.favorite,
                    gradient: const LinearGradient(
-                     colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+                     colors: [AppColors.errorLight, AppColors.errorDark],
                      begin: Alignment.topLeft,
                      end: Alignment.bottomRight,
                    ),
@@ -3201,13 +3201,13 @@ class _ProfileDetailSheetState extends State<_ProfileDetailSheet> with TickerPro
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
-            colors: [Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFF8C00)],
+            colors: [AppColors.superLikeGold, AppColors.warningLight, AppColors.lgbtOrange],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+              color: const AppColors.superLikeGold.withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 6),
             ),

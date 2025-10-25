@@ -31,6 +31,11 @@ class AppColors {
   // Image Filter Colors
   static const Color sepiaBrown = Color(0xFF8B4513); // Brown for sepia filter
   
+  // Social Media Brand Colors
+  static const Color facebookBlue = Color(0xFF1877F2); // Facebook brand color
+  static const Color googleRed = Color(0xFFDB4437); // Google brand color
+  static const Color appleBlack = Color(0xFF000000); // Apple brand color
+  
   // Info Colors
   static const Color info = Color(0xFF3B82F6); // Blue-500
 
@@ -81,6 +86,36 @@ class AppColors {
   static const Color aceBlack = Color(0xFF000000);
   static const Color aceGray = Color(0xFFA3A3A3);
   static const Color aceWhite = Color(0xFFFFFFFF);
+  static const Color acePurple = Color(0xFF800080);
+  
+  // Transgender Pride Flag Colors
+  static const Color transLightBlue = Color(0xFF5BCEFA);
+  static const Color transPink = Color(0xFFF5A9B8);
+  static const Color transWhite = Color(0xFFFFFFFF);
+  
+  // Pastel Rainbow Colors
+  static const Color pastelRed = Color(0xFFFFB3BA);
+  static const Color pastelOrange = Color(0xFFFFDFBA);
+  static const Color pastelYellow = Color(0xFFFFFFBA);
+  static const Color pastelGreen = Color(0xFFBAFFC9);
+  static const Color pastelBlue = Color(0xFFBAE1FF);
+  static const Color pastelPurple = Color(0xFFE1BAFF);
+  
+  // Vibrant Rainbow Colors (for very bright rainbow themes)
+  static const Color vibrantRed = Color(0xFFFF0000);
+  static const Color vibrantOrange = Color(0xFFFF8000);
+  static const Color vibrantYellow = Color(0xFFFFFF00);
+  static const Color vibrantGreen = Color(0xFF00FF00);
+  static const Color vibrantBlue = Color(0xFF0080FF);
+  static const Color vibrantPurple = Color(0xFF8000FF);
+  
+  // Subtle Rainbow Colors (softer, muted rainbow)
+  static const Color subtleRed = Color(0xFFE57373);
+  static const Color subtleOrange = Color(0xFFFFB74D);
+  static const Color subtleYellow = Color(0xFFFFF176);
+  static const Color subtleGreen = Color(0xFF81C784);
+  static const Color subtleBlue = Color(0xFF64B5F6);
+  static const Color subtlePurple = Color(0xFFBA68C8);
 
   // App Background Colors
   static const Color appBackground = Color(0xFF080912); // Main app background

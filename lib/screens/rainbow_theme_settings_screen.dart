@@ -556,58 +556,58 @@ class _RainbowThemeSettingsScreenState extends State<RainbowThemeSettingsScreen>
       case RainbowStyle.fullRainbow:
         return LinearGradient(colors: AppColors.lgbtGradient);
       case RainbowStyle.pastelRainbow:
-        return LinearGradient(colors: [
-          const Color(0xFFFFB3BA),
-          const Color(0xFFFFDFBA),
-          const Color(0xFFFFFFBA),
-          const Color(0xFFBAFFC9),
-          const Color(0xFFBAE1FF),
-          const Color(0xFFE1BAFF),
+        return const LinearGradient(colors: [
+          AppColors.pastelRed,
+          AppColors.pastelOrange,
+          AppColors.pastelYellow,
+          AppColors.pastelGreen,
+          AppColors.pastelBlue,
+          AppColors.pastelPurple,
         ]);
       case RainbowStyle.vibrantRainbow:
-        return LinearGradient(colors: [
-          const Color(0xFFFF0000),
-          const Color(0xFFFF8000),
-          const Color(0xFFFFFF00),
-          const Color(0xFF00FF00),
-          const Color(0xFF0080FF),
-          const Color(0xFF8000FF),
+        return const LinearGradient(colors: [
+          AppColors.vibrantRed,
+          AppColors.vibrantOrange,
+          AppColors.vibrantYellow,
+          AppColors.vibrantGreen,
+          AppColors.vibrantBlue,
+          AppColors.vibrantPurple,
         ]);
       case RainbowStyle.subtleRainbow:
-        return LinearGradient(colors: [
-          const Color(0xFFE57373),
-          const Color(0xFFFFB74D),
-          const Color(0xFFFFF176),
-          const Color(0xFF81C784),
-          const Color(0xFF64B5F6),
-          const Color(0xFFBA68C8),
+        return const LinearGradient(colors: [
+          AppColors.subtleRed,
+          AppColors.subtleOrange,
+          AppColors.subtleYellow,
+          AppColors.subtleGreen,
+          AppColors.subtleBlue,
+          AppColors.subtlePurple,
         ]);
       case RainbowStyle.transPride:
-        return LinearGradient(colors: [
-          const Color(0xFF5BCEFA),
-          const Color(0xFFF5A9B8),
-          const Color(0xFFFFFFFF),
-          const Color(0xFFF5A9B8),
-          const Color(0xFF5BCEFA),
+        return const LinearGradient(colors: [
+          AppColors.transLightBlue,
+          AppColors.transPink,
+          AppColors.transWhite,
+          AppColors.transPink,
+          AppColors.transLightBlue,
         ]);
       case RainbowStyle.biPride:
-        return LinearGradient(colors: [
-          const Color(0xFFD70071),
-          const Color(0xFF9C4F96),
-          const Color(0xFF0035AA),
+        return const LinearGradient(colors: [
+          AppColors.biPink,
+          AppColors.biPurple,
+          AppColors.biBlue,
         ]);
       case RainbowStyle.panPride:
-        return LinearGradient(colors: [
-          const Color(0xFFFF1B8D),
-          const Color(0xFFFFD700),
-          const Color(0xFF1BB3FF),
+        return const LinearGradient(colors: [
+          AppColors.panPink,
+          AppColors.superLikeGold,
+          AppColors.panBlue,
         ]);
       case RainbowStyle.acePride:
-        return LinearGradient(colors: [
-          const Color(0xFF000000),
-          const Color(0xFFA3A3A3),
-          const Color(0xFFFFFFFF),
-          const Color(0xFF800080),
+        return const LinearGradient(colors: [
+          AppColors.aceBlack,
+          AppColors.aceGray,
+          AppColors.aceWhite,
+          AppColors.acePurple,
         ]);
     }
   }

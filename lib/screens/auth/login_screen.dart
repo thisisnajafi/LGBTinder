@@ -723,7 +723,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _buildSocialLoginButton(
                     icon: Icons.facebook,
                     label: 'Continue with Facebook',
-                    color: const Color(0xFF1877F2),
+                    color: AppColors.facebookBlue,
                     textColor: Colors.white,
                     onPressed: _handleFacebookLogin,
                   ),
