@@ -94,7 +94,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                            'Find your perfect match',
                            style: AppTypography.subtitle1.copyWith(
                              color: Colors.white70,
-                             fontSize: 18,
                            ),
                          ),
                        ),
@@ -183,7 +182,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                      style: AppTypography.button.copyWith(
                                        color: Colors.white,
                                        fontWeight: FontWeight.w600,
-                                       fontSize: 18,
                                      ),
                                    ),
                                 ),
@@ -219,7 +217,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                      style: AppTypography.button.copyWith(
                                        color: AppColors.primary,
                                        fontWeight: FontWeight.w600,
-                                       fontSize: 18,
                                      ),
                                    ),
                                 ),
@@ -233,7 +230,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                  style: AppTypography.caption.copyWith(
                                    color: Colors.white70,
                                    height: 1.4,
-                                   fontSize: 14,
                                  ),
                                  textAlign: TextAlign.center,
                                ),
@@ -260,7 +256,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                        style: AppTypography.caption.copyWith(
                                          color: Colors.white,
                                          decoration: TextDecoration.underline,
-                                         fontSize: 13,
                                        ),
                                      ),
                                    ),
@@ -273,7 +268,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                        style: AppTypography.caption.copyWith(
                                          color: Colors.white,
                                          decoration: TextDecoration.underline,
-                                         fontSize: 13,
                                        ),
                                      ),
                                    ),
@@ -286,7 +280,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                        style: AppTypography.caption.copyWith(
                                          color: Colors.white,
                                          decoration: TextDecoration.underline,
-                                         fontSize: 13,
                                        ),
                                      ),
                                    ),
@@ -300,7 +293,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                        style: AppTypography.caption.copyWith(
                                          color: Colors.orange,
                                          decoration: TextDecoration.underline,
-                                         fontSize: 13,
                                        ),
                                      ),
                                    ),

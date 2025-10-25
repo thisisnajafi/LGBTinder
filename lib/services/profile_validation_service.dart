@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
 
 class ProfileValidationService {
@@ -362,8 +363,7 @@ class _ProfileValidationWidgetState extends State<ProfileValidationWidget>
         const SizedBox(width: 12),
         const Text(
           'Profile Validation',
-          style: TextStyle(
-            fontSize: 20,
+          style: AppTypography.titleLarge.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -387,8 +387,7 @@ class _ProfileValidationWidgetState extends State<ProfileValidationWidget>
         children: [
           Text(
             '${_validationResult!.percentage}%',
-            style: TextStyle(
-              fontSize: 48,
+            style: AppTypography.displayMedium.copyWith(
               fontWeight: FontWeight.bold,
               color: _getQualityColor(_validationResult!.quality),
             ),
@@ -396,7 +395,7 @@ class _ProfileValidationWidgetState extends State<ProfileValidationWidget>
           const SizedBox(height: 8),
           Text(
             _getQualityText(_validationResult!.quality),
-            style: TextStyle(
+            style: AppTypography.titleMedium.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: _getQualityColor(_validationResult!.quality),
@@ -405,8 +404,7 @@ class _ProfileValidationWidgetState extends State<ProfileValidationWidget>
           const SizedBox(height: 8),
           Text(
             '${_validationResult!.score}/${_validationResult!.maxScore} points',
-            style: const TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),
@@ -429,8 +427,7 @@ class _ProfileValidationWidgetState extends State<ProfileValidationWidget>
       children: [
         const Text(
           'Issues to Fix',
-          style: TextStyle(
-            fontSize: 16,
+          style: AppTypography.titleMedium.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -475,8 +472,7 @@ class _ProfileValidationWidgetState extends State<ProfileValidationWidget>
               Expanded(
                 child: Text(
                   issue,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
                     color: isError ? AppColors.feedbackError : AppColors.feedbackWarning,
                   ),
                 ),
