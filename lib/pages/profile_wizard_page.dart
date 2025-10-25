@@ -870,18 +870,16 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
           // Step title
           Text(
             _getStepTitle(),
-            style: const TextStyle(
+            style: AppTypography.headlineSmall.copyWith(
               color: Colors.white,
-              fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             _getStepDescription(),
-            style: const TextStyle(
+            style: AppTypography.bodyMedium.copyWith(
               color: Colors.white70,
-              fontSize: 14,
             ),
             textAlign: TextAlign.center,
           ),
@@ -985,9 +983,8 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
           const SizedBox(height: 8),
           Text(
             'Add at least 2 photos. First photo will be your main profile picture.',
-            style: TextStyle(
+            style: AppTypography.bodyMedium.copyWith(
               color: Colors.white.withOpacity(0.7),
-              fontSize: 14,
             ),
           ),
           const SizedBox(height: 20),
@@ -1076,7 +1073,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                   children: [
                     const Text(
                       'Minimum Age',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 8),
                     _buildAgeSlider(
@@ -1087,7 +1084,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                     ),
                     Text(
                       '$_minAgePreference years',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      style: AppTypography.bodySmall.copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -1099,7 +1096,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                   children: [
                     const Text(
                       'Maximum Age',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 8),
                     _buildAgeSlider(
@@ -1110,7 +1107,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                     ),
                     Text(
                       '$_maxAgePreference years',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      style: AppTypography.bodySmall.copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -1130,13 +1127,13 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                   children: [
                     const Text(
                       'Height',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 8),
                     _buildHeightSlider(),
                     Text(
                       '$_height cm',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      style: AppTypography.bodySmall.copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -1148,13 +1145,13 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                   children: [
                     const Text(
                       'Weight',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 8),
                     _buildWeightSlider(),
                     Text(
                       '$_weight kg',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      style: AppTypography.bodySmall.copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -1202,9 +1199,8 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
           const SizedBox(height: 8),
           Text(
             'Select at least 3 interests',
-            style: TextStyle(
+            style: AppTypography.bodyMedium.copyWith(
               color: Colors.white.withOpacity(0.7),
-              fontSize: 14,
             ),
           ),
           const SizedBox(height: 20),
@@ -1381,7 +1377,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: AppTypography.titleMedium.copyWith(
         color: Colors.white,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -1598,7 +1594,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                 ),
                 child: const Text(
                   'MAIN',
-                  style: TextStyle(
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -1687,9 +1683,8 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   color: Colors.white,
-                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1740,8 +1735,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
             )
           : Text(
               label,
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),

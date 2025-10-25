@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 
 /// Success feedback utility class for providing user feedback
 class SuccessFeedback {
@@ -24,9 +25,8 @@ class SuccessFeedback {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: Colors.white,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -71,9 +71,8 @@ class SuccessFeedback {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: Colors.white,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -118,9 +117,8 @@ class SuccessFeedback {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: Colors.white,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -174,8 +172,7 @@ class SuccessFeedback {
               Expanded(
                 child: Text(
                   message,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: AppTypography.labelLarge.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -287,8 +284,7 @@ class SuccessFeedback {
                 const SizedBox(height: 8),
                 Text(
                   '${(progress * 100).round()}%',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.titleSmall.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
                   ),
@@ -327,7 +323,7 @@ class SuccessFeedback {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: isDestructive ? Colors.red : Colors.black87,
@@ -338,8 +334,7 @@ class SuccessFeedback {
         ),
         content: Text(
           message,
-          style: const TextStyle(
-            fontSize: 16,
+          style: AppTypography.bodyLarge.copyWith(
             color: Colors.black54,
           ),
         ),
@@ -365,8 +360,7 @@ class SuccessFeedback {
             ),
             child: Text(
               confirmText,
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -398,7 +392,7 @@ class SuccessFeedback {
             const SizedBox(width: 8),
             Text(
               title,
-              style: const TextStyle(
+              style: AppTypography.titleMedium.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -408,8 +402,7 @@ class SuccessFeedback {
         ),
         content: Text(
           message,
-          style: const TextStyle(
-            fontSize: 16,
+          style: AppTypography.bodyLarge.copyWith(
             color: Colors.black54,
           ),
         ),
@@ -428,8 +421,7 @@ class SuccessFeedback {
             ),
             child: Text(
               buttonText,
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -477,8 +469,7 @@ class SuccessFeedback {
                 const SizedBox(height: 16),
                 Text(
                   message,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: AppTypography.labelLarge.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
@@ -534,9 +525,8 @@ class SuccessFeedback {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: Colors.white,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -586,8 +576,7 @@ class SuccessFeedback {
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 20,
+              style: AppTypography.titleLarge.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -619,8 +608,7 @@ class SuccessFeedback {
             ),
             child: Text(
               buttonText,
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),

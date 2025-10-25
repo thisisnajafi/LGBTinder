@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
 
 class MatchStatistics {
@@ -182,8 +183,7 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
         const SizedBox(width: 12),
         const Text(
           'Match Statistics',
-          style: TextStyle(
-            fontSize: 20,
+          style: AppTypography.titleLarge.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -269,8 +269,7 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondaryDark,
                   ),
                 ),
@@ -280,15 +279,14 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 24,
+            style: AppTypography.headlineSmall.copyWith(
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
           Text(
             subtitle,
-            style: const TextStyle(
+            style: AppTypography.bodySmall.copyWith(
               fontSize: 10,
               color: AppColors.textSecondaryDark,
             ),
@@ -306,8 +304,7 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
           children: [
             const Text(
               'Trends',
-              style: TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimaryDark,
               ),
@@ -340,8 +337,7 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
                       ),
                       child: Text(
                         period,
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: AppTypography.bodySmall.copyWith(
                           fontWeight: FontWeight.bold,
                           color: isSelected ? Colors.white : AppColors.textSecondaryDark,
                         ),
@@ -430,15 +426,13 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textPrimaryDark,
             ),
           ),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -570,8 +564,7 @@ class MatchStatisticsCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(
-                fontSize: 20,
+              style: AppTypography.titleLarge.copyWith(
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
