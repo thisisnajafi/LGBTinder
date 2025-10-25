@@ -13,6 +13,7 @@ import '../providers/matching_state_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/error_monitoring_service.dart';
 import '../services/sound_effects_service.dart';
+import '../services/match_sharing_service.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({Key? key}) : super(key: key);
@@ -573,20 +574,145 @@ class _DiscoveryPageState extends State<DiscoveryPage>
     
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('It\'s a Match!'),
-        content: Text('You and ${user.firstName} liked each other!'),
+        backgroundColor: AppColors.navbarBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Column(
+          children: [
+            Icon(
+              Icons.favorite,
+              color: Colors.red,
+              size: 60,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'It\'s a Match!',
+              style: AppTypography.h3.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'You and ${user.firstName ?? user.name ?? "someone special"} liked each other!',
+              style: AppTypography.body1.copyWith(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Current user avatar placeholder
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: AppColors.primary,
+                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                ),
+                SizedBox(width: 20),
+                Icon(Icons.favorite, color: Colors.red, size: 32),
+                SizedBox(width: 20),
+                // Matched user avatar
+                CircleAvatar(
+                  radius: 40,
+                  backgroundImage: user.images?.isNotEmpty == true
+                      ? NetworkImage(user.images!.first.url)
+                      : null,
+                  backgroundColor: AppColors.secondary,
+                  child: user.images?.isEmpty ?? true
+                      ? Icon(Icons.person, size: 40, color: Colors.white)
+                      : null,
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Keep Swiping'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Navigate to chat
-            },
-            child: const Text('Send Message'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Share button
+              OutlinedButton.icon(
+                onPressed: () async {
+                  try {
+                    await MatchSharingService.shareMatchText(
+                      matchedUser: user,
+                    );
+                    
+                    await AnalyticsService.trackEvent(
+                      name: 'match_shared',
+                      parameters: {
+                        'action': 'match_shared',
+                        'category': 'social',
+                        'matched_user_id': user.id,
+                      },
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to share: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                icon: Icon(Icons.share, color: AppColors.primary),
+                label: Text(
+                  'Share',
+                  style: AppTypography.button.copyWith(color: AppColors.primary),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: AppColors.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+              SizedBox(height: 8),
+              
+              // Send Message button
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // TODO: Navigate to chat with user
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Opening chat with ${user.firstName ?? "match"}...'),
+                      backgroundColor: AppColors.primary,
+                    ),
+                  );
+                },
+                icon: Icon(Icons.message, color: Colors.white),
+                label: Text(
+                  'Send Message',
+                  style: AppTypography.button.copyWith(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+              SizedBox(height: 8),
+              
+              // Keep Swiping button
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Keep Swiping',
+                  style: AppTypography.body1.copyWith(color: Colors.white70),
+                ),
+              ),
+            ],
           ),
         ],
       ),
