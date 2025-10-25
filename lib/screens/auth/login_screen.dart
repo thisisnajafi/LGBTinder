@@ -511,7 +511,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Sign in to continue your journey',
                     style: AppTypography.subtitle1.copyWith(
                       color: Colors.white70,
-                      fontSize: 18,
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -682,7 +681,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: AppTypography.button.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 18,
                                     ),
                                   ),
                                 ),
@@ -796,7 +794,6 @@ class _LoginScreenState extends State<LoginScreen> {
           style: AppTypography.button.copyWith(
             color: textColor,
             fontWeight: FontWeight.w600,
-            fontSize: 16,
           ),
         ),
         style: ElevatedButton.styleFrom(

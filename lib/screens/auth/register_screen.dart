@@ -123,7 +123,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             text,
             style: AppTypography.body2.copyWith(
               color: isValid ? AppColors.success : Colors.white54,
-              fontSize: 12,
             ),
           ),
         ],
@@ -321,7 +320,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     'Join LGBTinder and find your perfect match',
                     style: AppTypography.subtitle1.copyWith(
                       color: Colors.white70,
-                      fontSize: 18,
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -699,7 +697,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               style: AppTypography.button.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 18,
                               ),
                             ),
                     ),

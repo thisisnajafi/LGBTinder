@@ -474,7 +474,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                        style: AppTypography.h4.copyWith(
                          color: _isLoading ? Colors.white60 : Colors.white,
                          fontWeight: FontWeight.bold,
-                         fontSize: 20,
                        ),
                        onChanged: (value) {
                          if (value.length == 1 && index < 5) {
@@ -586,7 +585,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                           style: AppTypography.button.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
-                            fontSize: 18,
                           ),
                         ),
                 ),
