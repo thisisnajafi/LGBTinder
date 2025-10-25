@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
 import '../components/images/profile_image_editor.dart';
 
@@ -183,17 +184,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             children: [
               Text(
                 'Step ${_currentStep + 1} of $_totalSteps',
-                style: const TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondaryDark,
-                  fontSize: 14,
                 ),
               ),
               const Spacer(),
               Text(
                 _getStepTitle(_currentStep),
-                style: const TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   color: AppColors.textPrimaryDark,
-                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -379,7 +378,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         children: [
           const Text(
             'Select your interests',
-            style: TextStyle(
+            style: AppTypography.titleMedium.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
@@ -388,8 +387,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           const SizedBox(height: 8),
           const Text(
             'Choose up to 10 interests that describe you',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),
@@ -440,8 +438,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           const SizedBox(height: 16),
           Text(
             '${_selectedInterests.length}/10 selected',
-            style: const TextStyle(
-              fontSize: 12,
+            style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),
@@ -458,7 +455,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         children: [
           const Text(
             'Profile Photos',
-            style: TextStyle(
+            style: AppTypography.titleMedium.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
@@ -467,8 +464,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           const SizedBox(height: 8),
           const Text(
             'Add photos to make your profile more attractive',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),
@@ -503,8 +499,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           const SizedBox(height: 12),
           const Text(
             'Tap to change profile photo',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),
