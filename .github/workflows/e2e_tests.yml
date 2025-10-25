@@ -1,0 +1,60 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  flutter-test:
+    name: Flutter Unit & Widget Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Run unit tests
+        run: flutter test
+      
+      - name: Check code formatting
+        run: flutter format --set-exit-if-changed .
+      
+      - name: Analyze code
+        run: flutter analyze
+
+  # Uncomment when Firebase Test Lab is configured
+  # android-e2e:
+  #   name: Android E2E Tests
+  #   runs-on: ubuntu-latest
+  #   needs: flutter-test
+  #   
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #     
+  #     - name: Install dependencies
+  #       run: flutter pub get
+  #     
+  #     - name: Build APKs
+  #       run: flutter build apk --debug
+  #     
+  #     - name: Run on Firebase Test Lab
+  #       run: |
+  #         gcloud firebase test android run \
+  #           --type instrumentation \
+  #           --app build/app/outputs/apk/debug/app-debug.apk \
+  #           --device model=Pixel2,version=30 \
+  #           --timeout 20m
