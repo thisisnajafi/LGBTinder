@@ -26,6 +26,10 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   permission_handler: ^11.3.1
   flutter_webrtc: ^0.9.48+hotfix.1
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.2
+  flutter_facebook_auth: ^7.1.1
+  crypto: ^3.0.3
   image: ^4.1.7
   flutter_image_compress: ^2.3.0
   image_cropper: ^8.0.2

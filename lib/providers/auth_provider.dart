@@ -9,6 +9,7 @@ import '../models/auth_responses.dart';
 import '../services/auth_service.dart';
 import '../services/email_verification_service.dart';
 import '../services/jwt_token_service.dart';
+import '../services/social_auth_service.dart';
 import '../utils/error_handler.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -476,6 +477,153 @@ class AuthProvider extends ChangeNotifier {
   //     }
   //   }
   // }
+
+  /// Login with Google
+  Future<Map<String, dynamic>?> loginWithGoogle() async {
+    try {
+      print('🔵 AuthProvider.loginWithGoogle() started');
+      _setLoading(true);
+      _clearError();
+      
+      final result = await SocialAuthService.signInWithGoogle();
+      
+      if (result == null) {
+        // User cancelled
+        print('❌ Google Sign-In cancelled');
+        _setLoading(false);
+        return null;
+      }
+      
+      if (result['success'] == true) {
+        // Store authentication data
+        await storeAuthData(
+          accessToken: result['token'] ?? '',
+          refreshToken: result['refresh_token'] ?? result['token'] ?? '',
+          user: result['user'] != null ? AuthUser.fromJson(result['user']) : null,
+          expiresIn: result['expires_in'] ?? 3600,
+        );
+        
+        _isAuthenticated = true;
+        _startTokenRefreshTimer();
+        
+        print('✅ Google Sign-In successful in AuthProvider');
+        notifyListeners();
+        return result;
+      } else {
+        _setError('Google Sign-In failed');
+        return result;
+      }
+    } on AppException catch (e) {
+      print('💥 AuthProvider loginWithGoogle AppException: ${e.message}');
+      _setError(e.message);
+      return {'success': false, 'error': e.message};
+    } catch (e) {
+      print('💥 AuthProvider loginWithGoogle Exception: $e');
+      _setError('Google Sign-In failed: ${e.toString()}');
+      return {'success': false, 'error': e.toString()};
+    } finally {
+      print('🏁 AuthProvider.loginWithGoogle() completed');
+      _setLoading(false);
+    }
+  }
+
+  /// Login with Apple
+  Future<Map<String, dynamic>?> loginWithApple() async {
+    try {
+      print('🍎 AuthProvider.loginWithApple() started');
+      _setLoading(true);
+      _clearError();
+      
+      final result = await SocialAuthService.signInWithApple();
+      
+      if (result == null) {
+        // User cancelled
+        print('❌ Apple Sign-In cancelled');
+        _setLoading(false);
+        return null;
+      }
+      
+      if (result['success'] == true) {
+        // Store authentication data
+        await storeAuthData(
+          accessToken: result['token'] ?? '',
+          refreshToken: result['refresh_token'] ?? result['token'] ?? '',
+          user: result['user'] != null ? AuthUser.fromJson(result['user']) : null,
+          expiresIn: result['expires_in'] ?? 3600,
+        );
+        
+        _isAuthenticated = true;
+        _startTokenRefreshTimer();
+        
+        print('✅ Apple Sign-In successful in AuthProvider');
+        notifyListeners();
+        return result;
+      } else {
+        _setError('Apple Sign-In failed');
+        return result;
+      }
+    } on AppException catch (e) {
+      print('💥 AuthProvider loginWithApple AppException: ${e.message}');
+      _setError(e.message);
+      return {'success': false, 'error': e.message};
+    } catch (e) {
+      print('💥 AuthProvider loginWithApple Exception: $e');
+      _setError('Apple Sign-In failed: ${e.toString()}');
+      return {'success': false, 'error': e.toString()};
+    } finally {
+      print('🏁 AuthProvider.loginWithApple() completed');
+      _setLoading(false);
+    }
+  }
+
+  /// Login with Facebook
+  Future<Map<String, dynamic>?> loginWithFacebook() async {
+    try {
+      print('🔵 AuthProvider.loginWithFacebook() started');
+      _setLoading(true);
+      _clearError();
+      
+      final result = await SocialAuthService.signInWithFacebook();
+      
+      if (result == null) {
+        // User cancelled
+        print('❌ Facebook Sign-In cancelled');
+        _setLoading(false);
+        return null;
+      }
+      
+      if (result['success'] == true) {
+        // Store authentication data
+        await storeAuthData(
+          accessToken: result['token'] ?? '',
+          refreshToken: result['refresh_token'] ?? result['token'] ?? '',
+          user: result['user'] != null ? AuthUser.fromJson(result['user']) : null,
+          expiresIn: result['expires_in'] ?? 3600,
+        );
+        
+        _isAuthenticated = true;
+        _startTokenRefreshTimer();
+        
+        print('✅ Facebook Sign-In successful in AuthProvider');
+        notifyListeners();
+        return result;
+      } else {
+        _setError('Facebook Sign-In failed');
+        return result;
+      }
+    } on AppException catch (e) {
+      print('💥 AuthProvider loginWithFacebook AppException: ${e.message}');
+      _setError(e.message);
+      return {'success': false, 'error': e.message};
+    } catch (e) {
+      print('💥 AuthProvider loginWithFacebook Exception: $e');
+      _setError('Facebook Sign-In failed: ${e.toString()}');
+      return {'success': false, 'error': e.toString()};
+    } finally {
+      print('🏁 AuthProvider.loginWithFacebook() completed');
+      _setLoading(false);
+    }
+  }
 
   /// Logout user
   Future<void> logout() async {
