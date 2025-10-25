@@ -836,7 +836,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
               height: 80,
               decoration: BoxDecoration(
                 color: Color(int.parse(badge.color)),
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(40), // Keep 40 - standard value
               ),
               child: Icon(
                 _getIconData(badge.icon),

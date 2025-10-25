@@ -119,7 +119,7 @@ class PhotoGallery extends StatelessWidget {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(11),
+                borderRadius: BorderRadius.circular(12),
                 child: image.url.isNotEmpty
                     ? Image.network(
                         image.url,

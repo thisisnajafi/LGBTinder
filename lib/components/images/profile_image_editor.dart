@@ -547,7 +547,7 @@ class ImageFilterPreview extends StatelessWidget {
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         child: Image.file(
           imageFile,
           fit: BoxFit.cover,

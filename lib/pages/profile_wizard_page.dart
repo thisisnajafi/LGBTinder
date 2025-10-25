@@ -824,14 +824,14 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
             children: [
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   child: Stack(
                     children: [
                       Container(
                         height: 8,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       AnimatedBuilder(
@@ -845,7 +845,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                                 gradient: LinearGradient(
                                   colors: AppColors.lgbtGradient,
                                 ),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
                           );

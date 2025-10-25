@@ -287,7 +287,7 @@ class RainbowDivider extends StatelessWidget {
         height: height ?? thickness ?? 2,
         decoration: BoxDecoration(
           gradient: RainbowThemeService().getRainbowGradient(),
-          borderRadius: BorderRadius.circular(1),
+          borderRadius: BorderRadius.circular(4), // Rounded from 1 to 4 (smallest standard)
         ),
       ),
     );

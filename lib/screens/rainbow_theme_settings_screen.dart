@@ -236,7 +236,7 @@ class _RainbowThemeSettingsScreenState extends State<RainbowThemeSettingsScreen>
               height: 20,
               decoration: BoxDecoration(
                 gradient: _getStyleGradient(style),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
             const SizedBox(width: 12),

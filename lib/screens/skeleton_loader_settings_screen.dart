@@ -188,7 +188,7 @@ class _SkeletonLoaderSettingsScreenState extends State<SkeletonLoaderSettingsScr
                 height: 30,
                 decoration: BoxDecoration(
                   color: _skeletonService.baseColor,
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               const SizedBox(width: 12),
@@ -230,7 +230,7 @@ class _SkeletonLoaderSettingsScreenState extends State<SkeletonLoaderSettingsScr
                 height: 30,
                 decoration: BoxDecoration(
                   color: _skeletonService.highlightColor,
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               const SizedBox(width: 12),

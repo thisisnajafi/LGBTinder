@@ -214,7 +214,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                     child: RTCVideoView(
                       _localRenderer,
                       objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,

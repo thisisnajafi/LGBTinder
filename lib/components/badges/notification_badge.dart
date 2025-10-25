@@ -109,7 +109,7 @@ class NavbarBadge extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6),
             decoration: BoxDecoration(
               color: badgeColor,
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: AppColors.navbarBackground,
                 width: 2,

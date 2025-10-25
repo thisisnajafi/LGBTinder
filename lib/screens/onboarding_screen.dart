@@ -249,7 +249,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(24),
                             gradient: LinearGradient(
                               colors: [
                                 Colors.white.withOpacity(0.1),
@@ -515,7 +515,7 @@ class _OnboardingSlideWidgetState extends State<_OnboardingSlideWidget>
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(vertical: 32),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(32),
                       gradient: LinearGradient(
                         colors: widget.slide.gradientColors,
                         begin: Alignment.topLeft,

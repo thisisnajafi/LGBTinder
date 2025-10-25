@@ -358,7 +358,7 @@ class _PullToRefreshSettingsScreenState extends State<PullToRefreshSettingsScree
                 height: 30,
                 decoration: BoxDecoration(
                   color: _pullToRefreshService.refreshIndicatorColor,
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               const SizedBox(width: 12),
@@ -400,7 +400,7 @@ class _PullToRefreshSettingsScreenState extends State<PullToRefreshSettingsScree
                 height: 30,
                 decoration: BoxDecoration(
                   color: _pullToRefreshService.refreshBackgroundColor,
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white24),
                 ),
               ),

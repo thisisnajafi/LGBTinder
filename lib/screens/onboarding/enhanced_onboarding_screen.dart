@@ -361,7 +361,7 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
                       end: Alignment.bottomRight,
                     )
                   : LGBTGradientSystem.rainbowGradient,
-              borderRadius: BorderRadius.circular(60),
+              borderRadius: BorderRadius.circular(64),
               border: Border.all(
                 color: step.iconColor?.withOpacity(0.3) ?? AppColors.primaryLight.withOpacity(0.3),
                 width: 2,

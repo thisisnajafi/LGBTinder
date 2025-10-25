@@ -1728,7 +1728,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
          backgroundColor: color,
          duration: const Duration(seconds: 1),
          behavior: SnackBarBehavior.floating,
-         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
        ),
      );
    }

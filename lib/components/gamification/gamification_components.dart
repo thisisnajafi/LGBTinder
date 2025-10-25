@@ -230,7 +230,7 @@ class GamificationBadgeCard extends StatelessWidget {
                 color: badge.isEarned 
                     ? Color(int.parse(badge.color))
                     : AppColors.textSecondaryDark,
-                borderRadius: BorderRadius.circular(32),
+                borderRadius: BorderRadius.circular(32), // Keep 32 - standard value
                 boxShadow: badge.isEarned ? [
                   BoxShadow(
                     color: Color(int.parse(badge.color)).withOpacity(0.3),
@@ -898,7 +898,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
               height: 80,
               decoration: BoxDecoration(
                 color: Color(int.parse(badge.color)),
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(40), // Keep 40 - standard value
               ),
               child: Icon(
                 _getIconData(badge.icon),
