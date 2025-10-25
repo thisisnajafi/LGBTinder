@@ -30,6 +30,7 @@ dependencies:
   sign_in_with_apple: ^6.1.2
   flutter_facebook_auth: ^7.1.1
   crypto: ^3.0.3
+  lottie: ^3.1.2
   image: ^4.1.7
   flutter_image_compress: ^2.3.0
   image_cropper: ^8.0.2
@@ -70,6 +71,7 @@ flutter:
     - assets/logo/logo.png
     - assets/animations/
     - assets/sounds/
+    - assets/lottie/
 
 
   fonts:
