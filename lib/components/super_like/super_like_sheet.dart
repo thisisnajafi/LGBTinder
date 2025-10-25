@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
 import '../services/audio_service.dart';
 
@@ -162,8 +163,7 @@ class _SuperLikeSheetState extends State<SuperLikeSheet>
         const SizedBox(width: 12),
         const Text(
           'Super Like',
-          style: TextStyle(
-            fontSize: 24,
+          style: AppTypography.headlineSmall.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -251,8 +251,7 @@ class _SuperLikeSheetState extends State<SuperLikeSheet>
                 const SizedBox(height: 16),
                 Text(
                   widget.userName,
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: AppTypography.titleLarge.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimaryDark,
                   ),
@@ -260,8 +259,7 @@ class _SuperLikeSheetState extends State<SuperLikeSheet>
                 const SizedBox(height: 8),
                 Text(
                   'Show them you really like them!',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textSecondaryDark,
                   ),
                   textAlign: TextAlign.center,
@@ -297,8 +295,7 @@ class _SuperLikeSheetState extends State<SuperLikeSheet>
               const SizedBox(width: 8),
               const Text(
                 'Super Like Benefits',
-                style: TextStyle(
-                  fontSize: 16,
+                style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimaryDark,
                 ),
@@ -343,16 +340,14 @@ class _SuperLikeSheetState extends State<SuperLikeSheet>
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: AppTypography.bodyMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimaryDark,
                 ),
               ),
               Text(
                 description,
-                style: const TextStyle(
-                  fontSize: 12,
+                style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textSecondaryDark,
                 ),
               ),
@@ -405,8 +400,7 @@ class _SuperLikeSheetState extends State<SuperLikeSheet>
         if (widget.remainingSuperLikes > 0)
           Text(
             '${widget.remainingSuperLikes} Super Likes remaining',
-            style: const TextStyle(
-              fontSize: 12,
+            style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           )
@@ -432,8 +426,7 @@ class _SuperLikeSheetState extends State<SuperLikeSheet>
                 const SizedBox(width: 8),
                 const Text(
                   'No Super Likes remaining',
-                  style: TextStyle(
-                    fontSize: 12,
+                  style: AppTypography.bodySmall.copyWith(
                     color: AppColors.feedbackWarning,
                     fontWeight: FontWeight.bold,
                   ),
@@ -606,7 +599,6 @@ class _SuperLikeButtonState extends State<SuperLikeButton>
                           widget.remainingCount.toString(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -700,7 +692,6 @@ class SuperLikeCounter extends StatelessWidget {
               remainingCount.toString(),
               style: const TextStyle(
                 color: AppColors.prideYellow,
-                fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
             ),

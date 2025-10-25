@@ -360,7 +360,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(width: 12),
               const Text(
                 'Profile Completion',
-                style: TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -381,8 +381,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(width: 16),
               Text(
                 '$completionPercentage%',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -393,8 +392,7 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 12),
             Text(
               'Complete your profile by adding:',
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTypography.bodyMedium.copyWith(
                 color: Colors.grey[600],
               ),
             ),
@@ -410,8 +408,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Text(
                     field,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: AppTypography.bodySmall.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w500,
                     ),
@@ -623,8 +620,7 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
+              style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),
@@ -668,7 +664,6 @@ class _ProfilePageState extends State<ProfilePage> {
               'Add Photos',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -728,7 +723,6 @@ class _ProfilePageState extends State<ProfilePage> {
             label,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 14,
             ),
           ),
         ],
@@ -752,7 +746,6 @@ class _ProfilePageState extends State<ProfilePage> {
               'Verify Your Profile',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -829,8 +822,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
@@ -838,8 +830,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTypography.bodyMedium.copyWith(
                       color: Colors.grey[600],
                     ),
                   ),
