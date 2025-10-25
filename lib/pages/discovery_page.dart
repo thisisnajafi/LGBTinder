@@ -12,6 +12,7 @@ import '../components/real_time/real_time_listener.dart';
 import '../providers/matching_state_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/error_monitoring_service.dart';
+import '../services/sound_effects_service.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({Key? key}) : super(key: key);
@@ -136,6 +137,9 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   
   Future<void> _handleLike(User user) async {
     try {
+      // Play swipe right sound
+      SoundEffectsService().playSwipeRightSound();
+      
       await AnalyticsService.trackEvent(
         name: 'user_like',
         parameters: {'action': 'user_like', 'category': 'matching', 'target_user_id': user.id},
@@ -164,6 +168,9 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   
   Future<void> _handleDislike(User user) async {
     try {
+      // Play swipe left sound
+      SoundEffectsService().playSwipeLeftSound();
+      
       await AnalyticsService.trackEvent(
         name: 'user_dislike',
         parameters: {'action': 'user_dislike', 'category': 'matching', 'target_user_id': user.id},
@@ -188,6 +195,9 @@ class _DiscoveryPageState extends State<DiscoveryPage>
 
   Future<void> _handleSuperLike(User user) async {
     try {
+      // Play super like sound
+      SoundEffectsService().playSuperLikeSound();
+      
       await AnalyticsService.trackEvent(
         name: 'user_super_like',
         parameters: {'action': 'user_super_like', 'category': 'matching', 'target_user_id': user.id},
@@ -558,6 +568,9 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   }
 
   void _showMatchDialog(User user) {
+    // Play match celebration sound
+    SoundEffectsService().playMatchSound();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

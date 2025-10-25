@@ -49,6 +49,7 @@ import 'screens/voice_call_screen.dart';
 import 'models/premium_plan.dart';
 import 'models/user.dart';
 import 'services/firebase_notification_service.dart';
+import 'services/sound_effects_service.dart';
 import 'pages/feed_page.dart';
 import 'components/navbar/bottom_navbar.dart';
 import 'pages/chat_list_page.dart';
@@ -59,6 +60,9 @@ void main() async {
   
   // Initialize Firebase notifications
   await FirebaseNotificationService.initialize();
+  
+  // Initialize Sound Effects
+  await SoundEffectsService().initialize();
   
   runApp(const LGBTinderApp());
 }

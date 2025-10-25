@@ -69,6 +69,7 @@ flutter:
     - assets/avatars/
     - assets/logo/logo.png
     - assets/animations/
+    - assets/sounds/
 
 
   fonts:
