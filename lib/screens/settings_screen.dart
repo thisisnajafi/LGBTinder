@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
+import '../providers/auth_provider.dart';
 import 'notification_settings_screen.dart';
 import 'safety_settings_screen.dart';
 import 'accessibility_settings_screen.dart';
@@ -351,15 +353,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implement logout functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logout functionality coming soon!'),
-                  backgroundColor: AppColors.primary,
-                ),
-              );
+              
+              try {
+                // Show loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Logging out...'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                
+                // Get auth provider and logout
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                await authProvider.logout();
+                
+                // Navigate to welcome screen and clear navigation stack
+                if (mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/welcome',
+                    (route) => false,
+                  );
+                }
+              } catch (e) {
+                // Show error message if logout fails
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Logout failed: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               'Logout',
@@ -393,18 +421,140 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implement delete account functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Delete account functionality coming soon!'),
-                  backgroundColor: Colors.red,
-                ),
-              );
+              
+              // Show password confirmation dialog
+              final password = await _showPasswordConfirmationDialog();
+              
+              if (password == null || password.isEmpty) {
+                return; // User cancelled or didn't enter password
+              }
+              
+              // Show loading indicator
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Deleting account...'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+              
+              try {
+                // Get auth provider and delete account
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                await authProvider.deleteAccount(password);
+                
+                // Show success message
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Account deleted successfully'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  
+                  // Navigate to welcome screen after short delay
+                  await Future.delayed(const Duration(seconds: 2));
+                  
+                  if (mounted) {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/welcome',
+                      (route) => false,
+                    );
+                  }
+                }
+              } catch (e) {
+                // Show error message if delete fails
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete account: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               'Delete',
+              style: AppTypography.body1.copyWith(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<String?> _showPasswordConfirmationDialog() async {
+    final TextEditingController passwordController = TextEditingController();
+    
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.navbarBackground,
+        title: Text(
+          'Confirm Password',
+          style: AppTypography.h4.copyWith(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Please enter your password to confirm account deletion.',
+              style: AppTypography.body1.copyWith(color: Colors.white70),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              style: AppTypography.body1.copyWith(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Password',
+                labelStyle: AppTypography.body1.copyWith(color: Colors.white70),
+                hintText: 'Enter your password',
+                hintStyle: AppTypography.body2.copyWith(color: Colors.white54),
+                filled: true,
+                fillColor: AppColors.appBackground,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.white24),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              passwordController.dispose();
+              Navigator.pop(context);
+            },
+            child: Text(
+              'Cancel',
+              style: AppTypography.body1.copyWith(color: Colors.white70),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              final password = passwordController.text;
+              passwordController.dispose();
+              Navigator.pop(context, password);
+            },
+            child: Text(
+              'Confirm',
               style: AppTypography.body1.copyWith(color: Colors.red),
             ),
           ),

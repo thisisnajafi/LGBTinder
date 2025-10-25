@@ -11,6 +11,7 @@ import '../services/haptic_feedback_service.dart';
 import '../services/api_services/profile_api_service.dart';
 import '../services/api_services/reference_data_api_service.dart';
 import '../services/token_management_service.dart';
+import '../services/profile_wizard_service.dart';
 import '../models/api_models/profile_models.dart';
 
 class ProfileWizardPage extends StatefulWidget {
@@ -78,6 +79,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
       ),
     );
     _loadReferenceData();
+    _loadSavedProgress(); // Load saved wizard progress from backend
   }
 
   @override
@@ -500,8 +502,11 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
     });
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     if (_currentStep < _totalSteps - 1) {
+      // Save current step data before moving to next step
+      await _saveCurrentStepData();
+      
       setState(() => _currentStep++);
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -526,6 +531,156 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
 
   void _animateProgress() {
     _progressAnimationController.forward(from: 0);
+  }
+
+  /// Save current step data to backend
+  Future<void> _saveCurrentStepData() async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) return;
+
+      // Prepare step data based on current step
+      Map<String, dynamic> stepData = _getCurrentStepData();
+      
+      if (stepData.isNotEmpty) {
+        // Save to backend
+        await ProfileWizardService.saveStep(
+          _currentStep.toString(),
+          stepData,
+          accessToken: token,
+        );
+      }
+    } catch (e) {
+      // Silently fail - user can continue without saving
+      debugPrint('Failed to save wizard step: $e');
+    }
+  }
+
+  /// Get current step data
+  Map<String, dynamic> _getCurrentStepData() {
+    switch (_currentStep) {
+      case 0: // Welcome step
+        return {};
+      case 1: // Basic Info
+        return {
+          if (_birthDate != null) 'birth_date': _birthDate!.toIso8601String().split('T')[0],
+          if (_selectedGender != null) 'gender': _selectedGender!['id'],
+          if (_selectedCountryId != null) 'country_id': int.tryParse(_selectedCountryId!),
+          if (_selectedCityId != null) 'city_id': int.tryParse(_selectedCityId!),
+        };
+      case 2: // Photos & Bio
+        return {
+          if (_bio.isNotEmpty) 'profile_bio': _bio,
+          'photos_count': _photos.length,
+        };
+      case 3: // Physical & Lifestyle
+        return {
+          'height': _height,
+          'weight': _weight,
+          'smoke': _smoke,
+          'drink': _drink,
+          'gym': _gym,
+        };
+      case 4: // Background
+        return {
+          if (_selectedJob != null) 'jobs': [_selectedJob!['id']],
+          if (_selectedEducation != null) 'educations': [_selectedEducation!['id']],
+          'languages': _selectedLanguages.map((l) => l['id']).toList(),
+          'interests': _selectedInterests.map((i) => i['id']).toList(),
+          'music_genres': _selectedMusicGenres.map((g) => g['id']).toList(),
+        };
+      case 5: // Preferences
+        return {
+          'min_age_preference': _minAgePreference,
+          'max_age_preference': _maxAgePreference,
+          'preferred_genders': _preferredGenders.map((g) => g['id']).toList(),
+          if (_relationGoal != null) 'relation_goals': [_relationGoal!['id']],
+        };
+      case 6: // Review
+        return {'step_completed': true};
+      default:
+        return {};
+    }
+  }
+
+  /// Load saved wizard progress from backend
+  Future<void> _loadSavedProgress() async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) return;
+
+      // Get wizard progress
+      final progress = await ProfileWizardService.getWizardProgress(
+        accessToken: token,
+      );
+      
+      if (progress['current_step'] != null) {
+        setState(() {
+          _currentStep = progress['current_step'] as int;
+        });
+      }
+      
+      // Load saved data for each step if available
+      if (progress['saved_data'] != null) {
+        _populateFormFromSavedData(progress['saved_data'] as Map<String, dynamic>);
+      }
+    } catch (e) {
+      // Silently fail - user can start fresh
+      debugPrint('Failed to load wizard progress: $e');
+    }
+  }
+
+  /// Populate form fields from saved data
+  void _populateFormFromSavedData(Map<String, dynamic> savedData) {
+    setState(() {
+      // Basic Info
+      if (savedData['birth_date'] != null) {
+        _birthDate = DateTime.tryParse(savedData['birth_date'] as String);
+      }
+      if (savedData['gender'] != null) {
+        final genderId = savedData['gender'];
+        _selectedGender = _genders.firstWhere(
+          (g) => g['id'] == genderId,
+          orElse: () => {},
+        );
+      }
+      if (savedData['country_id'] != null) {
+        _selectedCountryId = savedData['country_id'].toString();
+      }
+      if (savedData['city_id'] != null) {
+        _selectedCityId = savedData['city_id'].toString();
+      }
+      
+      // Photos & Bio
+      if (savedData['profile_bio'] != null) {
+        _bio = savedData['profile_bio'] as String;
+      }
+      
+      // Physical & Lifestyle
+      if (savedData['height'] != null) {
+        _height = savedData['height'] as int;
+      }
+      if (savedData['weight'] != null) {
+        _weight = savedData['weight'] as int;
+      }
+      if (savedData['smoke'] != null) {
+        _smoke = savedData['smoke'] as bool;
+      }
+      if (savedData['drink'] != null) {
+        _drink = savedData['drink'] as bool;
+      }
+      if (savedData['gym'] != null) {
+        _gym = savedData['gym'] as bool;
+      }
+      
+      // Preferences
+      if (savedData['min_age_preference'] != null) {
+        _minAgePreference = savedData['min_age_preference'] as int;
+      }
+      if (savedData['max_age_preference'] != null) {
+        _maxAgePreference = savedData['max_age_preference'] as int;
+      }
+    });
   }
 
   Future<void> _submitProfile() async {

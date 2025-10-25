@@ -1,5 +1,3 @@
-// Temporarily disabled due to flutter_webrtc compatibility issues
-/*
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -405,4 +403,3 @@ class CallState {
     );
   }
 }
-*/

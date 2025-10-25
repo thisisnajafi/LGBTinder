@@ -1,5 +1,3 @@
-// Temporarily disabled due to flutter_webrtc compatibility issues
-/*
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -448,4 +446,3 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> {
     super.dispose();
   }
 }
-*/

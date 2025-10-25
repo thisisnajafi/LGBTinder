@@ -1,5 +1,3 @@
-// Temporarily disabled due to flutter_webrtc compatibility issues
-/*
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -501,4 +499,3 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     super.dispose();
   }
 }
-*/
