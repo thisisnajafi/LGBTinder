@@ -134,13 +134,13 @@ class BannedScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 reason ?? 'Your account has been banned. Please contact support for more information.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
                   // Navigate to support or contact page
@@ -189,13 +189,13 @@ class ErrorScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 message,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: onRetry,
                 child: const Text('Try Again'),

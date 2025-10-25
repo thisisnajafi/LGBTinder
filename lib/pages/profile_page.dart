@@ -185,7 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Text(
               'Your profile information could not be loaded. Please try again.',
               textAlign: TextAlign.center,
@@ -193,7 +193,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 32),
             ElevatedButton(
               onPressed: _loadProfile,
               style: ElevatedButton.styleFrom(
