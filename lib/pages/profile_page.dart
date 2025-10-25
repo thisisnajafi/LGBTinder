@@ -14,6 +14,7 @@ import '../providers/profile_state_provider.dart';
 import '../providers/profile_provider.dart';
 import '../models/api_models/user_models.dart';
 import '../models/user.dart';
+import '../models/user_image.dart' as user_image;
 import '../services/analytics_service.dart';
 import '../services/error_monitoring_service.dart';
 import '../screens/safety_settings_screen.dart';
@@ -29,6 +30,8 @@ import '../services/profile_verification_service.dart';
 import '../services/profile_analytics_service.dart';
 import '../services/profile_sharing_service.dart';
 import '../services/profile_backup_service.dart';
+import '../services/profile_template_service.dart';
+import '../services/profile_export_service.dart';
 import 'profile_edit_page.dart';
 import 'profile_wizard_page.dart';
 
@@ -130,32 +133,24 @@ class _ProfilePageState extends State<ProfilePage> {
           // Profile header skeleton
           SkeletonCard(
             height: 200,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 20),
           
           // Profile info sections skeleton
           SkeletonCard(
             height: 150,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 20),
           
           // Photo gallery skeleton
           SkeletonCard(
             height: 120,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 20),
           
           // Safety verification skeleton
           SkeletonCard(
             height: 100,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
         ],
       ),
@@ -293,7 +288,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 // Photo Gallery
                 if (user.avatarUrl != null) ...[
-                  PhotoGallery(images: [user.avatarUrl!]),
+                  PhotoGallery(images: [
+                    user_image.UserImage(
+                      id: 1,
+                      url: user.avatarUrl!,
+                      type: 'profile',
+                      isPrimary: true,
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
+                    )
+                  ]),
                   const SizedBox(height: 24),
                 ],
 
@@ -560,6 +564,26 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.backup,
                 label: 'Backup',
                 onTap: _showProfileBackup,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.dashboard,
+                label: 'Templates',
+                onTap: _showProfileTemplates,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildManagementButton(
+                icon: Icons.download,
+                label: 'Export',
+                onTap: _showProfileExport,
               ),
             ),
           ],
@@ -897,5 +921,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showProfileBackup() {
     Navigator.pushNamed(context, '/profile-backup');
+  }
+
+  void _showProfileTemplates() {
+    Navigator.pushNamed(context, '/profile-templates');
+  }
+
+  void _showProfileExport() {
+    Navigator.pushNamed(context, '/profile-export');
   }
 }

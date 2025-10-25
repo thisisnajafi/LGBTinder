@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../models/models.dart';
 import '../../../theme/colors.dart';
 import '../../../theme/typography.dart';
 import '../../../utils/validation.dart';
+import '../../../providers/theme_provider.dart';
 
 // Basic text input field
 class ProfileTextInput extends StatelessWidget {
@@ -37,81 +39,86 @@ class ProfileTextInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDark = themeProvider.isDarkMode;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: AppTypography.subtitle2.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (isRequired)
-              Text(
-                ' *',
-                style: AppTypography.subtitle2.copyWith(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
+            Row(
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          initialValue: value,
-          keyboardType: keyboardType,
-          maxLength: maxLength,
-          maxLines: maxLines,
-          onChanged: onChanged,
-          onTap: onTap,
-          validator: validator ?? (value) {
-            return ValidationUtils.validateField(
-              value: value,
-              fieldName: label,
-              isRequired: isRequired,
+                if (isRequired)
+                  Text(
+                    ' *',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              initialValue: value,
+              keyboardType: keyboardType,
               maxLength: maxLength,
-              minLength: minLength,
-            );
-          },
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppTypography.body2.copyWith(
-              color: AppColors.textSecondary,
-            ),
-            filled: true,
-            fillColor: AppColors.greyLight,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: AppColors.primary,
-                width: 2,
+              maxLines: maxLines,
+              onChanged: onChanged,
+              onTap: onTap,
+              validator: validator ?? (value) {
+                return ValidationUtils.validateField(
+                  value: value,
+                  fieldName: label,
+                  isRequired: isRequired,
+                  maxLength: maxLength,
+                  minLength: minLength,
+                );
+              },
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: const TextStyle(color: Colors.white30),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white30),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white30),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+                errorText: errorText,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                counterStyle: const TextStyle(color: Colors.white70),
               ),
             ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: AppColors.error,
-                width: 1,
-              ),
-            ),
-            errorText: errorText,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-          style: AppTypography.body2.copyWith(
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
@@ -139,81 +146,88 @@ class ProfileDropdownInput<T extends ReferenceItem> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDark = themeProvider.isDarkMode;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: AppTypography.subtitle2.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (isRequired)
+                  Text(
+                    ' *',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
             ),
-            if (isRequired)
-              Text(
-                ' *',
-                style: AppTypography.subtitle2.copyWith(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
+            const SizedBox(height: 8),
+            DropdownButtonFormField<T>(
+              value: selectedValue,
+              items: options.map((option) {
+                return DropdownMenuItem<T>(
+                  value: option,
+                  child: Text(
+                    displayText?.call(option) ?? option.name,
+                    style: AppTypography.body2.copyWith(
+                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                hintText: 'Select $label',
+                hintStyle: const TextStyle(color: Colors.white30),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white30),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white30),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+                errorText: errorText,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
               ),
+              icon: const Icon(
+                Icons.keyboard_arrow_down, 
+                color: Colors.white70,
+              ),
+              dropdownColor: Colors.white.withOpacity(0.1),
+              style: const TextStyle(color: Colors.white),
+            ),
           ],
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<T>(
-          value: selectedValue,
-          items: options.map((option) {
-            return DropdownMenuItem<T>(
-              value: option,
-              child: Text(
-                displayText?.call(option) ?? option.name,
-                style: AppTypography.body2.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            );
-          }).toList(),
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            hintText: 'Select $label',
-            hintStyle: AppTypography.body2.copyWith(
-              color: AppColors.textSecondary,
-            ),
-            filled: true,
-            fillColor: AppColors.greyLight,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: AppColors.primary,
-                width: 2,
-              ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: AppColors.error,
-                width: 1,
-              ),
-            ),
-            errorText: errorText,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
-          dropdownColor: Colors.white,
-          style: AppTypography.body2.copyWith(
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -544,70 +558,76 @@ class ProfileDatePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDark = themeProvider.isDarkMode;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: AppTypography.subtitle2.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (isRequired)
-              Text(
-                ' *',
-                style: AppTypography.subtitle2.copyWith(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () => _showDatePicker(context),
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.greyLight,
-              borderRadius: BorderRadius.circular(8),
-              border: errorText != null
-                  ? Border.all(color: AppColors.error, width: 1)
-                  : null,
-            ),
-            child: Row(
+            Row(
               children: [
-                Expanded(
-                  child: Text(
-                    selectedDate != null
-                        ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
-                        : 'Select date',
-                    style: AppTypography.body2.copyWith(
-                      color: selectedDate != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                    ),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const Icon(Icons.calendar_today, color: AppColors.textSecondary, size: 20),
+                if (isRequired)
+                  Text(
+                    ' *',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
               ],
             ),
-          ),
-        ),
-        if (errorText != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            errorText!,
-            style: AppTypography.caption.copyWith(
-              color: AppColors.error,
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => _showDatePicker(context),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: errorText != null
+                      ? Border.all(color: Colors.red, width: 1)
+                      : Border.all(color: Colors.white30, width: 1),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        selectedDate != null
+                            ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
+                            : 'Select date',
+                        style: TextStyle(
+                          color: selectedDate != null ? Colors.white : Colors.white30,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.calendar_today, 
+                      color: Colors.white70, 
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
-      ],
+            if (errorText != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                errorText!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 

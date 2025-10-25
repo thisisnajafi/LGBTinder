@@ -108,7 +108,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
         ReferenceDataApiService.getCountries(),
         ReferenceDataApiService.getGenders(),
         ReferenceDataApiService.getMusicGenres(),
-        ReferenceDataApiService.getAllReferenceData(),
+        ReferenceDataApiService.loadAllReferenceData(),
         ReferenceDataApiService.getJobs(),
         ReferenceDataApiService.getLanguages(),
         ReferenceDataApiService.getInterests(),
@@ -679,9 +679,10 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   
                   // Fetch cities for selected country
                   try {
-                    final cities = await ReferenceDataApiService.getCitiesByCountry(value);
+                    final citiesData = await ReferenceDataApiService.getCitiesByCountry(value.toString());
+                    final cities = citiesData.map((data) => City.fromJson(data)).toList();
                     setState(() {
-                      _cities = cities.data;
+                      _cities = cities;
                     });
                   } catch (e) {
                     print('Error fetching cities: $e');
@@ -692,9 +693,10 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                         errorContext: 'load_cities',
                         onAction: () async {
                           try {
-                            final cities = await ReferenceDataApiService.getCitiesByCountry(value);
+                            final citiesData = await ReferenceDataApiService.getCitiesByCountry(value.toString());
+                            final cities = citiesData.map((data) => City.fromJson(data)).toList();
                             setState(() {
-                              _cities = cities.data;
+                              _cities = cities;
                             });
                           } catch (e) {
                             // Error will be handled by ErrorSnackBar

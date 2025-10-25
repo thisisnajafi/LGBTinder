@@ -212,4 +212,12 @@ class AppColors {
   // Background Colors
   static const Color backgroundPrimary = Color(0xFFFFFFFF); // White
   static const Color backgroundSecondary = Color(0xFFF9FAFB); // Gray-50
+  
+  // Legacy color aliases for backward compatibility
+  static const Color textPrimary = textPrimaryDark;
+  static const Color textSecondary = textSecondaryDark;
+  // Backward compatibility aliases
+  static const Color background = backgroundDark; // Default to dark background
+  static const Color success = feedbackSuccess;
+  static const Color error = feedbackError;
 } 

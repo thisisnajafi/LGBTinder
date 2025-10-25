@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/profile_analytics_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/analytics/analytics_components.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/profile_analytics_service.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../components/analytics/analytics_components.dart';
+import '../../components/buttons/animated_button.dart';
 
 class ProfileAnalyticsScreen extends StatefulWidget {
   const ProfileAnalyticsScreen({Key? key}) : super(key: key);
@@ -334,7 +334,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
                 child: _buildMetricItem(
                   'Visits',
                   '${_analytics!.totalVisits}',
-                  Icons.visit,
+                  Icons.visibility,
                   AppColors.feedbackInfo,
                 ),
               ),

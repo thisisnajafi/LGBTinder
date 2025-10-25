@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/api_models/chat_models.dart';
 import '../models/api_models/user_models.dart';
 import '../models/user.dart';
+import '../models/api_models/matching_models.dart';
 import '../providers/chat_state_provider.dart';
 import '../providers/matching_state_provider.dart';
 import '../theme/colors.dart';
@@ -72,8 +73,18 @@ class _ChatListPageState extends State<ChatListPage> {
       setState(() {
         _matches = matchingProvider.matches.map((match) {
           // Handle different match types safely
-          if (match is Map<String, dynamic> && match.containsKey('user')) {
-            return User.fromJson(match['user']);
+          if (match is MatchData) {
+            // Convert MatchUser to User
+            return User(
+              id: match.user.id,
+              firstName: match.user.name.split(' ').first,
+              lastName: match.user.name.split(' ').length > 1 ? match.user.name.split(' ').last : '',
+              fullName: match.user.name,
+              email: '', // MatchUser doesn't have email
+              avatarUrl: match.user.avatarUrl,
+              createdAt: DateTime.now(), // MatchUser doesn't have createdAt
+              updatedAt: DateTime.now(), // MatchUser doesn't have updatedAt
+            );
           } else if (match is User) {
             return match;
           } else {
@@ -88,7 +99,7 @@ class _ChatListPageState extends State<ChatListPage> {
               updatedAt: DateTime.now(),
             );
           }
-        }).toList();
+        }).cast<User>().toList();
         _isLoadingMatches = false;
       });
     } catch (e) {
@@ -125,8 +136,18 @@ class _ChatListPageState extends State<ChatListPage> {
       setState(() {
         _matches = matchingProvider.matches.map((match) {
           // Handle different match types safely
-          if (match is Map<String, dynamic> && match.containsKey('user')) {
-            return User.fromJson(match['user']);
+          if (match is MatchData) {
+            // Convert MatchUser to User
+            return User(
+              id: match.user.id,
+              firstName: match.user.name.split(' ').first,
+              lastName: match.user.name.split(' ').length > 1 ? match.user.name.split(' ').last : '',
+              fullName: match.user.name,
+              email: '', // MatchUser doesn't have email
+              avatarUrl: match.user.avatarUrl,
+              createdAt: DateTime.now(), // MatchUser doesn't have createdAt
+              updatedAt: DateTime.now(), // MatchUser doesn't have updatedAt
+            );
           } else if (match is User) {
             return match;
           } else {
@@ -141,7 +162,7 @@ class _ChatListPageState extends State<ChatListPage> {
               updatedAt: DateTime.now(),
             );
           }
-        }).toList();
+        }).cast<User>().toList();
       });
     } catch (e) {
       if (mounted) {
@@ -308,20 +329,14 @@ class _ChatListPageState extends State<ChatListPage> {
         children: [
           SkeletonCard(
             height: 80,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 16),
           SkeletonCard(
             height: 80,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           const SizedBox(height: 16),
           SkeletonCard(
             height: 80,
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
         ],
       ),

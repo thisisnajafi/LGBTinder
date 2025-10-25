@@ -162,6 +162,32 @@ class BackupProgress {
       errorMessage: json['errorMessage'],
     );
   }
+
+  BackupProgress copyWith({
+    String? operation,
+    int? currentStep,
+    int? totalSteps,
+    double? percentage,
+    String? currentItem,
+    int? itemsProcessed,
+    int? totalItems,
+    DateTime? startTime,
+    DateTime? estimatedCompletion,
+    String? errorMessage,
+  }) {
+    return BackupProgress(
+      operation: operation ?? this.operation,
+      currentStep: currentStep ?? this.currentStep,
+      totalSteps: totalSteps ?? this.totalSteps,
+      percentage: percentage ?? this.percentage,
+      currentItem: currentItem ?? this.currentItem,
+      itemsProcessed: itemsProcessed ?? this.itemsProcessed,
+      totalItems: totalItems ?? this.totalItems,
+      startTime: startTime ?? this.startTime,
+      estimatedCompletion: estimatedCompletion ?? this.estimatedCompletion,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
 }
 
 class ProfileBackupService {

@@ -112,7 +112,7 @@ class ImageCompressionService {
     try {
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().compress();
+        HapticFeedbackService.compress();
       }
 
       // Get file info
@@ -145,7 +145,7 @@ class ImageCompressionService {
 
         // Trigger success haptic feedback
         if (_hapticFeedbackEnabled) {
-          await HapticFeedbackService().success();
+          HapticFeedbackService.success();
         }
 
         return File(compressedFile.path);
@@ -157,7 +157,7 @@ class ImageCompressionService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return imageFile;
@@ -181,7 +181,7 @@ class ImageCompressionService {
     try {
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().compress();
+        HapticFeedbackService.compress();
       }
 
       // Get bytes info
@@ -206,7 +206,7 @@ class ImageCompressionService {
 
         // Trigger success haptic feedback
         if (_hapticFeedbackEnabled) {
-          await HapticFeedbackService().success();
+          HapticFeedbackService.success();
         }
 
         return compressedBytes;
@@ -218,7 +218,7 @@ class ImageCompressionService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return imageBytes;

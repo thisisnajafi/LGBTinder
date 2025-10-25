@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../components/gradients/lgbt_gradient_system.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/buttons/animated_button.dart';
-import '../components/buttons/accessible_button.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
+import 'package:provider/provider.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../components/gradients/lgbt_gradient_system.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../services/onboarding_manager.dart';
+import '../../components/buttons/animated_button.dart';
+import '../../components/buttons/accessible_button.dart';
+import '../../providers/theme_provider.dart';
+import '../auth/login_screen.dart';
+import '../auth/register_screen.dart';
 
 class OnboardingStep {
   final String title;
@@ -15,7 +18,6 @@ class OnboardingStep {
   final String? imagePath;
   final IconData? icon;
   final Color? iconColor;
-  final List<String>? features;
   final Widget? customContent;
 
   const OnboardingStep({
@@ -24,7 +26,6 @@ class OnboardingStep {
     this.imagePath,
     this.icon,
     this.iconColor,
-    this.features,
     this.customContent,
   });
 }
@@ -58,48 +59,24 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
       description: 'A safe and inclusive space for the LGBTQ+ community to connect, discover, and build meaningful relationships.',
       icon: Icons.favorite,
       iconColor: AppColors.primaryLight,
-      features: [
-        'Safe & Inclusive Environment',
-        'Authentic Connections',
-        'Privacy Protection',
-        'Community Support',
-      ],
     ),
     OnboardingStep(
       title: 'Find Your Perfect Match',
       description: 'Discover amazing people who share your interests, values, and goals. Swipe right to connect!',
       icon: Icons.people,
       iconColor: AppColors.feedbackSuccess,
-      features: [
-        'Smart Matching Algorithm',
-        'Advanced Filters',
-        'Location-Based Discovery',
-        'Interest-Based Matching',
-      ],
     ),
     OnboardingStep(
       title: 'Build Meaningful Connections',
       description: 'Chat with your matches, share experiences, and build lasting relationships in a supportive environment.',
       icon: Icons.chat_bubble,
       iconColor: AppColors.feedbackInfo,
-      features: [
-        'Secure Messaging',
-        'Video Calls',
-        'Group Chats',
-        'Event Planning',
-      ],
     ),
     OnboardingStep(
       title: 'Join Our Community',
       description: 'Be part of a vibrant, supportive community that celebrates diversity and promotes authentic connections.',
       icon: Icons.group,
       iconColor: AppColors.feedbackWarning,
-      features: [
-        'Community Events',
-        'Support Groups',
-        'Educational Resources',
-        'Advocacy Opportunities',
-      ],
     ),
   ];
 
@@ -186,75 +163,86 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildProgressIndicator(),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                itemCount: _steps.length,
-                itemBuilder: (context, index) {
-                  return _buildOnboardingPage(_steps[index]);
-                },
-              ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: themeProvider.isDarkMode 
+              ? AppColors.backgroundDark 
+              : AppColors.background,
+          body: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: Column(
+              children: [
+                _buildHeader(context, themeProvider),
+                _buildProgressIndicator(context, themeProvider),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    itemCount: _steps.length,
+                    itemBuilder: (context, index) {
+                      return _buildOnboardingPage(_steps[index], context, themeProvider);
+                    },
+                  ),
+                ),
+                _buildNavigationButtons(context, themeProvider),
+              ],
             ),
-            _buildNavigationButtons(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ThemeProvider themeProvider) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Logo
+            AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: LGBTGradientSystem.rainbowGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.favorite,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            // Skip Button
+            if (!_isLastPage)
+              TextButton(
+                onPressed: _skipOnboarding,
+                child: Text(
+                  'Skip',
+                  style: AppTypography.buttonStyle.copyWith(
+                    color: themeProvider.isDarkMode 
+                        ? AppColors.textSecondaryDark 
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Logo
-          AnimatedBuilder(
-            animation: _scaleAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LGBTGradientSystem.rainbowGradient,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.favorite,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-              );
-            },
-          ),
-          
-          // Skip Button
-          if (!_isLastPage)
-            TextButton(
-              onPressed: _skipOnboarding,
-              child: Text(
-                'Skip',
-                style: AppTypography.button.copyWith(
-                  color: AppColors.textSecondaryDark,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator() {
+  Widget _buildProgressIndicator(BuildContext context, ThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -265,7 +253,9 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
               Text(
                 'Step ${_currentPage + 1} of ${_steps.length}',
                 style: AppTypography.caption.copyWith(
-                  color: AppColors.textSecondaryDark,
+                  color: themeProvider.isDarkMode 
+                      ? AppColors.textSecondaryDark 
+                      : AppColors.textSecondary,
                 ),
               ),
               Text(
@@ -283,7 +273,9 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
             builder: (context, child) {
               return LinearProgressIndicator(
                 value: (_currentPage + 1) / _steps.length * _progressAnimation.value,
-                backgroundColor: AppColors.surfaceSecondary,
+                backgroundColor: themeProvider.isDarkMode 
+                    ? AppColors.surfaceSecondary 
+                    : AppColors.surfaceSecondary,
                 valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryLight),
                 minHeight: 4,
               );
@@ -294,7 +286,7 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
     );
   }
 
-  Widget _buildOnboardingPage(OnboardingStep step) {
+  Widget _buildOnboardingPage(OnboardingStep step, BuildContext context, ThemeProvider themeProvider) {
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -302,45 +294,41 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
           opacity: _fadeAnimation,
           child: SlideTransition(
             position: _slideAnimation,
-            child: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 40),
-                  
-                  // Icon or Image
+                  // Icon
                   _buildStepIcon(step),
                   
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 40),
                   
                   // Title
                   Text(
                     step.title,
                     style: AppTypography.h2.copyWith(
-                      color: AppColors.textPrimaryDark,
+                      color: themeProvider.isDarkMode 
+                          ? AppColors.textPrimaryDark 
+                          : AppColors.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   
                   // Description
                   Text(
                     step.description,
                     style: AppTypography.body1.copyWith(
-                      color: AppColors.textSecondaryDark,
-                      height: 1.5,
+                      color: themeProvider.isDarkMode 
+                          ? AppColors.textSecondaryDark 
+                          : AppColors.textSecondary,
+                      height: 1.6,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Features
-                  if (step.features != null) _buildFeaturesList(step.features!),
-                  
-                  const SizedBox(height: 40),
                   
                   // Custom Content
                   if (step.customContent != null) step.customContent!,
@@ -390,147 +378,116 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
     );
   }
 
-  Widget _buildFeaturesList(List<String> features) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.borderDefault,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Key Features',
-            style: AppTypography.subtitle1.copyWith(
-              color: AppColors.textPrimaryDark,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...features.map((feature) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
+
+  Widget _buildNavigationButtons(BuildContext context, ThemeProvider themeProvider) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Icon(
-                  Icons.check_circle,
-                  size: 20,
-                  color: AppColors.feedbackSuccess,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    feature,
-                    style: AppTypography.body2.copyWith(
-                      color: AppColors.textSecondaryDark,
+                if (_currentPage > 0)
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _previousPage,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: themeProvider.isDarkMode 
+                              ? AppColors.borderDefault 
+                              : AppColors.borderDefault,
+                        ),
+                        foregroundColor: themeProvider.isDarkMode 
+                            ? AppColors.textPrimaryDark 
+                            : AppColors.textPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Previous'),
                     ),
                   ),
-                ),
-              ],
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavigationButtons() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              if (_currentPage > 0)
+                if (_currentPage > 0) const SizedBox(width: 12),
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _previousPage,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.borderDefault),
-                      foregroundColor: AppColors.textPrimaryDark,
+                  child: ElevatedButton(
+                    onPressed: _isLastPage ? _completeOnboarding : _nextPage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryLight,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Previous'),
+                    child: Text(_isLastPage ? 'Get Started' : 'Next'),
                   ),
                 ),
-              if (_currentPage > 0) const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _isLastPage ? _completeOnboarding : _nextPage,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryLight,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Terms and Privacy
+            Text(
+              'By continuing, you agree to our Terms of Service and Privacy Policy',
+              style: AppTypography.caption.copyWith(
+                color: themeProvider.isDarkMode 
+                    ? AppColors.textSecondaryDark 
+                    : AppColors.textSecondary,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // Footer Links
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                TextButton(
+                  onPressed: _showTermsOfService,
+                  child: Text(
+                    'Terms of Service',
+                    style: AppTypography.caption.copyWith(
+                      color: themeProvider.isDarkMode 
+                          ? AppColors.textSecondaryDark 
+                          : AppColors.textSecondary,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
-                  child: Text(_isLastPage ? 'Get Started' : 'Next'),
                 ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Terms and Privacy
-          Text(
-            'By continuing, you agree to our Terms of Service and Privacy Policy',
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textSecondaryDark,
-              height: 1.4,
+                TextButton(
+                  onPressed: _showPrivacyPolicy,
+                  child: Text(
+                    'Privacy Policy',
+                    style: AppTypography.caption.copyWith(
+                      color: themeProvider.isDarkMode 
+                          ? AppColors.textSecondaryDark 
+                          : AppColors.textSecondary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _showHelpSupport,
+                  child: Text(
+                    'Help & Support',
+                    style: AppTypography.caption.copyWith(
+                      color: themeProvider.isDarkMode 
+                          ? AppColors.textSecondaryDark 
+                          : AppColors.textSecondary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Footer Links
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 16,
-            runSpacing: 8,
-            children: [
-              TextButton(
-                onPressed: _showTermsOfService,
-                child: Text(
-                  'Terms of Service',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondaryDark,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: _showPrivacyPolicy,
-                child: Text(
-                  'Privacy Policy',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondaryDark,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: _showHelpSupport,
-                child: Text(
-                  'Help & Support',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondaryDark,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -575,41 +532,61 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
 
   void _completeOnboarding() {
     HapticFeedbackService.success();
+    OnboardingManager.markOnboardingCompleted();
     _showWelcomeOptions();
   }
 
   void _showSkipConfirmation() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.navbarBackground,
-        title: const Text(
-          'Skip Onboarding',
-          style: TextStyle(color: AppColors.textPrimaryDark),
-        ),
-        content: const Text(
-          'Are you sure you want to skip the onboarding? You can always access this information later.',
-          style: TextStyle(color: AppColors.textSecondaryDark),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Continue',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return AlertDialog(
+            backgroundColor: themeProvider.isDarkMode 
+                ? AppColors.navbarBackground 
+                : AppColors.background,
+            title: Text(
+              'Skip Onboarding',
+              style: TextStyle(
+                color: themeProvider.isDarkMode 
+                    ? AppColors.textPrimaryDark 
+                    : AppColors.textPrimary,
+              ),
             ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showWelcomeOptions();
-            },
-            child: const Text(
-              'Skip',
-              style: TextStyle(color: AppColors.feedbackWarning),
+            content: Text(
+              'Are you sure you want to skip the onboarding? You can always access this information later.',
+              style: TextStyle(
+                color: themeProvider.isDarkMode 
+                    ? AppColors.textSecondaryDark 
+                    : AppColors.textSecondary,
+              ),
             ),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Continue',
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode 
+                        ? AppColors.textSecondaryDark 
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  OnboardingManager.markOnboardingSkipped();
+                  _showWelcomeOptions();
+                },
+                child: Text(
+                  'Skip',
+                  style: TextStyle(color: AppColors.feedbackWarning),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -619,121 +596,133 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: AppColors.navbarBackground,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Handle
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: AppColors.textSecondaryDark,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                
-                Text(
-                  'Welcome to LGBTinder!',
-                  style: AppTypography.h3.copyWith(
-                    color: AppColors.textPrimaryDark,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 8),
-                
-                Text(
-                  'Ready to start your journey?',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.textSecondaryDark,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Login Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryLight,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      'I Already Have an Account',
-                      style: AppTypography.button.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Register Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegisterScreen(),
-                        ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryLight,
-                      side: BorderSide(
-                        color: AppColors.primaryLight,
-                        width: 2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      'Create New Account',
-                      style: AppTypography.button.copyWith(
-                        color: AppColors.primaryLight,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 20),
-              ],
+      builder: (context) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return Container(
+            decoration: BoxDecoration(
+              color: themeProvider.isDarkMode 
+                  ? AppColors.navbarBackground 
+                  : AppColors.background,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
-          ),
-        ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: themeProvider.isDarkMode 
+                            ? AppColors.textSecondaryDark 
+                            : AppColors.textSecondary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    
+                    Text(
+                      'Welcome to LGBTinder!',
+                      style: AppTypography.h3.copyWith(
+                        color: themeProvider.isDarkMode 
+                            ? AppColors.textPrimaryDark 
+                            : AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    
+                    const SizedBox(height: 8),
+                    
+                    Text(
+                      'Ready to start your journey?',
+                      style: AppTypography.body1.copyWith(
+                        color: themeProvider.isDarkMode 
+                            ? AppColors.textSecondaryDark 
+                            : AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Login Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryLight,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          'I Already Have an Account',
+                          style: AppTypography.buttonStyle.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Register Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RegisterScreen(),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primaryLight,
+                          side: BorderSide(
+                            color: AppColors.primaryLight,
+                            width: 2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          'Create New Account',
+                          style: AppTypography.buttonStyle.copyWith(
+                            color: AppColors.primaryLight,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

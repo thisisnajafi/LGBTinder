@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/buttons/animated_button.dart';
-import '../components/buttons/accessible_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../components/buttons/animated_button.dart';
+import '../../components/buttons/accessible_button.dart';
 
 class ProfileCustomizationOption {
   final String id;

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/profile_verification_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/verification/verification_components.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/profile_verification_service.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../components/verification/verification_components.dart';
+import '../../components/buttons/animated_button.dart';
 
 class ProfileVerificationScreen extends StatefulWidget {
   const ProfileVerificationScreen({Key? key}) : super(key: key);

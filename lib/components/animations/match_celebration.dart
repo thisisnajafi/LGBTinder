@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
-import '../theme/colors.dart';
-import '../services/haptic_feedback_service.dart';
+import 'dart:math';
+import '../../theme/colors.dart';
+import '../../services/haptic_feedback_service.dart';
 
 class MatchCelebration extends StatefulWidget {
   final Widget child;
@@ -112,7 +112,7 @@ class _MatchCelebrationState extends State<MatchCelebration>
       color: _getRandomColor(),
       size: _random.nextDouble() * 8 + 4,
       velocity: _random.nextDouble() * 2 + 1,
-      rotation: _random.nextDouble() * 2 * math.pi,
+      rotation: _random.nextDouble() * 2 * pi,
       rotationSpeed: _random.nextDouble() * 0.1 - 0.05,
     ));
 
@@ -447,9 +447,9 @@ class SparklePainter extends CustomPainter {
 
     // Draw a star shape
     for (int i = 0; i < 8; i++) {
-      final angle = (i * math.pi) / 4;
-      final x = center.dx + math.cos(angle) * radius;
-      final y = center.dy + math.sin(angle) * radius;
+      final angle = (i * pi) / 4;
+      final x = center.dx + cos(angle) * radius;
+      final y = center.dy + sin(angle) * radius;
       
       if (i == 0) {
         path.moveTo(x, y);

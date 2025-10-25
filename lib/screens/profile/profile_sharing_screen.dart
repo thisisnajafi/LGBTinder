@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/profile_sharing_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/sharing/sharing_components.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/profile_sharing_service.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../components/sharing/sharing_components.dart';
+import '../../components/buttons/animated_button.dart';
 
 class ProfileSharingScreen extends StatefulWidget {
   const ProfileSharingScreen({Key? key}) : super(key: key);
@@ -129,7 +129,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         backgroundColor: AppColors.navbarBackground,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryDark),
           onPressed: () {
             HapticFeedbackService.selection();
             Navigator.of(context).pop();
@@ -144,11 +144,11 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.textPrimaryDark),
+            icon: Icon(Icons.refresh, color: AppColors.textPrimaryDark),
             onPressed: _refreshData,
           ),
           IconButton(
-            icon: const Icon(Icons.download, color: AppColors.textPrimaryDark),
+            icon: Icon(Icons.download, color: AppColors.textPrimaryDark),
             onPressed: _exportData,
           ),
         ],
@@ -599,11 +599,11 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
                 ),
                 title: Text(
                   platform['name'],
-                  style: const TextStyle(color: AppColors.textPrimaryDark),
+                  style: TextStyle(color: AppColors.textPrimaryDark),
                 ),
                 subtitle: Text(
                   platform['description'],
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: TextStyle(color: AppColors.textSecondaryDark),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -744,18 +744,18 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
               if (_shareContent != null) ...[
                 Text(
                   'Title: ${_shareContent!.title}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: TextStyle(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Description: ${_shareContent!.description}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: TextStyle(color: AppColors.textSecondaryDark),
                 ),
                 if (_shareContent!.link != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     'Link: ${_shareContent!.link}',
-                    style: const TextStyle(color: AppColors.textSecondaryDark),
+                    style: TextStyle(color: AppColors.textSecondaryDark),
                   ),
                 ],
               ],
@@ -782,7 +782,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           _getPlatformDisplayName(history.platform),
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: TextStyle(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -790,7 +790,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
           children: [
             Text(
               'Time: ${_formatDate(history.timestamp)}',
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: TextStyle(color: AppColors.textSecondaryDark),
             ),
             const SizedBox(height: 8),
             Text(
@@ -805,14 +805,14 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
               const SizedBox(height: 8),
               Text(
                 'Recipient: ${history.recipientName}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: TextStyle(color: AppColors.textSecondaryDark),
               ),
             ],
             if (history.errorMessage != null) ...[
               const SizedBox(height: 8),
               Text(
                 'Error: ${history.errorMessage}',
-                style: const TextStyle(color: AppColors.feedbackError),
+                style: TextStyle(color: AppColors.feedbackError),
               ),
             ],
           ],
@@ -847,22 +847,22 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
               if (_statistics != null) ...[
                 Text(
                   'Total Shares: ${_statistics!['totalShares']}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: TextStyle(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Successful: ${_statistics!['successfulShares']}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: TextStyle(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Failed: ${_statistics!['failedShares']}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: TextStyle(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Success Rate: ${_statistics!['successRate'].toStringAsFixed(1)}%',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: TextStyle(color: AppColors.textSecondaryDark),
                 ),
               ],
             ],

@@ -1,458 +1,378 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
-import '../../models/api_models/reference_data_models.dart';
+import '../../services/token_management_service.dart';
 
-/// Reference Data API Service
-/// 
-/// This service handles all reference data API calls including:
-/// - Countries
-/// - Cities by country
-/// - Genders
-/// - Jobs
-/// - Education levels
-/// - Interests
-/// - Languages
-/// - Music genres
-/// - Relationship goals
-/// - Preferred genders
 class ReferenceDataApiService {
   static const String _baseUrl = ApiConfig.baseUrl;
 
-  // ============================================================================
-  // COUNTRIES
-  // ============================================================================
-
-  /// Get all available countries
-  /// 
-  /// Returns [CountriesResponse] with list of countries
-  static Future<CountriesResponse> getCountries() async {
+  /// Get list of jobs
+  static Future<List<Map<String, dynamic>>> getJobs() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/countries'),
+        Uri.parse('$_baseUrl${ApiConfig.jobs}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return CountriesResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return CountriesResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load jobs: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return CountriesResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading jobs: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // CITIES
-  // ============================================================================
-
-  /// Get all cities for a specific country
-  /// 
-  /// [countryId] - ID of the country to get cities for
-  /// Returns [CitiesResponse] with list of cities
-  static Future<CitiesResponse> getCitiesByCountry(int countryId) async {
+  /// Get list of education levels
+  static Future<List<Map<String, dynamic>>> getEducation() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/cities/country/$countryId'),
+        Uri.parse('$_baseUrl${ApiConfig.education}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return CitiesResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return CitiesResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load education: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return CitiesResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading education: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // GENDERS
-  // ============================================================================
-
-  /// Get all available gender options
-  /// 
-  /// Returns [GendersResponse] with list of genders
-  static Future<GendersResponse> getGenders() async {
+  /// Get list of genders
+  static Future<List<Map<String, dynamic>>> getGenders() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/genders'),
+        Uri.parse('$_baseUrl${ApiConfig.genders}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return GendersResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return GendersResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load genders: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return GendersResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading genders: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // JOBS
-  // ============================================================================
-
-  /// Get all available job/profession options
-  /// 
-  /// Returns [JobsResponse] with list of jobs
-  static Future<JobsResponse> getJobs() async {
+  /// Get list of preferred genders
+  static Future<List<Map<String, dynamic>>> getPreferredGenders() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/jobs'),
+        Uri.parse('$_baseUrl${ApiConfig.preferredGenders}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return JobsResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return JobsResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load preferred genders: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return JobsResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading preferred genders: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // EDUCATION
-  // ============================================================================
-
-  /// Get all available education level options
-  /// 
-  /// Returns [EducationResponse] with list of education levels
-  static Future<EducationResponse> getEducation() async {
+  /// Get list of interests
+  static Future<List<Map<String, dynamic>>> getInterests() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/education'),
+        Uri.parse('$_baseUrl${ApiConfig.interests}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return EducationResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return EducationResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load interests: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return EducationResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading interests: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // INTERESTS
-  // ============================================================================
-
-  /// Get all available interest options
-  /// 
-  /// Returns [InterestsResponse] with list of interests
-  static Future<InterestsResponse> getInterests() async {
+  /// Get list of languages
+  static Future<List<Map<String, dynamic>>> getLanguages() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/interests'),
+        Uri.parse('$_baseUrl${ApiConfig.languages}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return InterestsResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return InterestsResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load languages: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return InterestsResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading languages: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // LANGUAGES
-  // ============================================================================
-
-  /// Get all available language options
-  /// 
-  /// Returns [LanguagesResponse] with list of languages
-  static Future<LanguagesResponse> getLanguages() async {
+  /// Get list of relation goals
+  static Future<List<Map<String, dynamic>>> getRelationGoals() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/languages'),
+        Uri.parse('$_baseUrl${ApiConfig.relationGoals}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return LanguagesResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return LanguagesResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load relation goals: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return LanguagesResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading relation goals: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // MUSIC GENRES
-  // ============================================================================
-
-  /// Get all available music genre options
-  /// 
-  /// Returns [MusicGenresResponse] with list of music genres
-  static Future<MusicGenresResponse> getMusicGenres() async {
+  /// Get list of music genres
+  static Future<List<Map<String, dynamic>>> getMusicGenres() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/music-genres'),
+        Uri.parse('$_baseUrl${ApiConfig.musicGenres}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return MusicGenresResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return MusicGenresResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load music genres: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return MusicGenresResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading music genres: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // RELATIONSHIP GOALS
-  // ============================================================================
-
-  /// Get all available relationship goal options
-  /// 
-  /// Returns [RelationGoalsResponse] with list of relationship goals
-  static Future<RelationGoalsResponse> getRelationGoals() async {
+  /// Get list of countries
+  static Future<List<Map<String, dynamic>>> getCountries() async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/relation-goals'),
+        Uri.parse('$_baseUrl${ApiConfig.countries}'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return RelationGoalsResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
       } else {
-        // Handle error response
-        return RelationGoalsResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load countries: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return RelationGoalsResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading countries: $e');
+      return [];
     }
   }
 
-  // ============================================================================
-  // PREFERRED GENDERS
-  // ============================================================================
-
-  /// Get all available preferred gender options for matching
-  /// 
-  /// Returns [PreferredGendersResponse] with list of preferred genders
-  static Future<PreferredGendersResponse> getPreferredGenders() async {
+  /// Get country by ID
+  static Future<Map<String, dynamic>?> getCountryById(String id) async {
     try {
+      final token = await TokenManagementService.getAccessToken();
+      
       final response = await http.get(
-        Uri.parse('$_baseUrl/preferred-genders'),
+        Uri.parse('$_baseUrl${ApiConfig.countries}/$id'),
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
       if (response.statusCode == 200) {
-        return PreferredGendersResponse.fromJson(responseData);
+        final data = jsonDecode(response.body);
+        return data['data'];
       } else {
-        // Handle error response
-        return PreferredGendersResponse(
-          status: 'error',
-          data: [],
-        );
+        throw Exception('Failed to load country: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle network or parsing errors
-      return PreferredGendersResponse(
-        status: 'error',
-        data: [],
-      );
+      print('Error loading country: $e');
+      return null;
     }
   }
 
-  // ============================================================================
-  // BATCH OPERATIONS
-  // ============================================================================
-
-  /// Get all reference data in a single batch operation
-  /// 
-  /// Returns [Map<String, dynamic>] with all reference data
-  static Future<Map<String, dynamic>> getAllReferenceData() async {
+  /// Get list of all cities
+  static Future<List<Map<String, dynamic>>> getCities() async {
     try {
-      // Execute all requests concurrently
+      final token = await TokenManagementService.getAccessToken();
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl${ApiConfig.cities}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
+      } else {
+        throw Exception('Failed to load cities: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error loading cities: $e');
+      return [];
+    }
+  }
+
+  /// Get cities by country ID
+  static Future<List<Map<String, dynamic>>> getCitiesByCountry(String countryId) async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl${ApiConfig.cities}/country/$countryId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
+      } else {
+        throw Exception('Failed to load cities: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error loading cities: $e');
+      return [];
+    }
+  }
+
+  /// Get city by ID
+  static Future<Map<String, dynamic>?> getCityById(String id) async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl${ApiConfig.cities}/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'];
+      } else {
+        throw Exception('Failed to load city: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error loading city: $e');
+      return null;
+    }
+  }
+
+  /// Load all reference data at once
+  static Future<Map<String, dynamic>> loadAllReferenceData() async {
+    try {
       final results = await Future.wait([
-        getCountries(),
         getGenders(),
+        getPreferredGenders(),
         getJobs(),
         getEducation(),
+        getRelationGoals(),
         getInterests(),
         getLanguages(),
         getMusicGenres(),
-        getRelationGoals(),
-        getPreferredGenders(),
+        getCountries(),
       ]);
 
       return {
-        'countries': results[0] as CountriesResponse,
-        'genders': results[1] as GendersResponse,
-        'jobs': results[2] as JobsResponse,
-        'education': results[3] as EducationResponse,
-        'interests': results[4] as InterestsResponse,
-        'languages': results[5] as LanguagesResponse,
-        'music_genres': results[6] as MusicGenresResponse,
-        'relation_goals': results[7] as RelationGoalsResponse,
-        'preferred_genders': results[8] as PreferredGendersResponse,
+        'genders': results[0],
+        'preferredGenders': results[1],
+        'jobs': results[2],
+        'education': results[3],
+        'relationGoals': results[4],
+        'interests': results[5],
+        'languages': results[6],
+        'musicGenres': results[7],
+        'countries': results[8],
       };
     } catch (e) {
-      // Handle errors
-      return {
-        'countries': CountriesResponse(status: 'error', data: []),
-        'genders': GendersResponse(status: 'error', data: []),
-        'jobs': JobsResponse(status: 'error', data: []),
-        'education': EducationResponse(status: 'error', data: []),
-        'interests': InterestsResponse(status: 'error', data: []),
-        'languages': LanguagesResponse(status: 'error', data: []),
-        'music_genres': MusicGenresResponse(status: 'error', data: []),
-        'relation_goals': RelationGoalsResponse(status: 'error', data: []),
-        'preferred_genders': PreferredGendersResponse(status: 'error', data: []),
-      };
+      print('Error loading all reference data: $e');
+      return {};
     }
-  }
-
-  // ============================================================================
-  // UTILITY METHODS
-  // ============================================================================
-
-  /// Check if response indicates success
-  static bool isSuccessResponse(int statusCode) {
-    return statusCode >= 200 && statusCode < 300;
-  }
-
-  /// Check if response indicates client error
-  static bool isClientErrorResponse(int statusCode) {
-    return statusCode >= 400 && statusCode < 500;
-  }
-
-  /// Check if response indicates server error
-  static bool isServerErrorResponse(int statusCode) {
-    return statusCode >= 500 && statusCode < 600;
-  }
-
-  /// Get error message from response
-  static String getErrorMessage(Map<String, dynamic> responseData) {
-    if (responseData.containsKey('message')) {
-      return responseData['message'] as String;
-    }
-    return 'Unknown error occurred';
   }
 }

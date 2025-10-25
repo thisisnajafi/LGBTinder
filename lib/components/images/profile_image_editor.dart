@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'dart:io';
-import '../theme/colors.dart';
-import '../services/haptic_feedback_service.dart';
+import '../../theme/colors.dart';
+import '../../services/haptic_feedback_service.dart';
 
 class ProfileImageEditor extends StatefulWidget {
   final String? currentImageUrl;
@@ -447,7 +447,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
     if (_selectedImage == null) return;
 
     try {
-      final croppedFile = await ImageCropper.cropImage(
+      final croppedFile = await ImageCropper().cropImage(
         sourcePath: _selectedImage!.path,
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         uiSettings: [

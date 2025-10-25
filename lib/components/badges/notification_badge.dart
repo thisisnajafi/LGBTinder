@@ -105,7 +105,6 @@ class NavbarBadge extends StatelessWidget {
           right: 8,
           top: 8,
           child: Container(
-            min: 18,
             height: 18,
             padding: const EdgeInsets.symmetric(horizontal: 6),
             decoration: BoxDecoration(

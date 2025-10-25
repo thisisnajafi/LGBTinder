@@ -82,6 +82,146 @@ class HapticFeedbackService {
     HapticFeedback.vibrate();
   }
 
+  static void warning() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.mediumImpact();
+  }
+
+  static void like() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void superLike() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.heavyImpact();
+  }
+
+  static void match() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.heavyImpact();
+  }
+
+  static void messageSent() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void swipeLeft() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void swipeRight() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void refresh() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void stop() {
+    // Stop any ongoing haptic feedback
+    HapticFeedback.vibrate();
+  }
+
+  static void camera() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void gallery() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void audio() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void file() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  static void compress() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.mediumImpact();
+  }
+
+  static void impact() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.heavyImpact();
+  }
+
+  static void notification() {
+    if (!_shouldTriggerFeedback()) return;
+    
+    HapticFeedback.lightImpact();
+  }
+
+  // Instance methods for settings screen compatibility
+  static bool get isLightEnabled => _isEnabled;
+  static bool get isMediumEnabled => _isEnabled;
+  static bool get isHeavyEnabled => _isEnabled;
+  static bool get isSelectionEnabled => _isEnabled;
+  static bool get isImpactEnabled => _isEnabled;
+  static bool get isNotificationEnabled => _isEnabled;
+  static double get duration => _cooldownDuration.inMilliseconds.toDouble();
+
+  static void setLightEnabled(bool enabled) {
+    _isEnabled = enabled;
+  }
+
+  static void setMediumEnabled(bool enabled) {
+    _isEnabled = enabled;
+  }
+
+  static void setHeavyEnabled(bool enabled) {
+    _isEnabled = enabled;
+  }
+
+  static void setSelectionEnabled(bool enabled) {
+    _isEnabled = enabled;
+  }
+
+  static void setImpactEnabled(bool enabled) {
+    _isEnabled = enabled;
+  }
+
+  static void setNotificationEnabled(bool enabled) {
+    _isEnabled = enabled;
+  }
+
+  static void setDuration(int duration) {
+    _cooldownDuration = Duration(milliseconds: duration);
+  }
+
+  static void initialize() {
+    // Initialize haptic feedback service
+  }
+
+  static void dispose() {
+    // Dispose haptic feedback service
+  }
+
   static void customFeedback(HapticFeedbackType type) {
     if (!_shouldTriggerFeedback()) return;
     
@@ -121,28 +261,12 @@ class HapticFeedbackService {
     customFeedback(HapticFeedbackType.buttonRelease);
   }
 
-  static void swipeLeft() {
-    customFeedback(HapticFeedbackType.swipe);
-  }
-
-  static void swipeRight() {
-    customFeedback(HapticFeedbackType.swipe);
-  }
-
   static void swipeUp() {
     customFeedback(HapticFeedbackType.swipe);
   }
 
   static void matchFound() {
     customFeedback(HapticFeedbackType.match);
-  }
-
-  static void superLike() {
-    customFeedback(HapticFeedbackType.match);
-  }
-
-  static void notification() {
-    customFeedback(HapticFeedbackType.notification);
   }
 
   static void toggle() {

@@ -21,7 +21,7 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> _loadTheme() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final themeIndex = prefs.getInt(_themeKey) ?? 0;
+      final themeIndex = prefs.getInt(_themeKey) ?? ThemeMode.dark.index; // Default to dark mode
       _themeMode = ThemeMode.values[themeIndex];
       _isSystemTheme = _themeMode == ThemeMode.system;
       notifyListeners();
@@ -72,7 +72,7 @@ class ThemeProvider extends ChangeNotifier {
       bottomAppBarTheme: BottomAppBarThemeData(
         color: AppColors.backgroundLight,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardBackgroundLight,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -199,7 +199,7 @@ class ThemeProvider extends ChangeNotifier {
       bottomAppBarTheme: BottomAppBarThemeData(
         color: AppColors.appBackground,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.navbarBackground,
         elevation: 2,
         shape: RoundedRectangleBorder(

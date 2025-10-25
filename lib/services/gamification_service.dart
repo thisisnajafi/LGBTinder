@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Achievement {
@@ -83,7 +84,7 @@ class Achievement {
   }
 }
 
-class Badge {
+class GamificationBadge {
   final String id;
   final String name;
   final String description;
@@ -94,19 +95,20 @@ class Badge {
   final DateTime? earnedAt;
   final Map<String, dynamic> criteria;
 
-  const Badge({
+  const GamificationBadge({
     required this.id,
     required this.name,
     required this.description,
     required this.icon,
     required this.color,
     required this.rarity,
-    this.isEarned = false,
+    required this.isEarned,
     this.earnedAt,
-    this.criteria = const {},
+    required this.criteria,
   });
 
-  Badge copyWith({
+
+  GamificationBadge copyWith({
     String? id,
     String? name,
     String? description,
@@ -117,7 +119,7 @@ class Badge {
     DateTime? earnedAt,
     Map<String, dynamic>? criteria,
   }) {
-    return Badge(
+    return GamificationBadge(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
@@ -144,8 +146,8 @@ class Badge {
     };
   }
 
-  factory Badge.fromJson(Map<String, dynamic> json) {
-    return Badge(
+  factory GamificationBadge.fromJson(Map<String, dynamic> json) {
+    return GamificationBadge(
       id: json['id'],
       name: json['name'],
       description: json['description'],
@@ -362,70 +364,77 @@ class GamificationService {
   }
 
   /// Get all available badges
-  List<Badge> getAvailableBadges() {
+  List<GamificationBadge> getAvailableGamificationBadges() {
     return [
-      // Profile Badges
-      Badge(
+      // Profile GamificationBadges
+      GamificationBadge(
         id: 'verified_profile',
         name: 'Verified',
         description: 'Profile verified by our team',
         icon: 'verified',
         color: '0xFF4CAF50',
         rarity: 'rare',
+        isEarned: false,
         criteria: {'verification_status': 'verified'},
       ),
-      Badge(
+      GamificationBadge(
         id: 'premium_member',
         name: 'Premium',
         description: 'Premium member',
         icon: 'diamond',
         color: '0xFFFFD700',
         rarity: 'epic',
+        isEarned: false,
         criteria: {'membership': 'premium'},
       ),
-      Badge(
+      GamificationBadge(
         id: 'new_member',
         name: 'New Member',
         description: 'Recently joined',
         icon: 'new_releases',
         color: '0xFF2196F3',
         rarity: 'common',
+        isEarned: false,
         criteria: {'days_since_join': 7},
       ),
-      Badge(
+      GamificationBadge(
         id: 'profile_complete',
         name: 'Complete',
         description: 'Profile 100% complete',
         icon: 'check_circle',
         color: '0xFF4CAF50',
         rarity: 'rare',
+        isEarned: false,
         criteria: {'completion_percentage': 100},
       ),
-      Badge(
+      GamificationBadge(
         id: 'photo_pro',
         name: 'Photo Pro',
         description: 'Has 5+ high-quality photos',
         icon: 'photo_library',
         color: '0xFF9C27B0',
         rarity: 'rare',
+        isEarned: false,
         criteria: {'photos_count': 5, 'photo_quality': 'high'},
       ),
-      Badge(
+      GamificationBadge(
         id: 'social_butterfly',
         name: 'Social Butterfly',
         description: 'Very active in conversations',
         icon: 'chat',
         color: '0xFFE91E63',
         rarity: 'epic',
+        isEarned: false,
         criteria: {'conversation_rate': 0.8},
       ),
-      Badge(
+      GamificationBadge(
         id: 'match_magnet',
         name: 'Match Magnet',
         description: 'Gets lots of matches',
         icon: 'favorite',
         color: '0xFFFF5722',
         rarity: 'legendary',
+        isEarned: false,
         criteria: {'match_rate': 0.7},
       ),
     ];
@@ -448,21 +457,26 @@ class GamificationService {
     return getAvailableAchievements();
   }
 
+  /// Get user badges (alias for getUserGamificationBadges)
+  Future<List<GamificationBadge>> getUserBadges() async {
+    return getUserGamificationBadges();
+  }
+
   /// Get user badges
-  Future<List<Badge>> getUserBadges() async {
+  Future<List<GamificationBadge>> getUserGamificationBadges() async {
     final prefs = await SharedPreferences.getInstance();
     final badgesJson = prefs.getString(_badgesKey);
     
     if (badgesJson != null) {
       try {
         final badgesList = json.decode(badgesJson) as List;
-        return badgesList.map((item) => Badge.fromJson(item)).toList();
+        return badgesList.map((item) => GamificationBadge.fromJson(item)).toList();
       } catch (e) {
-        return getAvailableBadges();
+        return getAvailableGamificationBadges();
       }
     }
     
-    return getAvailableBadges();
+    return getAvailableGamificationBadges();
   }
 
   /// Get profile completion progress
@@ -492,7 +506,7 @@ class GamificationService {
     await _checkAchievements(profileData);
     
     // Check for badges
-    await _checkBadges(profileData);
+    await _checkGamificationBadges(profileData);
   }
 
   /// Unlock achievement
@@ -515,8 +529,8 @@ class GamificationService {
   }
 
   /// Earn badge
-  Future<void> earnBadge(String badgeId) async {
-    final badges = await getUserBadges();
+  Future<void> earnGamificationBadge(String badgeId) async {
+    final badges = await getUserGamificationBadges();
     final badgeIndex = badges.indexWhere((b) => b.id == badgeId);
     
     if (badgeIndex != -1 && !badges[badgeIndex].isEarned) {
@@ -564,20 +578,20 @@ class GamificationService {
   /// Get gamification statistics
   Future<Map<String, dynamic>> getGamificationStats() async {
     final achievements = await getUserAchievements();
-    final badges = await getUserBadges();
+    final badges = await getUserGamificationBadges();
     final progress = await getProfileCompletionProgress();
     final levelData = await getUserLevel();
     
     final unlockedAchievements = achievements.where((a) => a.isUnlocked).length;
-    final earnedBadges = badges.where((b) => b.isEarned).length;
+    final earnedGamificationBadges = badges.where((b) => b.isEarned).length;
     
     return {
       'totalAchievements': achievements.length,
       'unlockedAchievements': unlockedAchievements,
       'achievementProgress': unlockedAchievements / achievements.length,
-      'totalBadges': badges.length,
-      'earnedBadges': earnedBadges,
-      'badgeProgress': earnedBadges / badges.length,
+      'totalGamificationBadges': badges.length,
+      'earnedGamificationBadges': earnedGamificationBadges,
+      'badgeProgress': earnedGamificationBadges / badges.length,
       'profileCompletion': progress.completionPercentage,
       'level': levelData['level'],
       'experience': levelData['experience'],
@@ -691,12 +705,12 @@ class GamificationService {
     }
   }
 
-  Future<void> _checkBadges(Map<String, dynamic> profileData) async {
-    final badges = await getUserBadges();
+  Future<void> _checkGamificationBadges(Map<String, dynamic> profileData) async {
+    final badges = await getUserGamificationBadges();
     
     for (final badge in badges) {
-      if (!badge.isEarned && _isBadgeEarned(badge, profileData)) {
-        await earnBadge(badge.id);
+      if (!badge.isEarned && _isGamificationBadgeEarned(badge, profileData)) {
+        await earnGamificationBadge(badge.id);
       }
     }
   }
@@ -718,7 +732,7 @@ class GamificationService {
     return true;
   }
 
-  bool _isBadgeEarned(Badge badge, Map<String, dynamic> profileData) {
+  bool _isGamificationBadgeEarned(GamificationBadge badge, Map<String, dynamic> profileData) {
     final criteria = badge.criteria;
     
     for (final key in criteria.keys) {
@@ -735,7 +749,7 @@ class GamificationService {
 
   int _calculateLevel(int experience) {
     // Level formula: level = sqrt(experience / 100) + 1
-    return (experience / 100).sqrt().floor() + 1;
+    return sqrt(experience / 100).floor() + 1;
   }
 
   int _getNextLevelExperience(int currentLevel) {

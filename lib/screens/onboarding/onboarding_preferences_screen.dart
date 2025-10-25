@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../components/buttons/animated_button.dart';
 
 class OnboardingPreferences {
   final bool showAnimations;

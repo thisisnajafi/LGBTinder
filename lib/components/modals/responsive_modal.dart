@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/colors.dart';
-import '../services/haptic_feedback_service.dart';
+import 'dart:math';
+import '../../theme/colors.dart';
+import '../../services/haptic_feedback_service.dart';
 
 class ResponsiveModal extends StatefulWidget {
   final Widget child;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/haptic_feedback_service.dart';
-import '../utils/color_state_manager.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../utils/color_state_manager.dart';
 
 class AccessibleButton extends StatefulWidget {
   final String text;
@@ -427,11 +427,11 @@ class _AccessibleButtonState extends State<AccessibleButton>
   TextStyle _getButtonTypography() {
     switch (widget.size) {
       case ButtonSize.small:
-        return AppTypography.labelMedium;
+        return AppTypography.labelMediumStyle;
       case ButtonSize.medium:
-        return AppTypography.labelLarge;
+        return AppTypography.labelLargeStyle;
       case ButtonSize.large:
-        return AppTypography.titleSmall;
+        return AppTypography.titleSmallStyle;
     }
   }
 
@@ -501,7 +501,7 @@ class ButtonDimensions {
   });
 }
 
-class IconButton extends StatelessWidget {
+class AccessibleIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
   final String? semanticLabel;
@@ -512,7 +512,7 @@ class IconButton extends StatelessWidget {
   final bool isDisabled;
   final Duration animationDuration;
 
-  const IconButton({
+  const AccessibleIconButton({
     Key? key,
     required this.icon,
     this.onPressed,

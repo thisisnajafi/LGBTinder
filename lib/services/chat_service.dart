@@ -62,7 +62,7 @@ class ChatService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Haptic feedback for successful message send
-        await HapticFeedbackService().messageSent();
+        HapticFeedbackService.messageSent();
         return Message.fromJson(data['data'] ?? data);
       } else if (response.statusCode == 401) {
         throw AuthException('Authentication required');
@@ -80,16 +80,16 @@ class ChatService {
         throw ApiException('Failed to send message: ${response.statusCode}');
       }
     } on AuthException {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       rethrow;
     } on ValidationException {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       rethrow;
     } on ApiException {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       rethrow;
     } catch (e) {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       throw NetworkException('Network error while sending message: $e');
     }
   }
@@ -797,7 +797,7 @@ class ChatService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Haptic feedback for successful message send
-        await HapticFeedbackService().messageSent();
+        HapticFeedbackService.messageSent();
         return Message.fromJson(data['data'] ?? data);
       } else if (response.statusCode == 401) {
         throw AuthException('Authentication required');
@@ -815,16 +815,16 @@ class ChatService {
         throw ApiException('Failed to send message: ${response.statusCode}');
       }
     } on AuthException {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       rethrow;
     } on ValidationException {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       rethrow;
     } on ApiException {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       rethrow;
     } catch (e) {
-      await HapticFeedbackService().error();
+      HapticFeedbackService.error();
       throw NetworkException('Network error while sending message: $e');
     }
   }

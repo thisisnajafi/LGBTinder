@@ -33,12 +33,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   Future<void> _checkOnboardingStatus() async {
     final shouldShow = await OnboardingManager.shouldShowOnboarding();
+    final isFirstLaunch = await OnboardingManager.isFirstLaunch();
+    
     if (mounted) {
       setState(() {
-        _shouldShowOnboarding = shouldShow;
+        // Only show onboarding for first-time users who are not authorized
+        _shouldShowOnboarding = shouldShow && isFirstLaunch;
         _isCheckingOnboarding = false;
       });
     }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Show splash screen while checking onboarding status

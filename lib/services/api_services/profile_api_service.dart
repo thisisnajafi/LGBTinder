@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/api_config.dart';
 import '../../models/api_models/profile_models.dart';
 import '../../utils/profile_helper.dart';
@@ -13,6 +14,47 @@ import '../../utils/profile_helper.dart';
 /// - Profile management utilities
 class ProfileApiService {
   static const String _baseUrl = ApiConfig.baseUrl;
+
+  // ============================================================================
+  // PROFILE COMPLETION
+  // ============================================================================
+
+  /// Complete user profile registration
+  /// 
+  /// [profileData] - Map containing all required profile fields
+  /// Returns Map with response data
+  static Future<Map<String, dynamic>> completeProfile(Map<String, dynamic> profileData) async {
+    try {
+      final token = await _getAccessToken();
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/complete-registration'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(profileData),
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+      return responseData;
+    } catch (e) {
+      return {
+        'status': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  static Future<String?> _getAccessToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('access_token');
+    } catch (e) {
+      return null;
+    }
+  }
 
   // ============================================================================
   // PROFILE UPDATE

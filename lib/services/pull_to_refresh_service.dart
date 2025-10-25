@@ -86,7 +86,7 @@ class PullToRefreshService {
   /// Trigger haptic feedback for refresh
   Future<void> triggerRefreshHaptic() async {
     if (_hapticFeedbackEnabled && _isEnabled) {
-      await HapticFeedbackService().refresh();
+      HapticFeedbackService.refresh();
     }
   }
 

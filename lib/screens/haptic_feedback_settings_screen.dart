@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
+import '../components/haptic/haptic_widgets.dart';
 
 class HapticFeedbackSettingsScreen extends StatefulWidget {
   const HapticFeedbackSettingsScreen({Key? key}) : super(key: key);
@@ -11,18 +12,15 @@ class HapticFeedbackSettingsScreen extends StatefulWidget {
 }
 
 class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScreen> {
-  late HapticFeedbackService _hapticService;
-
   @override
   void initState() {
     super.initState();
-    _hapticService = HapticFeedbackService();
-    _hapticService.initialize();
+    HapticFeedbackService.initialize();
   }
 
   @override
   void dispose() {
-    _hapticService.dispose();
+    HapticFeedbackService.dispose();
     super.dispose();
   }
 
@@ -147,10 +145,10 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
                 ),
               ),
               HapticSwitch(
-                value: _hapticService.isEnabled,
+                value: HapticFeedbackService.isEnabled,
                 onChanged: (value) {
                   setState(() {
-                    _hapticService.setEnabled(value);
+                    HapticFeedbackService.setEnabled(value);
                   });
                 },
                 activeColor: AppColors.primary,
@@ -185,78 +183,78 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
           _buildHapticTypeToggle(
             title: 'Light Haptic',
             subtitle: 'Subtle vibrations for gentle interactions',
-            value: _hapticService.isLightEnabled,
+            value: HapticFeedbackService.isLightEnabled,
             onChanged: (value) {
               setState(() {
-                _hapticService.setLightEnabled(value);
+                HapticFeedbackService.setLightEnabled(value);
               });
             },
-            onTest: () => _hapticService.light(),
+            onTest: () => HapticFeedbackService.light(),
             icon: Icons.touch_app,
           ),
           const SizedBox(height: 12),
           _buildHapticTypeToggle(
             title: 'Medium Haptic',
             subtitle: 'Standard vibrations for normal interactions',
-            value: _hapticService.isMediumEnabled,
+            value: HapticFeedbackService.isMediumEnabled,
             onChanged: (value) {
               setState(() {
-                _hapticService.setMediumEnabled(value);
+                HapticFeedbackService.setMediumEnabled(value);
               });
             },
-            onTest: () => _hapticService.medium(),
+            onTest: () => HapticFeedbackService.medium(),
             icon: Icons.touch_app,
           ),
           const SizedBox(height: 12),
           _buildHapticTypeToggle(
             title: 'Heavy Haptic',
             subtitle: 'Strong vibrations for important interactions',
-            value: _hapticService.isHeavyEnabled,
+            value: HapticFeedbackService.isHeavyEnabled,
             onChanged: (value) {
               setState(() {
-                _hapticService.setHeavyEnabled(value);
+                HapticFeedbackService.setHeavyEnabled(value);
               });
             },
-            onTest: () => _hapticService.heavy(),
+            onTest: () => HapticFeedbackService.heavy(),
             icon: Icons.touch_app,
           ),
           const SizedBox(height: 12),
           _buildHapticTypeToggle(
             title: 'Selection Haptic',
             subtitle: 'Vibrations for list selections and switches',
-            value: _hapticService.isSelectionEnabled,
+            value: HapticFeedbackService.isSelectionEnabled,
             onChanged: (value) {
               setState(() {
-                _hapticService.setSelectionEnabled(value);
+                HapticFeedbackService.setSelectionEnabled(value);
               });
             },
-            onTest: () => _hapticService.selection(),
+            onTest: () => HapticFeedbackService.selection(),
             icon: Icons.check_circle,
           ),
           const SizedBox(height: 12),
           _buildHapticTypeToggle(
             title: 'Impact Haptic',
             subtitle: 'Vibrations for button presses and taps',
-            value: _hapticService.isImpactEnabled,
+            value: HapticFeedbackService.isImpactEnabled,
             onChanged: (value) {
               setState(() {
-                _hapticService.setImpactEnabled(value);
+                HapticFeedbackService.setImpactEnabled(value);
               });
             },
-            onTest: () => _hapticService.impact(),
+            onTest: () => HapticFeedbackService.impact(),
             icon: Icons.touch_app,
           ),
           const SizedBox(height: 12),
           _buildHapticTypeToggle(
             title: 'Notification Haptic',
             subtitle: 'Vibrations for alerts and notifications',
-            value: _hapticService.isNotificationEnabled,
+            value: HapticFeedbackService.isNotificationEnabled,
             onChanged: (value) {
               setState(() {
-                _hapticService.setNotificationEnabled(value);
+                HapticFeedbackService.setNotificationEnabled(value);
               });
             },
-            onTest: () => _hapticService.notification(),
+            onTest: () => HapticFeedbackService.notification(),
             icon: Icons.notifications,
           ),
         ],
@@ -284,43 +282,41 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
           ),
           const SizedBox(height: 16),
           Text(
-            'Intensity: ${(_hapticService.intensity * 100).toInt()}%',
+            'Intensity: ${(HapticFeedbackService.intensity * 100).toInt()}%',
             style: AppTypography.body1.copyWith(
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
           HapticSlider(
-            value: _hapticService.intensity,
+            value: HapticFeedbackService.intensity,
             min: 0.0,
             max: 1.0,
             onChanged: (value) {
               setState(() {
-                _hapticService.setIntensity(value);
+                HapticFeedbackService.setIntensity(value);
               });
             },
             activeColor: AppColors.primary,
-            inactiveColor: Colors.white24,
           ),
           const SizedBox(height: 16),
           Text(
-            'Duration: ${_hapticService.duration}ms',
+            'Duration: ${HapticFeedbackService.duration}ms',
             style: AppTypography.body1.copyWith(
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
           HapticSlider(
-            value: _hapticService.duration.toDouble(),
+            value: HapticFeedbackService.duration.toDouble(),
             min: 10.0,
             max: 1000.0,
             onChanged: (value) {
               setState(() {
-                _hapticService.setDuration(value.round());
+                HapticFeedbackService.setDuration(value.round());
               });
             },
             activeColor: AppColors.primary,
-            inactiveColor: Colors.white24,
           ),
         ],
       ),
@@ -357,18 +353,18 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
             spacing: 12,
             runSpacing: 12,
             children: [
-              _buildTestButton('Light', () => _hapticService.light()),
-              _buildTestButton('Medium', () => _hapticService.medium()),
-              _buildTestButton('Heavy', () => _hapticService.heavy()),
-              _buildTestButton('Success', () => _hapticService.success()),
-              _buildTestButton('Error', () => _hapticService.error()),
-              _buildTestButton('Warning', () => _hapticService.warning()),
-              _buildTestButton('Like', () => _hapticService.like()),
-              _buildTestButton('Super Like', () => _hapticService.superLike()),
-              _buildTestButton('Match', () => _hapticService.match()),
-              _buildTestButton('Message', () => _hapticService.messageSent()),
-              _buildTestButton('Swipe', () => _hapticService.swipeLeft()),
-              _buildTestButton('Refresh', () => _hapticService.refresh()),
+              _buildTestButton('Light', () => HapticFeedbackService.light()),
+              _buildTestButton('Medium', () => HapticFeedbackService.medium()),
+              _buildTestButton('Heavy', () => HapticFeedbackService.heavy()),
+              _buildTestButton('Success', () => HapticFeedbackService.success()),
+              _buildTestButton('Error', () => HapticFeedbackService.error()),
+              _buildTestButton('Warning', () => HapticFeedbackService.warning()),
+              _buildTestButton('Like', () => HapticFeedbackService.like()),
+              _buildTestButton('Super Like', () => HapticFeedbackService.superLike()),
+              _buildTestButton('Match', () => HapticFeedbackService.match()),
+              _buildTestButton('Message', () => HapticFeedbackService.messageSent()),
+              _buildTestButton('Swipe', () => HapticFeedbackService.swipeLeft()),
+              _buildTestButton('Refresh', () => HapticFeedbackService.refresh()),
             ],
           ),
         ],
@@ -406,7 +402,7 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
             title: 'Stop All Vibrations',
             subtitle: 'Stop any currently playing vibrations',
             icon: Icons.stop,
-            onTap: () => _hapticService.stop(),
+            onTap: () => HapticFeedbackService.stop(),
           ),
           const SizedBox(height: 12),
           _buildActionTile(
@@ -457,6 +453,7 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
           ),
         ),
         HapticButton(
+          text: 'Test',
           onPressed: onTest,
           hapticType: HapticType.light,
           backgroundColor: Colors.transparent,
@@ -479,6 +476,7 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
 
   Widget _buildTestButton(String label, VoidCallback onPressed) {
     return HapticButton(
+      text: label,
       onPressed: onPressed,
       hapticType: HapticType.buttonPress,
       backgroundColor: AppColors.primary.withOpacity(0.2),
@@ -547,15 +545,15 @@ class _HapticFeedbackSettingsScreenState extends State<HapticFeedbackSettingsScr
 
   void _resetToDefault() {
     setState(() {
-      _hapticService.setEnabled(true);
-      _hapticService.setLightEnabled(true);
-      _hapticService.setMediumEnabled(true);
-      _hapticService.setHeavyEnabled(true);
-      _hapticService.setSelectionEnabled(true);
-      _hapticService.setImpactEnabled(true);
-      _hapticService.setNotificationEnabled(true);
-      _hapticService.setIntensity(1.0);
-      _hapticService.setDuration(100);
+      HapticFeedbackService.setEnabled(true);
+      HapticFeedbackService.setLightEnabled(true);
+      HapticFeedbackService.setMediumEnabled(true);
+      HapticFeedbackService.setHeavyEnabled(true);
+      HapticFeedbackService.setSelectionEnabled(true);
+      HapticFeedbackService.setImpactEnabled(true);
+      HapticFeedbackService.setNotificationEnabled(true);
+      HapticFeedbackService.setIntensity(1.0);
+      HapticFeedbackService.setDuration(100);
     });
   }
 

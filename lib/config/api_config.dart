@@ -29,6 +29,7 @@ class ApiConfig {
   
   // Auth endpoints
   static const String login = '/auth/login';
+  static const String loginPassword = '/auth/login-password';
   static const String register = '/auth/register';
   static const String verifyCode = '/auth/send-verification';
   static const String sendLoginCode = '/auth/send-login-code';
@@ -254,8 +255,6 @@ class ApiConfig {
   static const String notificationsTopics = '/notifications/topics';
   
   // Missing Reference Data endpoints
-  static const String countries = '/reference-data/countries';
-  static const String cities = '/reference-data/cities';
   static const String ageRanges = '/reference-data/age-ranges';
   static const String heightRanges = '/reference-data/height-ranges';
   static const String bodyTypes = '/reference-data/body-types';
@@ -374,6 +373,8 @@ class ApiConfig {
   static const String musicGenres = '/music-genres';
   static const String preferredGenders = '/preferred-genders';
   static const String relationGoals = '/relation-goals';
+  static const String countries = '/countries';
+  static const String cities = '/cities';
   
   // Helper method to get full URL
   static String getUrl(String endpoint) {

@@ -106,6 +106,14 @@ class AppTypography {
     letterSpacing: 0.1,
   );
 
+  static const TextStyle h3 = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: headlineSmall,
+    fontWeight: headingWeight,
+    letterSpacing: 0,
+    height: 1.2,
+  );
+
   static const TextStyle bodyLargeStyle = TextStyle(
     fontFamily: primaryFont,
     fontSize: bodyLarge,

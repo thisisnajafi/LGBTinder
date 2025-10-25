@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../services/haptic_feedback_service.dart';
+import '../../theme/colors.dart';
+import '../../services/haptic_feedback_service.dart';
 
 class AnimatedButton extends StatefulWidget {
   final Widget child;

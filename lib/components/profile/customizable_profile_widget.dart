@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/profile_customization_service.dart';
-import '../services/haptic_feedback_service.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/profile_customization_service.dart';
+import '../../services/haptic_feedback_service.dart';
 
 class CustomizableProfileWidget extends StatefulWidget {
   final Widget child;

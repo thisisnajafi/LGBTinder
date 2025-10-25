@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/gamification_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/gamification/gamification_components.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/gamification_service.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../components/gamification/gamification_components.dart';
+import '../../components/buttons/animated_button.dart';
 
 class ProfileCompletionIncentivesScreen extends StatefulWidget {
   const ProfileCompletionIncentivesScreen({Key? key}) : super(key: key);
@@ -25,7 +25,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
 
   ProfileCompletionProgress? _progress;
   List<Achievement> _achievements = [];
-  List<Badge> _badges = [];
+  List<GamificationBadge> _badges = [];
   Map<String, dynamic>? _stats;
   bool _isLoading = true;
 
@@ -554,7 +554,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
   }
 
   Widget _buildBadgesPreview() {
-    final earnedBadges = _badges.where((b) => b.isEarned).take(4).toList();
+    final earnedBadges = _badges.where((b) => (b as GamificationBadge).isEarned).take(4).toList();
     
     if (earnedBadges.isEmpty) {
       return Container(
@@ -641,7 +641,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
             ),
             itemCount: earnedBadges.length,
             itemBuilder: (context, index) {
-              return BadgeCard(
+              return GamificationBadgeCard(
                 badge: earnedBadges[index],
                 onTap: () {
                   _showBadgeDetails(earnedBadges[index]);
@@ -819,7 +819,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
     );
   }
 
-  void _showBadgeDetails(Badge badge) {
+  void _showBadgeDetails(GamificationBadge badge) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -854,13 +854,13 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _getRarityColor(badge.rarity).withOpacity(0.1),
+                color: _getRarityColor((badge as GamificationBadge).rarity).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                '${badge.rarity.toUpperCase()} BADGE',
+                '${(badge as GamificationBadge).rarity.toUpperCase()} BADGE',
                 style: TextStyle(
-                  color: _getRarityColor(badge.rarity),
+                  color: _getRarityColor((badge as GamificationBadge).rarity),
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),

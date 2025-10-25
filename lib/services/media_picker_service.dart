@@ -109,11 +109,38 @@ class MediaPickerService {
   /// Request photo library permission
   Future<bool> requestPhotoLibraryPermission() async {
     try {
-      final status = await Permission.photos.request();
+      // For Android 13+ (API 33+), use photos permission
+      // For older versions, use storage permission
+      Permission permission;
+      
+      if (Platform.isAndroid) {
+        // Check if we're on Android 13+ (API 33+)
+        permission = Permission.photos;
+      } else {
+        // For iOS, use photos permission
+        permission = Permission.photos;
+      }
+      
+      final status = await permission.request();
+      
+      // If photos permission is denied, try storage permission as fallback
+      if (status != PermissionStatus.granted && Platform.isAndroid) {
+        final storageStatus = await Permission.storage.request();
+        return storageStatus == PermissionStatus.granted;
+      }
+      
       return status == PermissionStatus.granted;
     } catch (e) {
       debugPrint('Photo library permission error: $e');
-      return false;
+      
+      // Fallback to storage permission
+      try {
+        final storageStatus = await Permission.storage.request();
+        return storageStatus == PermissionStatus.granted;
+      } catch (fallbackError) {
+        debugPrint('Storage permission fallback error: $fallbackError');
+        return false;
+      }
     }
   }
 
@@ -156,7 +183,7 @@ class MediaPickerService {
 
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().camera();
+        HapticFeedbackService.camera();
       }
 
       // Pick image from camera
@@ -188,7 +215,7 @@ class MediaPickerService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return null;
@@ -212,7 +239,7 @@ class MediaPickerService {
 
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().gallery();
+        HapticFeedbackService.gallery();
       }
 
       // Pick image from gallery
@@ -244,7 +271,7 @@ class MediaPickerService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return null;
@@ -269,7 +296,7 @@ class MediaPickerService {
 
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().gallery();
+        HapticFeedbackService.gallery();
       }
 
       // Pick multiple images from gallery
@@ -306,7 +333,7 @@ class MediaPickerService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return null;
@@ -328,7 +355,7 @@ class MediaPickerService {
 
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().camera();
+        HapticFeedbackService.camera();
       }
 
       // Pick video from camera
@@ -352,7 +379,7 @@ class MediaPickerService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return null;
@@ -374,7 +401,7 @@ class MediaPickerService {
 
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().gallery();
+        HapticFeedbackService.gallery();
       }
 
       // Pick video from gallery
@@ -398,7 +425,7 @@ class MediaPickerService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return null;
@@ -418,7 +445,7 @@ class MediaPickerService {
 
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().audio();
+        HapticFeedbackService.audio();
       }
 
       // Pick audio file
@@ -448,7 +475,7 @@ class MediaPickerService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return null;
@@ -471,7 +498,7 @@ class MediaPickerService {
 
       // Trigger haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().file();
+        HapticFeedbackService.file();
       }
 
       // Pick any file
@@ -502,7 +529,7 @@ class MediaPickerService {
       
       // Trigger error haptic feedback
       if (_hapticFeedbackEnabled) {
-        await HapticFeedbackService().error();
+        HapticFeedbackService.error();
       }
       
       return null;

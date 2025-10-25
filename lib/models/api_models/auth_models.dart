@@ -6,6 +6,116 @@ import 'dart:convert';
 /// including registration, user state checking, email verification, and profile completion.
 
 // ============================================================================
+// LOGIN PASSWORD MODELS
+// ============================================================================
+
+/// Request model for password login
+class LoginPasswordRequest {
+  final String email;
+  final String password;
+  final String deviceName;
+
+  const LoginPasswordRequest({
+    required this.email,
+    required this.password,
+    required this.deviceName,
+  });
+
+  factory LoginPasswordRequest.fromJson(Map<String, dynamic> json) {
+    return LoginPasswordRequest(
+      email: json['email'] as String,
+      password: json['password'] as String,
+      deviceName: json['device_name'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'password': password,
+      'device_name': deviceName,
+    };
+  }
+}
+
+/// Response data model for password login
+class LoginPasswordResponseData {
+  final String userState;
+  final int userId;
+  final String email;
+  final String token;
+  final String tokenType;
+  final ProfileCompletionStatus? profileCompletionStatus;
+
+  const LoginPasswordResponseData({
+    required this.userState,
+    required this.userId,
+    required this.email,
+    required this.token,
+    required this.tokenType,
+    this.profileCompletionStatus,
+  });
+
+  factory LoginPasswordResponseData.fromJson(Map<String, dynamic> json) {
+    return LoginPasswordResponseData(
+      userState: json['user_state'] as String,
+      userId: json['user_id'] as int,
+      email: json['email'] as String,
+      token: json['token'] as String,
+      tokenType: json['token_type'] as String,
+      profileCompletionStatus: json['profile_completion_status'] != null
+          ? ProfileCompletionStatus.fromJson(
+              json['profile_completion_status'] as Map<String, dynamic>,
+            )
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_state': userState,
+      'user_id': userId,
+      'email': email,
+      'token': token,
+      'token_type': tokenType,
+      if (profileCompletionStatus != null) 
+          'profile_completion_status': profileCompletionStatus!.toJson(),
+    };
+  }
+}
+
+/// Response model for password login
+class LoginPasswordResponse {
+  final bool status;
+  final String message;
+  final LoginPasswordResponseData? data;
+
+  const LoginPasswordResponse({
+    required this.status,
+    required this.message,
+    this.data,
+  });
+
+  factory LoginPasswordResponse.fromJson(Map<String, dynamic> json) {
+    return LoginPasswordResponse(
+      status: json['status'] as bool,
+      message: json['message'] as String,
+      data: json['data'] != null 
+          ? LoginPasswordResponseData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'message': message,
+      if (data != null) 'data': data!.toJson(),
+    };
+  }
+}
+
+// ============================================================================
 // REGISTRATION MODELS
 // ============================================================================
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/profile_analytics_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/profile_analytics_service.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../buttons/animated_button.dart';
 
 class AnalyticsSummaryCard extends StatelessWidget {
   final Map<String, dynamic> summary;
@@ -460,13 +460,13 @@ class AnalyticsEventCard extends StatelessWidget {
       case AnalyticsEventType.profileUnblock:
         return Icons.check_circle;
       case AnalyticsEventType.profileVisit:
-        return Icons.visit;
+        return Icons.visibility;
       case AnalyticsEventType.profileEdit:
         return Icons.edit;
       case AnalyticsEventType.profilePhotoAdd:
         return Icons.add_photo_alternate;
       case AnalyticsEventType.profilePhotoRemove:
-        return Icons.remove_photo_alternate;
+        return Icons.remove_circle;
       case AnalyticsEventType.profileBioUpdate:
         return Icons.description;
       case AnalyticsEventType.profileInterestAdd:

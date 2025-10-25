@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
+import '../../theme/colors.dart';
 
 class LGBTGradientSystem {
   // Private constructor to prevent instantiation
@@ -19,6 +19,9 @@ class LGBTGradientSystem {
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
+
+  // Alias for backward compatibility
+  static const LinearGradient rainbowGradient = rainbowPride;
 
   // Trans Pride Gradient
   static const LinearGradient transPride = LinearGradient(
@@ -271,7 +274,7 @@ class PrideFlagWidget extends StatelessWidget {
       width: width,
       height: height,
       borderRadius: borderRadius,
-      child: child,
+      child: child ?? const SizedBox.shrink(),
     );
   }
 }

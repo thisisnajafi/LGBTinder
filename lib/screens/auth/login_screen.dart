@@ -4,9 +4,12 @@ import '../../providers/app_state_provider.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../models/user_state_models.dart';
+import '../../models/api_models/auth_models.dart';
 import '../../services/validation_service.dart';
 import '../../services/analytics_service.dart';
 import '../../services/error_monitoring_service.dart';
+import '../../services/api_services/login_password_api_service.dart';
+import '../../services/token_management_service.dart';
 import '../../components/animations/animated_components.dart';
 import '../../components/error_handling/error_snackbar.dart';
 import '../../components/loading/loading_widgets.dart';
@@ -93,27 +96,151 @@ class _LoginScreenState extends State<LoginScreen> {
         success: false, // Will be updated based on result
       );
 
-      print('📡 Calling app state provider login...');
-      final appState = Provider.of<AppStateProvider>(context, listen: false);
+      print('📡 Calling password login API...');
       
-      // For now, we'll simulate a login since the API doesn't have a direct login endpoint
-      // In a real implementation, you would call appState.login() or similar
-      print('📡 App state provider login result: true');
-      
-      if (mounted) {
-        print('✅ Login successful');
+      // Call the password login API
+      final loginResult = await LoginPasswordApiService.loginWithPasswordWithErrorHandling(
+        email: email,
+        password: password,
+      );
+
+      if (loginResult['success'] == true) {
+        final response = loginResult['data'] as LoginPasswordResponse;
         
-        // Track successful login
+        if (LoginPasswordApiService.isLoginSuccessful(response)) {
+          print('✅ Login successful');
+          
+          // Store authentication token
+          final token = LoginPasswordApiService.getAuthToken(response);
+          final tokenType = LoginPasswordApiService.getTokenType(response);
+          final userId = LoginPasswordApiService.getUserId(response);
+          
+          if (token != null && tokenType != null && userId != null) {
+            await TokenManagementService.storeTokenData(
+              accessToken: token,
+              refreshToken: null, // Not provided in this response
+              tokenType: tokenType,
+              expiresAt: DateTime.now().add(const Duration(hours: 1)), // Default 1 hour
+            );
+            await TokenManagementService.storeUserId(userId);
+          }
+          
+          // Track successful login
+          await AnalyticsService.trackAuthEvent(
+            action: 'login_success',
+            success: true,
+          );
+
+          if (mounted) {
+            // Check if profile completion is required
+            if (LoginPasswordApiService.needsProfileCompletion(response)) {
+              print('📋 Profile completion required');
+              
+              // Navigate to profile completion screen
+              Navigator.pushReplacementNamed(context, '/profile-wizard');
+              
+              ErrorSnackBar.showSuccess(
+                context,
+                message: 'Welcome back! Please complete your profile.',
+              );
+            } else {
+              print('✅ Profile complete, proceeding to main app');
+              
+              // Update app state to authenticated
+              final appState = Provider.of<AppStateProvider>(context, listen: false);
+              appState.setToken(token);
+              appState.setUserState(ReadyForLoginState({'user_id': userId}));
+              
+              ErrorSnackBar.showSuccess(
+                context,
+                message: 'Welcome back!',
+              );
+            }
+          }
+        } else {
+          print('❌ Login failed: ${response.message}');
+          
+          // Track failed login
+          await AnalyticsService.trackAuthEvent(
+            action: 'login_failed',
+            success: false,
+            errorType: 'api_error',
+          );
+
+          if (mounted) {
+            ErrorSnackBar.show(
+              context,
+              error: Exception(response.message),
+              errorContext: 'login',
+              onAction: _handleLogin,
+              actionText: 'Try Again',
+            );
+          }
+        }
+      } else {
+        final error = loginResult['error'] as Map<String, dynamic>;
+        final errorCode = error['code'] as int?;
+        final errorDetails = error['details'] as Map<String, dynamic>?;
+        
+        // Check if this is a 403 error with profile completion required
+        if (errorCode == 403 && errorDetails != null) {
+          final responseData = errorDetails['data'] as Map<String, dynamic>?;
+          
+          if (responseData != null && responseData['user_state'] == 'profile_completion_required') {
+            print('📋 Profile completion required (403 response)');
+            
+            // Store authentication token from the 403 response
+            final token = responseData['token'] as String?;
+            final tokenType = responseData['token_type'] as String?;
+            final userId = responseData['user_id'] as int?;
+            
+            if (token != null && tokenType != null && userId != null) {
+              await TokenManagementService.storeTokenData(
+                accessToken: token,
+                refreshToken: null,
+                tokenType: tokenType,
+                expiresAt: DateTime.now().add(const Duration(hours: 1)),
+              );
+              await TokenManagementService.storeUserId(userId);
+            }
+            
+            // Track successful login (even though profile completion is required)
+            await AnalyticsService.trackAuthEvent(
+              action: 'login_success_profile_incomplete',
+              success: true,
+            );
+
+            if (mounted) {
+              // Navigate to profile completion screen
+              Navigator.pushReplacementNamed(context, '/profile-wizard');
+              
+              ErrorSnackBar.showSuccess(
+                context,
+                message: 'Welcome back! Please complete your profile.',
+              );
+            }
+            return; // Exit early since we handled the profile completion case
+          }
+        }
+        
+        print('❌ Login API error: ${loginResult['error']}');
+        
+        // Track failed login
         await AnalyticsService.trackAuthEvent(
-          action: 'login_success',
-          success: true,
+          action: 'login_failed',
+          success: false,
+          errorType: 'api_error',
         );
 
-               // Navigation will be handled by AuthWrapper
-               ErrorSnackBar.showSuccess(
-                 context,
-                 message: 'Welcome back!',
-               );
+        if (mounted) {
+          ErrorSnackBar.show(
+            context,
+            error: Exception(error['message'] ?? 'Login failed'),
+            errorContext: 'login',
+            onAction: _handleLogin,
+            actionText: 'Try Again',
+          );
+        }
       }
     } catch (e) {
       print('💥 Login exception: ${e.toString()}');

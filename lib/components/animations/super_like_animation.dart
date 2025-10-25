@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
-import '../theme/colors.dart';
-import '../services/haptic_feedback_service.dart';
+import 'dart:math';
+import '../../theme/colors.dart';
+import '../../services/haptic_feedback_service.dart';
 
 class SuperLikeAnimation extends StatefulWidget {
   final Widget child;
@@ -104,18 +104,18 @@ class _SuperLikeAnimationState extends State<SuperLikeAnimation>
 
   void _generateParticles() {
     _starParticles = List.generate(12, (index) => StarParticle(
-      x: 0.5 + (math.cos(index * math.pi / 6) * 0.3),
-      y: 0.5 + (math.sin(index * math.pi / 6) * 0.3),
+      x: 0.5 + (cos(index * pi / 6) * 0.3),
+      y: 0.5 + (sin(index * pi / 6) * 0.3),
       size: _random.nextDouble() * 8 + 4,
       velocity: _random.nextDouble() * 2 + 1,
-      rotation: index * math.pi / 6,
+      rotation: index * pi / 6,
       rotationSpeed: _random.nextDouble() * 0.2 - 0.1,
     ));
 
     _burstParticles = List.generate(24, (index) => BurstParticle(
       x: 0.5,
       y: 0.5,
-      angle: (index * 2 * math.pi) / 24,
+      angle: (index * 2 * pi) / 24,
       velocity: _random.nextDouble() * 3 + 2,
       size: _random.nextDouble() * 6 + 3,
       color: _getRandomBurstColor(),
@@ -315,12 +315,12 @@ class StarPainter extends CustomPainter {
     final innerRadius = radius * 0.4;
 
     for (int i = 0; i < 10; i++) {
-      final angle = (i * math.pi) / 5;
+      final angle = (i * pi) / 5;
       final isOuter = i % 2 == 0;
       final currentRadius = isOuter ? radius : innerRadius;
       
-      final x = center.dx + math.cos(angle) * currentRadius;
-      final y = center.dy + math.sin(angle) * currentRadius;
+      final x = center.dx + cos(angle) * currentRadius;
+      final y = center.dy + sin(angle) * currentRadius;
       
       if (i == 0) {
         path.moveTo(x, y);
@@ -355,8 +355,8 @@ class BurstPainter extends CustomPainter {
         ..color = particle.color.withOpacity(1.0 - progress)
         ..style = PaintingStyle.fill;
 
-      final x = particle.x * size.width + math.cos(particle.angle) * progress * size.width * particle.velocity * 0.3;
-      final y = particle.y * size.height + math.sin(particle.angle) * progress * size.height * particle.velocity * 0.3;
+      final x = particle.x * size.width + cos(particle.angle) * progress * size.width * particle.velocity * 0.3;
+      final y = particle.y * size.height + sin(particle.angle) * progress * size.height * particle.velocity * 0.3;
 
       canvas.drawCircle(
         Offset(x, y),

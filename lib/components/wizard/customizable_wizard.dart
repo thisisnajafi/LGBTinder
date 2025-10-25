@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../services/haptic_feedback_service.dart';
+import 'package:provider/provider.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../../providers/theme_provider.dart';
 
 class WizardStep {
   final String id;
@@ -129,43 +132,61 @@ class _CustomizableWizardState extends State<CustomizableWizard>
     final currentStep = widget.steps[_currentStepIndex];
     final isLastStep = _currentStepIndex == widget.steps.length - 1;
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      appBar: _buildAppBar(currentStep),
-      body: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0, _slideAnimation.value * 100),
-            child: Opacity(
-              opacity: _fadeAnimation.value,
-              child: Column(
-                children: [
-                  if (widget.customization.showProgress) _buildProgressIndicator(),
-                  Expanded(
-                    child: _buildStepContent(currentStep),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: themeProvider.isDarkMode 
+              ? AppColors.backgroundDark 
+              : AppColors.background,
+          appBar: _buildAppBar(currentStep, themeProvider),
+          body: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, _slideAnimation.value * 100),
+                child: Opacity(
+                  opacity: _fadeAnimation.value,
+                  child: Column(
+                    children: [
+                      if (widget.customization.showProgress) _buildProgressIndicator(themeProvider),
+                      Expanded(
+                        child: _buildStepContent(currentStep, themeProvider),
+                      ),
+                      _buildNavigationButtons(currentStep, isLastStep, themeProvider),
+                    ],
                   ),
-                  _buildNavigationButtons(currentStep, isLastStep),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-  PreferredSizeWidget _buildAppBar(WizardStep currentStep) {
+  PreferredSizeWidget _buildAppBar(WizardStep currentStep, ThemeProvider themeProvider) {
     return AppBar(
-      backgroundColor: AppColors.navbarBackground,
+      backgroundColor: themeProvider.isDarkMode 
+          ? AppColors.navbarBackground 
+          : AppColors.background,
       elevation: 0,
       leading: widget.customization.allowBackNavigation && _currentStepIndex > 0
           ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark),
+              icon: Icon(
+                Icons.arrow_back, 
+                color: themeProvider.isDarkMode 
+                    ? AppColors.textPrimaryDark 
+                    : AppColors.textPrimary,
+              ),
               onPressed: _goToPreviousStep,
             )
           : IconButton(
-              icon: const Icon(Icons.close, color: AppColors.textPrimaryDark),
+              icon: Icon(
+                Icons.close, 
+                color: themeProvider.isDarkMode 
+                    ? AppColors.textPrimaryDark 
+                    : AppColors.textPrimary,
+              ),
               onPressed: () {
                 HapticFeedbackService.selection();
                 widget.onWizardCancel?.call();
@@ -176,16 +197,20 @@ class _CustomizableWizardState extends State<CustomizableWizard>
         children: [
           Text(
             currentStep.title,
-            style: const TextStyle(
-              color: AppColors.textPrimaryDark,
+            style: TextStyle(
+              color: themeProvider.isDarkMode 
+                  ? AppColors.textPrimaryDark 
+                  : AppColors.textPrimary,
               fontWeight: FontWeight.bold,
             ),
           ),
           if (widget.customization.showStepNumbers)
             Text(
               'Step ${_currentStepIndex + 1} of ${widget.steps.length}',
-              style: const TextStyle(
-                color: AppColors.textSecondaryDark,
+              style: TextStyle(
+                color: themeProvider.isDarkMode 
+                    ? AppColors.textSecondaryDark 
+                    : AppColors.textSecondary,
                 fontSize: 12,
               ),
             ),
@@ -197,10 +222,12 @@ class _CustomizableWizardState extends State<CustomizableWizard>
             !currentStep.isRequired)
           TextButton(
             onPressed: () => _showSkipConfirmation(currentStep),
-            child: const Text(
+            child: Text(
               'Skip',
               style: TextStyle(
-                color: AppColors.textSecondaryDark,
+                color: themeProvider.isDarkMode 
+                    ? AppColors.textSecondaryDark 
+                    : AppColors.textSecondary,
               ),
             ),
           ),
@@ -208,7 +235,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
     );
   }
 
-  Widget _buildProgressIndicator() {
+  Widget _buildProgressIndicator(ThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -217,16 +244,20 @@ class _CustomizableWizardState extends State<CustomizableWizard>
             children: [
               Text(
                 'Progress',
-                style: const TextStyle(
-                  color: AppColors.textSecondaryDark,
+                style: TextStyle(
+                  color: themeProvider.isDarkMode 
+                      ? AppColors.textSecondaryDark 
+                      : AppColors.textSecondary,
                   fontSize: 14,
                 ),
               ),
               const Spacer(),
               Text(
                 '${((_currentStepIndex + 1) / widget.steps.length * 100).round()}%',
-                style: const TextStyle(
-                  color: AppColors.textSecondaryDark,
+                style: TextStyle(
+                  color: themeProvider.isDarkMode 
+                      ? AppColors.textSecondaryDark 
+                      : AppColors.textSecondary,
                   fontSize: 14,
                 ),
               ),
@@ -235,15 +266,17 @@ class _CustomizableWizardState extends State<CustomizableWizard>
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: (_currentStepIndex + 1) / widget.steps.length,
-            backgroundColor: AppColors.surfaceSecondary,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryLight),
+            backgroundColor: themeProvider.isDarkMode 
+                ? AppColors.surfaceSecondary 
+                : AppColors.surfaceSecondary,
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryLight),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStepContent(WizardStep currentStep) {
+  Widget _buildStepContent(WizardStep currentStep, ThemeProvider themeProvider) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -251,9 +284,11 @@ class _CustomizableWizardState extends State<CustomizableWizard>
         children: [
           Text(
             currentStep.description,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
-              color: AppColors.textSecondaryDark,
+              color: themeProvider.isDarkMode 
+                  ? AppColors.textSecondaryDark 
+                  : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 24),
@@ -263,7 +298,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
     );
   }
 
-  Widget _buildNavigationButtons(WizardStep currentStep, bool isLastStep) {
+  Widget _buildNavigationButtons(WizardStep currentStep, bool isLastStep, ThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -273,8 +308,14 @@ class _CustomizableWizardState extends State<CustomizableWizard>
               child: OutlinedButton(
                 onPressed: _isAnimating ? null : _goToPreviousStep,
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: AppColors.borderDefault),
-                  foregroundColor: AppColors.textPrimaryDark,
+                  side: BorderSide(
+                    color: themeProvider.isDarkMode 
+                        ? AppColors.borderDefault 
+                        : AppColors.borderDefault,
+                  ),
+                  foregroundColor: themeProvider.isDarkMode 
+                      ? AppColors.textPrimaryDark 
+                      : AppColors.textPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -372,7 +413,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
         ),
         content: Text(
           message,
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: TextStyle(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
@@ -496,7 +537,7 @@ class _WizardCustomizationScreenState extends State<WizardCustomizationScreen> {
         backgroundColor: AppColors.navbarBackground,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimaryDark),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryDark),
           onPressed: () {
             HapticFeedbackService.selection();
             Navigator.of(context).pop();
@@ -641,11 +682,11 @@ class _WizardCustomizationScreenState extends State<WizardCustomizationScreen> {
     return SwitchListTile(
       title: Text(
         title,
-        style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: TextStyle(color: AppColors.textPrimaryDark),
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(color: AppColors.textSecondaryDark),
+        style: TextStyle(color: AppColors.textSecondaryDark),
       ),
       value: value,
       onChanged: (newValue) {

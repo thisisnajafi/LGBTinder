@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/gamification_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/gamification_service.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../buttons/animated_button.dart';
 
 class AchievementCard extends StatelessWidget {
   final Achievement achievement;
@@ -189,11 +189,11 @@ class AchievementCard extends StatelessWidget {
   }
 }
 
-class BadgeCard extends StatelessWidget {
-  final Badge badge;
+class GamificationBadgeCard extends StatelessWidget {
+  final GamificationBadge badge;
   final VoidCallback? onTap;
 
-  const BadgeCard({
+  const GamificationBadgeCard({
     Key? key,
     required this.badge,
     this.onTap,
@@ -222,7 +222,7 @@ class BadgeCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Badge Icon
+            // GamificationBadge Icon
             Container(
               width: 64,
               height: 64,
@@ -248,7 +248,7 @@ class BadgeCard extends StatelessWidget {
             
             const SizedBox(height: 12),
             
-            // Badge Name
+            // GamificationBadge Name
             Text(
               badge.name,
               style: AppTypography.subtitle2.copyWith(
@@ -262,7 +262,7 @@ class BadgeCard extends StatelessWidget {
             
             const SizedBox(height: 4),
             
-            // Badge Description
+            // GamificationBadge Description
             Text(
               badge.description,
               style: AppTypography.caption.copyWith(
@@ -275,7 +275,7 @@ class BadgeCard extends StatelessWidget {
             
             const SizedBox(height: 8),
             
-            // Rarity Badge
+            // Rarity GamificationBadge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -412,7 +412,7 @@ class ProfileCompletionProgressCard extends StatelessWidget {
             LinearProgressIndicator(
               value: progress.completionPercentage / 100,
               backgroundColor: AppColors.surfaceSecondary,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryLight),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryLight),
               minHeight: 8,
             ),
             
@@ -484,7 +484,7 @@ class ProfileCompletionProgressCard extends StatelessWidget {
                       LinearProgressIndicator(
                         value: progress.experiencePoints / progress.nextLevelExperience,
                         backgroundColor: AppColors.surfaceSecondary,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.feedbackSuccess),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.feedbackSuccess),
                         minHeight: 4,
                       ),
                       Text(
@@ -574,7 +574,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
   List<Achievement> _achievements = [];
-  List<Badge> _badges = [];
+  List<GamificationBadge> _badges = [];
   ProfileCompletionProgress? _progress;
   Map<String, dynamic>? _stats;
   bool _isLoading = true;
@@ -630,7 +630,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
       appBar: AppBar(
         backgroundColor: AppColors.navbarBackground,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Achievements & Progress',
           style: TextStyle(
             color: AppColors.textPrimaryDark,
@@ -645,7 +645,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
           tabs: const [
             Tab(text: 'Progress'),
             Tab(text: 'Achievements'),
-            Tab(text: 'Badges'),
+            Tab(text: 'GamificationBadges'),
           ],
         ),
       ),
@@ -654,7 +654,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         children: [
           _buildProgressTab(),
           _buildAchievementsTab(),
-          _buildBadgesTab(),
+          _buildGamificationBadgesTab(),
         ],
       ),
     );
@@ -703,7 +703,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
     );
   }
 
-  Widget _buildBadgesTab() {
+  Widget _buildGamificationBadgesTab() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: GridView.builder(
@@ -717,10 +717,10 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         ),
         itemCount: _badges.length,
         itemBuilder: (context, index) {
-          return BadgeCard(
+          return GamificationBadgeCard(
             badge: _badges[index],
             onTap: () {
-              _showBadgeDetails(_badges[index]);
+              _showGamificationBadgeDetails(_badges[index]);
             },
           );
         },
@@ -775,8 +775,8 @@ class _GamificationDashboardState extends State<GamificationDashboard>
             children: [
               Expanded(
                 child: _buildStatItem(
-                  'Badges',
-                  '${_stats!['earnedBadges']}/${_stats!['totalBadges']}',
+                  'GamificationBadges',
+                  '${_stats!['earnedGamificationBadges']}/${_stats!['totalGamificationBadges']}',
                   Icons.military_tech,
                   AppColors.feedbackWarning,
                 ),
@@ -832,7 +832,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           achievement.title,
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: TextStyle(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -840,7 +840,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
           children: [
             Text(
               achievement.description,
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: TextStyle(color: AppColors.textSecondaryDark),
             ),
             const SizedBox(height: 16),
             Row(
@@ -849,7 +849,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
                 const SizedBox(width: 4),
                 Text(
                   '${achievement.points} points',
-                  style: const TextStyle(color: AppColors.feedbackWarning),
+                  style: TextStyle(color: AppColors.feedbackWarning),
                 ),
               ],
             ),
@@ -861,7 +861,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
                   const SizedBox(width: 4),
                   Text(
                     'Reward: ${achievement.reward}',
-                    style: const TextStyle(color: AppColors.feedbackInfo),
+                    style: TextStyle(color: AppColors.feedbackInfo),
                   ),
                 ],
               ),
@@ -871,7 +871,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: TextStyle(color: AppColors.primaryLight),
             ),
@@ -881,14 +881,14 @@ class _GamificationDashboardState extends State<GamificationDashboard>
     );
   }
 
-  void _showBadgeDetails(Badge badge) {
+  void _showGamificationBadgeDetails(GamificationBadge badge) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           badge.name,
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: TextStyle(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -909,7 +909,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
             const SizedBox(height: 16),
             Text(
               badge.description,
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: TextStyle(color: AppColors.textSecondaryDark),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -933,7 +933,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: TextStyle(color: AppColors.primaryLight),
             ),

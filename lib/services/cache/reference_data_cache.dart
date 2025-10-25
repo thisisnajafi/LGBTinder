@@ -167,8 +167,9 @@ class ReferenceDataCache {
     // If no valid cache, fetch from API
     try {
       final response = await ReferenceDataApiService.getCountries();
-      await cacheCountries(response.data);
-      return response.data;
+      final countries = response.map((data) => Country.fromJson(data)).toList();
+      await cacheCountries(countries);
+      return countries;
     } catch (e) {
       // Return cached data even if expired, as fallback
       return await getCachedCountries();
@@ -188,7 +189,7 @@ class ReferenceDataCache {
     try {
       // Note: ReferenceDataApiService.getAllReferenceData() returns Map<String, dynamic>
       // with Response objects, not List<ReferenceDataItem>. We need to extract the data.
-      final dynamic responseData = await ReferenceDataApiService.getAllReferenceData();
+      final dynamic responseData = await ReferenceDataApiService.loadAllReferenceData();
       
       // Convert the API response to our expected format
       final Map<String, List<ReferenceDataItem>> convertedData = {};
@@ -234,9 +235,10 @@ class ReferenceDataCache {
     
     // If no valid cache, fetch from API
     try {
-      final response = await ReferenceDataApiService.getCitiesByCountry(countryId);
-      await cacheCities(countryId, response.data);
-      return response.data;
+      final response = await ReferenceDataApiService.getCitiesByCountry(countryId.toString());
+      final cities = response.map((data) => City.fromJson(data)).toList();
+      await cacheCities(countryId, cities);
+      return cities;
     } catch (e) {
       // Return cached data even if expired, as fallback
       return await getCachedCities(countryId);

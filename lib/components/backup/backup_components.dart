@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/typography.dart';
-import '../services/profile_backup_service.dart';
-import '../services/haptic_feedback_service.dart';
-import '../components/buttons/animated_button.dart';
+import '../../theme/colors.dart';
+import '../../theme/typography.dart';
+import '../../services/profile_backup_service.dart';
+import '../../services/haptic_feedback_service.dart';
+import '../buttons/animated_button.dart';
 
 class BackupStatusCard extends StatelessWidget {
   final BackupStatus status;
