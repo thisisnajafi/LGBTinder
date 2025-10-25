@@ -60,7 +60,6 @@ class PhotoGallery extends StatelessWidget {
               Text(
                 'Photos',
                 style: const TextStyle(
-                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -70,7 +69,6 @@ class PhotoGallery extends StatelessWidget {
                 Text(
                   '${images.length} photo${images.length != 1 ? 's' : ''}',
                   style: TextStyle(
-                    fontSize: 14,
                     color: Colors.grey[600],
                   ),
                 ),
@@ -151,7 +149,6 @@ class PhotoGallery extends StatelessWidget {
                   'Primary',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -197,7 +194,6 @@ class PhotoGallery extends StatelessWidget {
           Text(
             'No Photo',
             style: TextStyle(
-              fontSize: 12,
               color: Colors.grey[500],
             ),
           ),
@@ -241,7 +237,6 @@ class PhotoGallery extends StatelessWidget {
           Text(
             'No Photos Yet',
             style: TextStyle(
-              fontSize: 16,
               fontWeight: FontWeight.w500,
               color: Colors.grey[600],
             ),
