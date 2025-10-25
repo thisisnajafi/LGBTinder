@@ -3108,7 +3108,7 @@ class _ProfileDetailSheetState extends State<_ProfileDetailSheet> with TickerPro
                     isOwnProfile: false,
                   ),
                   
-                  const SizedBox(height: 100), // Space for action buttons
+                  const SizedBox(height: 96), // Space for action buttons
                 ],
               ),
             ),

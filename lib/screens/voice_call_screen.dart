@@ -201,7 +201,7 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> {
             // Main content
             Column(
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 64),
                 
                 // Call status
                 _buildCallStatus(),

@@ -168,7 +168,7 @@ class _ResponsiveModalState extends State<ResponsiveModal>
     if (isDesktop) {
       return const EdgeInsets.all(40);
     } else if (isTablet) {
-      return const EdgeInsets.all(30);
+      return const EdgeInsets.all(32);
     } else {
       return const EdgeInsets.all(20);
     }

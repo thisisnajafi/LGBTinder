@@ -311,7 +311,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Action Buttons (for own profile, show management options)
                 if (!_isEditMode) _buildManagementButtons(profileProvider),
 
-                const SizedBox(height: 100), // Bottom padding
+                const SizedBox(height: 96), // Bottom padding
               ],
             ),
           ),

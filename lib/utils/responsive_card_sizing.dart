@@ -275,9 +275,9 @@ class ResponsiveCardSizing {
       case DeviceType.largePhone:
         return const EdgeInsets.all(8);
       case DeviceType.tablet:
-        return const EdgeInsets.all(10);
-      case DeviceType.desktop:
         return const EdgeInsets.all(12);
+      case DeviceType.desktop:
+        return const EdgeInsets.all(16);
     }
   }
 
