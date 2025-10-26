@@ -157,10 +157,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               ),
                               child: Text(
                                 'Back',
-                                style: AppTypography.bodyMediumStyle.copyWith(
+                                style: AppTypography.button.copyWith(
                                     color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                    fontSize: 16,
                                   ),
                                 ),
                               ),
@@ -211,10 +209,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               _currentPage == _slides.length - 1
                                   ? 'Get Started'
                                   : 'Next',
-                              style: AppTypography.bodyMediumStyle.copyWith(
+                              style: AppTypography.button.copyWith(
                                 color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
                                 ),
                               ),
                             ),
@@ -342,8 +338,6 @@ class _OnboardingSlideWidget extends StatelessWidget {
                   slide.title,
                   style: AppTypography.headlineLargeStyle.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
                     letterSpacing: -0.5,
                   ),
                   textAlign: TextAlign.center,
@@ -355,7 +349,6 @@ class _OnboardingSlideWidget extends StatelessWidget {
                   slide.subtitle,
                   style: AppTypography.bodyLargeStyle.copyWith(
                           color: Colors.white.withOpacity(0.9),
-                    fontSize: 18,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
