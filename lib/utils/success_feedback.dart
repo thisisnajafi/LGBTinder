@@ -229,8 +229,7 @@ class SuccessFeedback {
                     const SizedBox(height: 16),
                     Text(
                       message,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: AppTypography.titleMedium.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
@@ -267,8 +266,7 @@ class SuccessFeedback {
             children: [
               Text(
                 message,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
@@ -324,7 +322,6 @@ class SuccessFeedback {
               child: Text(
                 title,
                 style: AppTypography.titleMedium.copyWith(
-                  fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: isDestructive ? Colors.red : Colors.black87,
                 ),
@@ -343,8 +340,7 @@ class SuccessFeedback {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               cancelText,
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -393,7 +389,6 @@ class SuccessFeedback {
             Text(
               title,
               style: AppTypography.titleMedium.copyWith(
-                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
@@ -585,8 +580,7 @@ class SuccessFeedback {
             const SizedBox(height: 8),
             Text(
               message,
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.titleMedium.copyWith(
                 color: Colors.black54,
               ),
               textAlign: TextAlign.center,
