@@ -206,10 +206,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             ),
                             child: Text(
                               'Skip',
-                              style: AppTypography.bodyMediumStyle.copyWith(
+                              style: AppTypography.button.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
                               ),
                             ),
                           ),
@@ -318,10 +316,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                       ),
                                       child: Text(
                                         'Back',
-                                        style: AppTypography.bodyMediumStyle.copyWith(
+                                        style: AppTypography.button.copyWith(
                                           color: _slides[_currentPage].accentColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
                                         ),
                                       ),
                                     ),
@@ -370,10 +366,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                     _currentPage == _slides.length - 1
                                         ? 'Get Started'
                                         : 'Next',
-                                    style: AppTypography.bodyMediumStyle.copyWith(
+                                    style: AppTypography.button.copyWith(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
                                     ),
                                   ),
                                 ),
@@ -594,10 +588,8 @@ class _OnboardingSlideWidgetState extends State<_OnboardingSlideWidget>
                           ).createShader(bounds),
                           child: Text(
                             widget.slide.title,
-                            style: AppTypography.headlineLargeStyle.copyWith(
+                            style: AppTypography.displaySmallStyle.copyWith(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 36,
                               letterSpacing: -0.5,
                               shadows: [
                                 Shadow(
@@ -638,9 +630,7 @@ class _OnboardingSlideWidgetState extends State<_OnboardingSlideWidget>
                             widget.slide.subtitle,
                             style: AppTypography.bodyLargeStyle.copyWith(
                               color: Colors.white.withOpacity(0.9),
-                              fontSize: 18,
                               height: 1.6,
-                              fontWeight: FontWeight.w500,
                             ),
                             textAlign: TextAlign.center,
                           ),
