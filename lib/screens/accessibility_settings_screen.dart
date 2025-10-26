@@ -372,6 +372,7 @@ class _AccessibilitySettingsScreenState extends State<AccessibilitySettingsScree
             'This is how text will appear with your current settings.',
             style: AppTypography.body1.copyWith(
               color: Colors.white70,
+              fontSize: AppTypography.bodyLarge * _textScaleFactor,
             ),
           ),
           const SizedBox(height: 12),
@@ -385,7 +386,9 @@ class _AccessibilitySettingsScreenState extends State<AccessibilitySettingsScree
             ),
             child: Text(
               'Sample Button',
-              style: AppTypography.bodyLarge,
+              style: TextStyle(
+                fontSize: AppTypography.bodyLarge * _textScaleFactor,
+              ),
             ),
           ),
         ],

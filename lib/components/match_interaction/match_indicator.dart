@@ -127,7 +127,6 @@ class _MatchIndicatorState extends State<MatchIndicator> with TickerProviderStat
               Text(
                 'It\'s a Match!',
                 style: AppTypography.headlineLarge.copyWith(
-                  fontWeight: FontWeight.bold,
                   color: AppColors.primaryLight,
                 ),
               ),

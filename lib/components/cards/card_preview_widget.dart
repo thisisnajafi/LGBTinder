@@ -324,7 +324,6 @@ class PreviewCard extends StatelessWidget {
               title,
               style: AppTypography.headlineSmall.copyWith(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),

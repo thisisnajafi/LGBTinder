@@ -166,8 +166,9 @@ class PhotoGallery extends StatelessWidget {
               ),
               child: Text(
                 image.type == 'profile' ? 'Profile' : 'Gallery',
-                style: AppTypography.caption.copyWith(
+                style: const TextStyle(
                   color: Colors.white,
+                  fontSize: 10,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -243,7 +244,8 @@ class PhotoGallery extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Add some photos to your profile',
-            style: AppTypography.bodyMedium.copyWith(
+            style: TextStyle(
+              fontSize: 14,
               color: Colors.grey[500],
             ),
           ),
