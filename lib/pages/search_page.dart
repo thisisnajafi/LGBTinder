@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../components/profile/profile_header.dart';
 import '../components/profile/profile_info_sections.dart';
 import '../components/profile/photo_gallery.dart';
@@ -346,9 +347,7 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 Text(
                   'LGBTinder',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
+                  style: AppTypography.headlineLarge.copyWith(
                     color: AppColors.primaryLight,
                     letterSpacing: 1.5,
                     shadows: [
@@ -461,10 +460,9 @@ class _SearchPageState extends State<SearchPage> {
                             children: [
                               Text(
                                 '${user['name']}, ${user['age']}',
-                                style: const TextStyle(
+                                style: AppTypography.titleMedium.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 18,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -474,9 +472,8 @@ class _SearchPageState extends State<SearchPage> {
                                   const SizedBox(width: 4),
                                   Text(
                                     user['location'],
-                                    style: const TextStyle(
+                                    style: AppTypography.bodyMedium.copyWith(
                                       color: Colors.white70,
-                                      fontSize: 14,
                                     ),
                                   ),
                                 ],
