@@ -379,8 +379,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           const Text(
             'Select your interests',
             style: AppTypography.titleMedium.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
             ),
           ),
@@ -456,8 +454,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           const Text(
             'Profile Photos',
             style: AppTypography.titleMedium.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
             ),
           ),
@@ -523,8 +519,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
+          style: AppTypography.titleMedium.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -568,8 +563,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
+          style: AppTypography.titleMedium.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
