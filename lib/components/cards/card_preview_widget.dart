@@ -322,18 +322,16 @@ class PreviewCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: AppTypography.headlineSmall.copyWith(
                 color: Colors.white,
-                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: const TextStyle(
+              style: AppTypography.bodyLarge.copyWith(
                 color: Colors.white70,
-                fontSize: 16,
               ),
             ),
           ],

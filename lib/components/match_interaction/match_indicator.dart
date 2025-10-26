@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class MatchIndicator extends StatefulWidget {
   final VoidCallback onAnimationComplete;
@@ -125,8 +126,7 @@ class _MatchIndicatorState extends State<MatchIndicator> with TickerProviderStat
             children: [
               Text(
                 'It\'s a Match!',
-                style: TextStyle(
-                  fontSize: 32,
+                style: AppTypography.headlineLarge.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryLight,
                 ),
@@ -134,8 +134,7 @@ class _MatchIndicatorState extends State<MatchIndicator> with TickerProviderStat
               const SizedBox(height: 16),
               Text(
                 'You and your match have liked each other',
-                style: TextStyle(
-                  fontSize: 16,
+                style: AppTypography.bodyLarge.copyWith(
                   color: AppColors.textSecondaryLight,
                 ),
               ),

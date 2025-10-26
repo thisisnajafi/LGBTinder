@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
 
 class PrivacySettings {
@@ -595,8 +596,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
+            style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
             ),
@@ -604,8 +604,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),
