@@ -135,9 +135,8 @@ class ActionButtons extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'Super Like',
-          style: TextStyle(
+          style: AppTypography.bodySmall.copyWith(
             color: Colors.white.withOpacity(0.7),
-            fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
         ),

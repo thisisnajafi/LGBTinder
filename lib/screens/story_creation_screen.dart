@@ -170,7 +170,6 @@ class _StoryCreationScreenState extends State<StoryCreationScreen> {
               textAlignVertical: TextAlignVertical.top,
               style: AppTypography.body1.copyWith(
                 color: Colors.white,
-                fontSize: 18,
               ),
               decoration: InputDecoration(
                 hintText: 'Share your thoughts...',

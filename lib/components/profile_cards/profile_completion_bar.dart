@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class ProfileCompletionBar extends StatefulWidget {
   final double progress;
@@ -93,9 +94,8 @@ class _ProfileCompletionBarState extends State<ProfileCompletionBar> with Single
             const SizedBox(height: 4),
             Text(
               '${(_progressAnimation.value * 100).toInt()}% Complete',
-              style: TextStyle(
+              style: AppTypography.bodySmall.copyWith(
                 color: _getProgressColor(_progressAnimation.value),
-                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),

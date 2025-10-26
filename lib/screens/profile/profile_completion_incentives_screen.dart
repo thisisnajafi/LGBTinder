@@ -859,10 +859,9 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
               ),
               child: Text(
                 '${(badge as GamificationBadge).rarity.toUpperCase()} BADGE',
-                style: TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   color: _getRarityColor((badge as GamificationBadge).rarity),
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
                 ),
               ),
             ),

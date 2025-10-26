@@ -393,8 +393,7 @@ class VerificationCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimaryDark,
                     ),

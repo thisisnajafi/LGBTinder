@@ -128,7 +128,6 @@ class NavbarBadge extends StatelessWidget {
                 style: AppTypography.caption.copyWith(
                   color: textColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 10,
                 ),
               ),
             ),

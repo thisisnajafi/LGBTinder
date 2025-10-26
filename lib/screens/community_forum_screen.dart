@@ -269,7 +269,6 @@ class _CommunityForumScreenState extends State<CommunityForumScreen> {
                   category.subtitle,
                   style: AppTypography.body2.copyWith(
                     color: Colors.white70,
-                    fontSize: 12,
                   ),
                 ),
               ],

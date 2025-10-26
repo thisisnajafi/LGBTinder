@@ -217,7 +217,6 @@ class ShareHistoryCard extends StatelessWidget {
                       ? AppColors.feedbackSuccess
                       : AppColors.feedbackError,
                   fontWeight: FontWeight.bold,
-                  fontSize: 10,
                 ),
               ),
             ),

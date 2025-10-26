@@ -655,7 +655,6 @@ class _WizardCustomizationScreenState extends State<WizardCustomizationScreen> {
           Text(
             title,
             style: AppTypography.titleMedium.copyWith(
-              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
             ),

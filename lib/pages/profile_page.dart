@@ -361,7 +361,6 @@ class _ProfilePageState extends State<ProfilePage> {
               const Text(
                 'Profile Completion',
                 style: AppTypography.titleMedium.copyWith(
-                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),

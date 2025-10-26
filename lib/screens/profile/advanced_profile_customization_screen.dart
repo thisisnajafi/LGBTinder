@@ -564,7 +564,6 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
                           style: AppTypography.caption.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 10,
                           ),
                         ),
                       ),

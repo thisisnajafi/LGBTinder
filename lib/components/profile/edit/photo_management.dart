@@ -192,7 +192,6 @@ class _PhotoManagementState extends State<PhotoManagement> {
                 style: AppTypography.caption.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
-                  fontSize: 10,
                 ),
               ),
             ),
