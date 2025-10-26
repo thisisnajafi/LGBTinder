@@ -396,7 +396,6 @@ class _ProfileValidationWidgetState extends State<ProfileValidationWidget>
           Text(
             _getQualityText(_validationResult!.quality),
             style: AppTypography.titleMedium.copyWith(
-              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: _getQualityColor(_validationResult!.quality),
             ),
@@ -598,8 +597,7 @@ class ProfileCompletionCard extends StatelessWidget {
               child: Center(
                 child: Text(
                   '${validationResult.percentage}%',
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: AppTypography.titleMedium.copyWith(
                     fontWeight: FontWeight.bold,
                     color: _getQualityColor(validationResult.quality),
                   ),
@@ -613,8 +611,7 @@ class ProfileCompletionCard extends StatelessWidget {
                 children: [
                   Text(
                     'Profile Completion',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimaryDark,
                     ),
@@ -622,8 +619,7 @@ class ProfileCompletionCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     _getQualityText(validationResult.quality),
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTypography.bodyMedium.copyWith(
                       color: _getQualityColor(validationResult.quality),
                     ),
                   ),
