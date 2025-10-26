@@ -95,7 +95,6 @@ class ExportFormatCard extends StatelessWidget {
                       style: AppTypography.caption.copyWith(
                         color: AppColors.feedbackInfo,
                         fontWeight: FontWeight.w600,
-                        fontSize: 10,
                       ),
                     ),
                   ),
@@ -223,7 +222,6 @@ class ExportTypeCard extends StatelessWidget {
                           dataType,
                           style: AppTypography.caption.copyWith(
                             color: AppColors.textSecondaryDark,
-                            fontSize: 10,
                           ),
                         ),
                       );
@@ -336,7 +334,6 @@ class ExportRequestCard extends StatelessWidget {
                   style: AppTypography.caption.copyWith(
                     color: _getStatusColor(request.status),
                     fontWeight: FontWeight.bold,
-                    fontSize: 10,
                   ),
                 ),
               ),
@@ -361,7 +358,6 @@ class ExportRequestCard extends StatelessWidget {
                   style: AppTypography.caption.copyWith(
                     color: AppColors.feedbackInfo,
                     fontWeight: FontWeight.w600,
-                    fontSize: 10,
                   ),
                 ),
               );
@@ -374,7 +370,6 @@ class ExportRequestCard extends StatelessWidget {
               '+${request.dataTypes.length - 5} more',
               style: AppTypography.caption.copyWith(
                 color: AppColors.textSecondaryDark,
-                fontSize: 10,
               ),
             ),
           ],

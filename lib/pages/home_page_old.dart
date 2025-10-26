@@ -1908,7 +1908,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                    style: theme.textTheme.headlineMedium?.copyWith(
                      fontWeight: FontWeight.bold,
                      color: Colors.white,
-                     fontSize: 24,
                    ),
                    textAlign: TextAlign.center,
                  ),
@@ -1919,7 +1918,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                    'It\'s a new match!',
                    style: theme.textTheme.bodyLarge?.copyWith(
                      color: Colors.white.withValues(alpha: 0.8),
-                     fontSize: 16,
                    ),
                    textAlign: TextAlign.center,
                  ),
@@ -2064,7 +2062,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         style: theme.textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          fontSize: 24,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -2075,7 +2072,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         'Send a message to ${_superLikedProfile?['name'] ?? 'them'}',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 16,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -2235,7 +2231,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                ),
                child: Text(
                  emoji,
-                 style: TextStyle(fontSize: 24),
+                 style: TextStyle(),
                ),
              ),
            );
@@ -2628,7 +2624,6 @@ class _ModernSwipeableCardState extends State<_ModernSwipeableCard> with SingleT
                                        style: theme.textTheme.titleLarge?.copyWith(
                                          fontWeight: FontWeight.bold,
                                          color: Colors.white,
-                                         fontSize: 20,
                                        ),
                                      ),
                                      const SizedBox(width: 8),
@@ -2737,7 +2732,6 @@ class _ModernSwipeableCardState extends State<_ModernSwipeableCard> with SingleT
                                style: theme.textTheme.bodySmall?.copyWith(
                                  color: Colors.white,
                                  fontWeight: FontWeight.w600,
-                                 fontSize: 12,
                                ),
                              ),
                            ],

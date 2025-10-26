@@ -371,7 +371,6 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                           key: ValueKey(_currentOperation),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
                           textAlign: TextAlign.center,
@@ -385,7 +384,6 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                         '${(_progress * 100).round()}%',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.8),
-                          fontSize: 14,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -398,7 +396,6 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                           'Elapsed: ${splashDuration.inMilliseconds}ms',
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.6),
-                            fontSize: 12,
                           ),
                         ),
                         if (_hasTimedOut)
@@ -406,7 +403,6 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                             '⚠️ Timeout reached',
                             style: TextStyle(
                               color: Colors.orange,
-                              fontSize: 12,
                             ),
                           ),
                       ],
@@ -422,7 +418,6 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                   'LGBTinder by PrideTech',
                   style: TextStyle(
                     color: Colors.white54,
-                    fontSize: 12,
                     fontWeight: FontWeight.w300,
                   ),
                 ),
