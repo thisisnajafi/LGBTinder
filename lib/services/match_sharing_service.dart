@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/user.dart';
+import '../theme/typography.dart';
 
 /// Service for sharing match celebrations
 class MatchSharingService {
@@ -173,9 +174,7 @@ class MatchSharingService {
             // Title
             Text(
               "It's a Match!",
-              style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
+              style: AppTypography.displayMedium.copyWith(
                 color: Colors.white,
                 shadows: [
                   Shadow(
@@ -218,9 +217,7 @@ class MatchSharingService {
             // Names
             Text(
               '${currentUser.firstName ?? "You"} & ${matchedUser.firstName ?? matchedUser.name ?? "Match"}',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
+              style: AppTypography.headlineMedium.copyWith(
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
@@ -230,9 +227,7 @@ class MatchSharingService {
             // App branding
             Text(
               'LGBTinder 🌈',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              style: AppTypography.headlineSmall.copyWith(
                 color: Colors.white,
               ),
             ),
