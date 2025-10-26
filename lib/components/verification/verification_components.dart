@@ -103,7 +103,6 @@ class VerificationStatusCard extends StatelessWidget {
                       style: AppTypography.caption.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 10,
                       ),
                     ),
                   ),
@@ -295,7 +294,6 @@ class VerificationDocumentCard extends StatelessWidget {
                   style: AppTypography.caption.copyWith(
                     color: _getStatusColor(document.status),
                     fontWeight: FontWeight.bold,
-                    fontSize: 10,
                   ),
                 ),
               ),
@@ -730,7 +728,6 @@ class VerificationRequirementCard extends StatelessWidget {
                   style: AppTypography.caption.copyWith(
                     color: AppColors.feedbackError,
                     fontWeight: FontWeight.bold,
-                    fontSize: 10,
                   ),
                 ),
               ),
