@@ -164,16 +164,14 @@ class CommunityForumService {
           const SizedBox(height: 16),
           Text(
             message,
-            style: const TextStyle(
-              fontSize: 16,
+            style: AppTypography.bodyLarge.copyWith(
               color: Colors.grey,
             ),
           ),
           const SizedBox(height: 24),
           const Text(
             'Forum coming soon!',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: Colors.grey,
             ),
           ),

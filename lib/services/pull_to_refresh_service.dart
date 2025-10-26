@@ -279,9 +279,8 @@ class _CustomPullToRefreshState extends State<_CustomPullToRefresh>
           const SizedBox(height: 8),
           Text(
             widget.refreshingText,
-            style: TextStyle(
+            style: AppTypography.bodySmall.copyWith(
               color: widget.color,
-              fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
           ),

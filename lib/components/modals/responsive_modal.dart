@@ -301,8 +301,7 @@ class _MatchModalState extends State<MatchModal>
         const SizedBox(width: 12),
         const Text(
           'It\'s a Match!',
-          style: TextStyle(
-            fontSize: 24,
+          style: AppTypography.headlineSmall.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -373,8 +372,7 @@ class _MatchModalState extends State<MatchModal>
                   const SizedBox(height: 16),
                   Text(
                     'You and ${widget.matchName} liked each other!',
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimaryDark,
                     ),

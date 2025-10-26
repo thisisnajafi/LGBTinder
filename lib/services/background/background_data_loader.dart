@@ -253,8 +253,7 @@ class _BackgroundLoaderWidgetState extends State<BackgroundLoaderWidget> {
               const SizedBox(height: 16),
               Text(
                 _currentProgress!.message,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,

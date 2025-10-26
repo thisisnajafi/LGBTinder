@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   final VoidCallback? onLike;
@@ -145,8 +146,7 @@ class ProfileActionButtons extends StatelessWidget {
                 ),
                 child: Text(
                   badge,
-                  style: TextStyle(
-                    fontSize: 10,
+                  style: AppTypography.caption.copyWith(
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
@@ -190,9 +190,8 @@ class ProfileActionButtons extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   color: color,
-                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
