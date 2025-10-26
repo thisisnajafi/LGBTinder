@@ -287,7 +287,6 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
           Text(
             subtitle,
             style: AppTypography.bodySmall.copyWith(
-              fontSize: 10,
               color: AppColors.textSecondaryDark,
             ),
           ),
@@ -401,8 +400,7 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
       children: [
         const Text(
           'Detailed Statistics',
-          style: TextStyle(
-            fontSize: 16,
+          style: AppTypography.titleMedium.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -552,8 +550,7 @@ class MatchStatisticsCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: AppTypography.bodyMedium.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimaryDark,
                     ),
@@ -571,8 +568,7 @@ class MatchStatisticsCard extends StatelessWidget {
             ),
             Text(
               subtitle,
-              style: const TextStyle(
-                fontSize: 12,
+              style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondaryDark,
               ),
             ),
