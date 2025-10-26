@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 import 'dart:async';
 
 class MatchCardPlayer extends StatefulWidget {
@@ -260,9 +261,7 @@ class MatchCard extends StatelessWidget {
             // Name and age
             Text(
               '${profile['name']} ${profile['age']}',
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+              style: AppTypography.headlineMedium.copyWith(
                 color: Colors.white,
               ),
             ),
@@ -270,8 +269,7 @@ class MatchCard extends StatelessWidget {
             // Bio
             Text(
               profile['bio'],
-              style: const TextStyle(
-                fontSize: 16,
+              style: AppTypography.bodyLarge.copyWith(
                 color: Colors.white,
                 height: 1.4,
               ),
@@ -302,10 +300,9 @@ class MatchCard extends StatelessWidget {
           ),
           child: Text(
             tag,
-            style: const TextStyle(
+            style: AppTypography.bodyMedium.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
-              fontSize: 14,
             ),
           ),
         );
