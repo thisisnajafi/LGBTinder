@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/typography.dart';
 import '../../components/navbar/lgbtinder_logo.dart';
 
 /// Simple, robust splash page with minimal complexity
@@ -85,10 +86,8 @@ class _SimpleSplashPageState extends State<SimpleSplashPage> {
               
               Text(
                 'Welcome to LGBTinder',
-                style: TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               
@@ -96,9 +95,8 @@ class _SimpleSplashPageState extends State<SimpleSplashPage> {
               
               Text(
                 'Connecting hearts across the rainbow',
-                style: TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: Colors.white70,
-                  fontSize: 14,
                 ),
               ),
               
@@ -108,9 +106,8 @@ class _SimpleSplashPageState extends State<SimpleSplashPage> {
                 padding: EdgeInsets.only(bottom: 40),
                 child: Text(
                   'LGBTinder by PrideTech',
-                  style: TextStyle(
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white54,
-                    fontSize: 12,
                     fontWeight: FontWeight.w300,
                   ),
                 ),
