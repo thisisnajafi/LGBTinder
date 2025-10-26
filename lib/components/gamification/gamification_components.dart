@@ -122,7 +122,6 @@ class AchievementCard extends StatelessWidget {
                           style: AppTypography.caption.copyWith(
                             color: _getCategoryColor(achievement.category),
                             fontWeight: FontWeight.w600,
-                            fontSize: 10,
                           ),
                         ),
                       ),
@@ -287,7 +286,6 @@ class GamificationBadgeCard extends StatelessWidget {
                 style: AppTypography.caption.copyWith(
                   color: _getRarityColor(badge.rarity),
                   fontWeight: FontWeight.w600,
-                  fontSize: 10,
                 ),
               ),
             ),
@@ -921,10 +919,9 @@ class _GamificationDashboardState extends State<GamificationDashboard>
               ),
               child: Text(
                 '${badge.rarity.toUpperCase()} BADGE',
-                style: TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   color: _getRarityColor(badge.rarity),
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
                 ),
               ),
             ),
