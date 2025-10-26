@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 import '../services/haptic_feedback_service.dart';
 
 class AudioService {
@@ -369,8 +370,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
       children: [
         const Text(
           'Audio Settings',
-          style: TextStyle(
-            fontSize: 18,
+          style: AppTypography.titleMedium.copyWith(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimaryDark,
           ),
@@ -398,8 +398,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
         const SizedBox(height: 16),
         Text(
           'Volume: ${(_volume * 100).round()}%',
-          style: const TextStyle(
-            fontSize: 16,
+          style: AppTypography.titleMedium.copyWith(
             color: AppColors.textPrimaryDark,
           ),
         ),
@@ -489,8 +488,7 @@ class SoundPreviewWidget extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: AppTypography.titleMedium.copyWith(
                   color: AppColors.textPrimaryDark,
                 ),
               ),
