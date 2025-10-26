@@ -68,7 +68,6 @@ class BackupStatusCard extends StatelessWidget {
                     style: AppTypography.caption.copyWith(
                       color: _getStatusColor(status),
                       fontWeight: FontWeight.bold,
-                      fontSize: 10,
                     ),
                   ),
                 ),
@@ -557,7 +556,6 @@ class CloudProviderCard extends StatelessWidget {
                           style: AppTypography.caption.copyWith(
                             color: AppColors.feedbackInfo,
                             fontWeight: FontWeight.w600,
-                            fontSize: 10,
                           ),
                         ),
                       ),
@@ -574,7 +572,6 @@ class CloudProviderCard extends StatelessWidget {
                             style: AppTypography.caption.copyWith(
                               color: AppColors.feedbackError,
                               fontWeight: FontWeight.bold,
-                              fontSize: 10,
                             ),
                           ),
                         ),
