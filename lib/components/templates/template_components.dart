@@ -110,7 +110,6 @@ class TemplateCard extends StatelessWidget {
                                   style: AppTypography.caption.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 10,
                                   ),
                                 ),
                               ],
@@ -219,7 +218,6 @@ class TemplateCard extends StatelessWidget {
                           style: AppTypography.caption.copyWith(
                             color: _getCategoryColor(template.category),
                             fontWeight: FontWeight.w600,
-                            fontSize: 10,
                           ),
                         ),
                       ),
@@ -235,7 +233,6 @@ class TemplateCard extends StatelessWidget {
                           style: AppTypography.caption.copyWith(
                             color: AppColors.feedbackInfo,
                             fontWeight: FontWeight.w600,
-                            fontSize: 10,
                           ),
                         ),
                       ),
@@ -263,7 +260,6 @@ class TemplateCard extends StatelessWidget {
                           feature,
                           style: AppTypography.caption.copyWith(
                             color: AppColors.textSecondaryDark,
-                            fontSize: 10,
                           ),
                         ),
                       );
@@ -315,7 +311,6 @@ class TemplateCard extends StatelessWidget {
                             style: AppTypography.caption.copyWith(
                               color: AppColors.feedbackSuccess,
                               fontWeight: FontWeight.bold,
-                              fontSize: 9,
                             ),
                           ),
                         ),
