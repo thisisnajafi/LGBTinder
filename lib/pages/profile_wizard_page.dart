@@ -1379,8 +1379,6 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
       title,
       style: AppTypography.titleMedium.copyWith(
         color: Colors.white,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -1596,7 +1594,6 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                   'MAIN',
                   style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
-                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1695,9 +1692,8 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
               '• $item',
-              style: const TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: Colors.white70,
-                fontSize: 14,
               ),
             ),
           )),
@@ -2077,18 +2073,15 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: AppTypography.titleMedium.copyWith(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: AppTypography.bodyMedium.copyWith(
                     color: Colors.white70,
-                    fontSize: 14,
                   ),
                 ),
               ],
