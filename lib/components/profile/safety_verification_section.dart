@@ -58,9 +58,8 @@ class SafetyVerificationSection extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'Safety & Verification',
-                style: AppTypography.titleMedium.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
@@ -280,8 +279,7 @@ class SafetyVerificationSection extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Verification features will be available soon',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
               color: Colors.grey[500],
             ),
             textAlign: TextAlign.center,
