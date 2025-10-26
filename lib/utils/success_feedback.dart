@@ -229,7 +229,7 @@ class SuccessFeedback {
                     const SizedBox(height: 16),
                     Text(
                       message,
-                      style: AppTypography.titleMedium.copyWith(
+                      style: AppTypography.bodyLarge.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
@@ -266,7 +266,7 @@ class SuccessFeedback {
             children: [
               Text(
                 message,
-                style: AppTypography.titleMedium.copyWith(
+                style: AppTypography.bodyLarge.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
@@ -340,7 +340,7 @@ class SuccessFeedback {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               cancelText,
-              style: AppTypography.titleMedium.copyWith(
+              style: AppTypography.bodyLarge.copyWith(
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -580,7 +580,7 @@ class SuccessFeedback {
             const SizedBox(height: 8),
             Text(
               message,
-              style: AppTypography.titleMedium.copyWith(
+              style: AppTypography.bodyLarge.copyWith(
                 color: Colors.black54,
               ),
               textAlign: TextAlign.center,
