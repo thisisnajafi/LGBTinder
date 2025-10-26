@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class ProfileInfoSections extends StatelessWidget {
   final User user;
@@ -127,9 +128,7 @@ class ProfileInfoSections extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                style: AppTypography.titleMedium.copyWith(
                   color: Colors.black87,
                 ),
               ),
@@ -163,9 +162,7 @@ class ProfileInfoSections extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+        style: AppTypography.titleMedium.copyWith(
           color: Colors.black87,
         ),
       ),
@@ -206,8 +203,7 @@ class ProfileInfoSections extends StatelessWidget {
             width: 120,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTypography.bodyMedium.copyWith(
                 fontWeight: FontWeight.w500,
                 color: Colors.grey[600],
               ),
@@ -217,8 +213,7 @@ class ProfileInfoSections extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
+              style: AppTypography.bodyMedium.copyWith(
                 color: Colors.black87,
               ),
             ),
