@@ -73,7 +73,6 @@ class StoriesHeader extends StatelessWidget {
               'Your Story',
               style: AppTypography.caption.copyWith(
                 color: Colors.white70,
-                fontSize: 10,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -158,7 +157,6 @@ class StoriesHeader extends StatelessWidget {
               user.firstName,
               style: AppTypography.caption.copyWith(
                 color: Colors.white70,
-                fontSize: 10,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
