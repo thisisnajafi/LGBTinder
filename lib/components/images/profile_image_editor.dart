@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'dart:io';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 import '../../services/haptic_feedback_service.dart';
 
 class ProfileImageEditor extends StatefulWidget {
@@ -226,9 +227,8 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(
+              style: AppTypography.bodySmall.copyWith(
                 color: Colors.white,
-                fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -246,8 +246,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
         children: [
           const Text(
             'Filters',
-            style: TextStyle(
-              fontSize: 18,
+            style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimaryDark,
             ),
@@ -330,8 +329,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
           children: [
             const Text(
               'Choose Image Source',
-              style: TextStyle(
-                fontSize: 18,
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimaryDark,
               ),
