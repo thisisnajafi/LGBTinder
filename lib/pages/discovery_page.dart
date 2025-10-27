@@ -657,7 +657,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Failed to share: $e'),
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppColors.error,
                       ),
                     );
                   }
