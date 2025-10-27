@@ -1075,7 +1075,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -1085,7 +1085,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
             },
             child: const Text(
               'Reset',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],
@@ -1121,7 +1121,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Profile Customization Help',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: const Text(
           'Use the customization options to personalize your profile. Premium features are marked with a star icon.',

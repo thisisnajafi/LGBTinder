@@ -778,7 +778,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -807,7 +807,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
             },
             child: const Text(
               'Delete',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],
@@ -843,7 +843,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -861,7 +861,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
             },
             child: const Text(
               'Clear',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],

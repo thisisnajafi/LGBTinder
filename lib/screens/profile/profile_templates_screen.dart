@@ -154,7 +154,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
         ),
         title: const Text(
           'Profile Templates',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
@@ -664,7 +664,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Apply Template',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           'Are you sure you want to apply "${template.name}" to your profile? This will change your current profile layout.',
@@ -675,7 +675,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
