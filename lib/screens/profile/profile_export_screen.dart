@@ -135,7 +135,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
         ),
         title: const Text(
           'Profile Export',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
@@ -767,7 +767,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Delete Export',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           'Are you sure you want to delete this export? This action cannot be undone.',
@@ -832,7 +832,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Clear Export History',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: const Text(
           'Are you sure you want to clear all export history? This action cannot be undone.',
