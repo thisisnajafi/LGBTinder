@@ -159,7 +159,7 @@ class ApiErrorHandler {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white),
+          style: AppTypography.bodyMedium.copyWith(color: Colors.white),
         ),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 3),

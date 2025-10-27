@@ -532,10 +532,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           validator: validator,
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimaryDark),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.textSecondaryDark),
+            hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: AppColors.borderDefault),
@@ -576,14 +576,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               value: item,
               child: Text(
                 item,
-                style: const TextStyle(color: AppColors.textPrimaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimaryDark),
               ),
             );
           }).toList(),
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: 'Select $label',
-            hintStyle: const TextStyle(color: AppColors.textSecondaryDark),
+            hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: AppColors.borderDefault),

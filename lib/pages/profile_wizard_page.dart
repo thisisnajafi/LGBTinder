@@ -1970,7 +1970,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
         thumbColor: AppColors.primary,
         overlayColor: AppColors.primary.withOpacity(0.2),
         valueIndicatorColor: AppColors.primary,
-        valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+        valueIndicatorTextStyle: AppTypography.bodySmall.copyWith(color: Colors.white),
       ),
       child: Slider(
         value: value,
@@ -1990,7 +1990,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
         thumbColor: AppColors.primary,
         overlayColor: AppColors.primary.withOpacity(0.2),
         valueIndicatorColor: AppColors.primary,
-        valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+        valueIndicatorTextStyle: AppTypography.bodySmall.copyWith(color: Colors.white),
       ),
       child: Slider(
         value: _height.toDouble(),
@@ -2010,7 +2010,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
         thumbColor: AppColors.primary,
         overlayColor: AppColors.primary.withOpacity(0.2),
         valueIndicatorColor: AppColors.primary,
-        valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+        valueIndicatorTextStyle: AppTypography.bodySmall.copyWith(color: Colors.white),
       ),
       child: Slider(
         value: _weight.toDouble(),

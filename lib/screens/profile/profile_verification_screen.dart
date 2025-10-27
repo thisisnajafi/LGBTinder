@@ -647,7 +647,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           _getTypeDisplayName(document.type),
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -655,12 +655,12 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
           children: [
             Text(
               'Status: ${_getStatusDisplayName(document.status)}',
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
             const SizedBox(height: 8),
             Text(
               'Submitted: ${_formatDate(document.submittedAt)}',
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
             if (document.reviewedAt != null) ...[
               const SizedBox(height: 8),
@@ -673,7 +673,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
               const SizedBox(height: 8),
               Text(
                 'Rejection Reason: ${document.rejectionReason}',
-                style: const TextStyle(color: AppColors.feedbackError),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.feedbackError),
               ),
             ],
           ],
@@ -736,7 +736,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
                     ? Icon(Icons.check_circle, color: AppColors.feedbackSuccess)
                     : Text(
                         '${requirement['points']} pts',
-                        style: const TextStyle(color: AppColors.feedbackWarning),
+                        style: AppTypography.bodySmall.copyWith(color: AppColors.feedbackWarning),
                       ),
                 onTap: () {
                   Navigator.pop(context);

@@ -196,7 +196,7 @@ class OfflineRetryButton extends StatelessWidget {
           ),
           child: Text(
             retryText!,
-            style: const TextStyle(
+            style: AppTypography.button.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),

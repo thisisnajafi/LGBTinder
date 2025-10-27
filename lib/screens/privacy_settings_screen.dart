@@ -628,7 +628,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(color: AppColors.textSecondaryDark),
+        style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
       ),
       value: value,
       onChanged: (newValue) {
@@ -653,7 +653,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(color: AppColors.textSecondaryDark),
+        style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
       ),
       value: value,
       groupValue: groupValue,
@@ -726,7 +726,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         ),
         content: Text(
           'You have blocked ${_currentSettings.blockedUsers.userIds.length} users.',
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
@@ -752,7 +752,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         ),
         content: Text(
           'You have reported ${_currentSettings.reportedUsers.userIds.length} users.',
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(

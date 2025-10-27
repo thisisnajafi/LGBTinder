@@ -972,7 +972,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           _getEventDisplayName(event.type),
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -980,27 +980,27 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
           children: [
             Text(
               'Time: ${_formatDate(event.timestamp)}',
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
             if (event.targetUserId != null) ...[
               const SizedBox(height: 8),
               Text(
                 'Target User: ${event.targetUserId}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
             ],
             if (event.location != null) ...[
               const SizedBox(height: 8),
               Text(
                 'Location: ${event.location}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
             ],
             if (event.source != null) ...[
               const SizedBox(height: 8),
               Text(
                 'Source: ${event.source}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
             ],
           ],

@@ -879,7 +879,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         ),
         content: Text(
           'Are you sure you want to restore "${item.name}"? This will replace your current profile data.',
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
@@ -945,7 +945,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         ),
         content: Text(
           'Are you sure you want to delete "${item.name}"? This action cannot be undone.',
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
