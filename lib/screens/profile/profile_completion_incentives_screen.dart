@@ -770,7 +770,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           achievement.title,
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -778,7 +778,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
           children: [
             Text(
               achievement.description,
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
             const SizedBox(height: 16),
             Row(
@@ -787,7 +787,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
                 const SizedBox(width: 4),
                 Text(
                   '${achievement.points} points',
-                  style: const TextStyle(color: AppColors.feedbackWarning),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.feedbackWarning),
                 ),
               ],
             ),
@@ -799,7 +799,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
                   const SizedBox(width: 4),
                   Text(
                     'Reward: ${achievement.reward}',
-                    style: const TextStyle(color: AppColors.feedbackInfo),
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.feedbackInfo),
                   ),
                 ],
               ),
@@ -826,7 +826,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           badge.name,
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -847,7 +847,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
             const SizedBox(height: 16),
             Text(
               badge.description,
-              style: const TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
