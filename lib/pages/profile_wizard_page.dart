@@ -1520,7 +1520,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
             ),
             child: Text(
               _getItemName(item),
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: isSelected ? Colors.white : Colors.white70,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -1558,7 +1558,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
             ),
             child: Text(
               _getItemName(item),
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: isSelected ? Colors.white : Colors.white70,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -1769,7 +1769,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                 _selectedCountryId != null 
                     ? (_countries[_selectedCountryId]?['title'] ?? 'Select country')
                     : 'Select country',
-                style: TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: _selectedCountryId != null ? Colors.white : Colors.white30,
                 ),
               ),
@@ -1843,7 +1843,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                         orElse: () => {'title': 'Select city'},
                       )['title'] ?? 'Select city')
                     : 'Select city',
-                style: TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: _selectedCityId != null ? Colors.white : Colors.white30,
                 ),
               ),
@@ -1953,7 +1953,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
               onPressed: () => Navigator.of(context).pop(),
               child: const Text(
                 'Cancel',
-                style: TextStyle(color: Colors.white70),
+                style: AppTypography.button.copyWith(color: Colors.white70),
               ),
             ),
           ],
