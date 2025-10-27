@@ -426,7 +426,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
             },
             child: const Text(
               'Skip',
-              style: TextStyle(color: AppColors.feedbackWarning),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackWarning),
             ),
           ),
         ],
@@ -539,7 +539,7 @@ class _WizardCustomizationScreenState extends State<WizardCustomizationScreen> {
         ),
         title: const Text(
           'Wizard Customization',
-          style: TextStyle(
+          style: AppTypography.titleMedium.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
@@ -679,7 +679,7 @@ class _WizardCustomizationScreenState extends State<WizardCustomizationScreen> {
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(color: AppColors.textSecondaryDark),
+        style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
       ),
       value: value,
       onChanged: (newValue) {
