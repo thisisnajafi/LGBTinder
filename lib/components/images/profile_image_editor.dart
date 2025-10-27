@@ -386,7 +386,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
+              style: AppTypography.titleMedium.copyWith(
                 color: AppColors.textPrimaryDark,
                 fontWeight: FontWeight.bold,
               ),
@@ -495,7 +495,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
         ),
         content: Text(
           message,
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(

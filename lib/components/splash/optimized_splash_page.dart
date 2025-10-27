@@ -369,7 +369,7 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                         child: Text(
                           _currentOperation,
                           key: ValueKey(_currentOperation),
-                          style: const TextStyle(
+                          style: AppTypography.bodyMedium.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),

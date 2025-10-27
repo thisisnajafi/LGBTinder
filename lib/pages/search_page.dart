@@ -327,7 +327,7 @@ class _SearchPageState extends State<SearchPage> {
           children: [
             Icon(icon, color: AppColors.primaryLight, size: 18),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            Text(label, style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
           ],
         ),
       ),

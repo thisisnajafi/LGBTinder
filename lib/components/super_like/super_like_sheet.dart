@@ -597,7 +597,7 @@ class _SuperLikeButtonState extends State<SuperLikeButton>
                         ),
                         child: Text(
                           widget.remainingCount.toString(),
-                          style: const TextStyle(
+                          style: AppTypography.headlineSmall.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -690,7 +690,7 @@ class SuperLikeCounter extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               remainingCount.toString(),
-              style: const TextStyle(
+              style: AppTypography.titleMedium.copyWith(
                 color: AppColors.prideYellow,
                 fontWeight: FontWeight.bold,
               ),

@@ -59,7 +59,7 @@ class PhotoGallery extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'Photos',
-                style: const TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
