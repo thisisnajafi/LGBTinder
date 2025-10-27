@@ -111,9 +111,9 @@ class _OnboardingPreferencesScreenState extends State<OnboardingPreferencesScree
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Onboarding Preferences',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),

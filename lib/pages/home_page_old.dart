@@ -2116,7 +2116,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                         child: TextField(
-                          style: TextStyle(color: Colors.white),
+                          style: AppTypography.bodyMedium.copyWith(color: Colors.white),
                           decoration: InputDecoration(
                             hintText: 'Or type your own message...',
                             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
@@ -2231,7 +2231,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                ),
                child: Text(
                  emoji,
-                 style: TextStyle(),
+                 style: AppTypography.bodyMedium,
                ),
              ),
            );

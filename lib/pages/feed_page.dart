@@ -238,7 +238,7 @@ class _FeedPageState extends State<FeedPage> {
                     child: Center(
                       child: Text(
                         'No more posts to load',
-                        style: TextStyle(color: Colors.white70),
+                        style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                       ),
                     ),
                   );

@@ -493,7 +493,7 @@ class _StoryViewingScreenState extends State<StoryViewingScreen>
           children: [
             ListTile(
               leading: const Icon(Icons.block, color: Colors.red),
-              title: const Text('Block User', style: TextStyle(color: Colors.white)),
+              title: Text('Block User', style: AppTypography.bodyMedium.copyWith(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _blockUser();
@@ -501,7 +501,7 @@ class _StoryViewingScreenState extends State<StoryViewingScreen>
             ),
             ListTile(
               leading: const Icon(Icons.report, color: Colors.orange),
-              title: const Text('Report Story', style: TextStyle(color: Colors.white)),
+              title: Text('Report Story', style: AppTypography.bodyMedium.copyWith(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _reportStory();
