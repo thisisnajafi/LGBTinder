@@ -137,7 +137,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         ),
         title: const Text(
           'Share Profile',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
@@ -599,11 +599,11 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
                 ),
                 title: Text(
                   platform['name'],
-                  style: TextStyle(color: AppColors.textPrimaryDark),
+                  style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
                 ),
                 subtitle: Text(
                   platform['description'],
-                  style: TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -744,18 +744,18 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
               if (_shareContent != null) ...[
                 Text(
                   'Title: ${_shareContent!.title}',
-                  style: TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Description: ${_shareContent!.description}',
-                  style: TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 if (_shareContent!.link != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     'Link: ${_shareContent!.link}',
-                    style: TextStyle(color: AppColors.textSecondaryDark),
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                   ),
                 ],
               ],
@@ -767,7 +767,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -795,7 +795,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
             const SizedBox(height: 8),
             Text(
               'Status: ${history.isSuccessful ? 'Success' : 'Failed'}',
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: history.isSuccessful 
                     ? AppColors.feedbackSuccess
                     : AppColors.feedbackError,
@@ -822,7 +822,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -847,22 +847,22 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
               if (_statistics != null) ...[
                 Text(
                   'Total Shares: ${_statistics!['totalShares']}',
-                  style: TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Successful: ${_statistics!['successfulShares']}',
-                  style: TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Failed: ${_statistics!['failedShares']}',
-                  style: TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Success Rate: ${_statistics!['successRate'].toStringAsFixed(1)}%',
-                  style: TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
               ],
             ],
@@ -873,7 +873,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
