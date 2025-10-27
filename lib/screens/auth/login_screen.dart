@@ -523,7 +523,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         enabled: !appState.isLoading,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        style: TextStyle(color: appState.isLoading ? Colors.white60 : Colors.white),
+                        style: AppTypography.bodyMedium.copyWith(color: appState.isLoading ? Colors.white60 : Colors.white),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Email is required';
@@ -580,7 +580,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         enabled: !appState.isLoading,
                         obscureText: !_isPasswordVisible,
                         textInputAction: TextInputAction.done,
-                        style: TextStyle(color: appState.isLoading ? Colors.white60 : Colors.white),
+                        style: AppTypography.bodyMedium.copyWith(color: appState.isLoading ? Colors.white60 : Colors.white),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Password is required';

@@ -652,7 +652,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const TextSpan(text: 'I agree to the '),
                               TextSpan(
                                 text: 'Terms of Service',
-                                style: TextStyle(
+                                style: AppTypography.bodyMedium.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -660,7 +660,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const TextSpan(text: ' and '),
                               TextSpan(
                                 text: 'Privacy Policy',
-                                style: TextStyle(
+                                style: AppTypography.bodyMedium.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
