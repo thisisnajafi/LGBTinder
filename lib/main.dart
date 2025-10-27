@@ -55,6 +55,7 @@ import 'pages/feed_page.dart';
 import 'components/navbar/bottom_navbar.dart';
 import 'pages/chat_list_page.dart';
 import 'pages/profile_page.dart';
+import 'screens/discovery/profile_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -131,6 +132,13 @@ class _LGBTinderAppState extends State<LGBTinderApp> {
             initialRoute: '/',
             routes: {
               '/': (context) => const AuthWrapper(),
+              '/profile-detail': (context) {
+                final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                return ProfileDetailScreen(
+                  user: args?['user'] as User?,
+                  userId: args?['userId'] as String?,
+                );
+              },
               '/onboarding': (context) => const OnboardingPage(),
               '/enhanced-onboarding': (context) => const EnhancedOnboardingScreen(),
               '/onboarding-preferences': (context) => OnboardingPreferencesScreen(
