@@ -1064,7 +1064,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Reset to Defaults',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: const Text(
           'Are you sure you want to reset all customizations to default settings?',
