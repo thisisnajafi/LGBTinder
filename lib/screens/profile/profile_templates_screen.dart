@@ -704,7 +704,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
             },
             child: const Text(
               'Apply',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],

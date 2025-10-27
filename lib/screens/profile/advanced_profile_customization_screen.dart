@@ -1132,7 +1132,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Got it',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],

@@ -836,7 +836,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
         ),
         content: const Text(
           'Are you sure you want to clear all export history? This action cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(

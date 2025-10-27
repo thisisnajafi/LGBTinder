@@ -566,7 +566,7 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   'Continue',
-                  style: TextStyle(
+                  style: AppTypography.button.copyWith(
                     color: themeProvider.isDarkMode 
                         ? AppColors.textSecondaryDark 
                         : AppColors.textSecondary,
