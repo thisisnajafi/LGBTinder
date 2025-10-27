@@ -690,18 +690,18 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Clear Share History',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: const Text(
           'Are you sure you want to clear all share history? This action cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -719,7 +719,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
             },
             child: const Text(
               'Clear',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],
@@ -734,7 +734,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Share Content Details',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -782,7 +782,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           _getPlatformDisplayName(history.platform),
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -790,7 +790,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
           children: [
             Text(
               'Time: ${_formatDate(history.timestamp)}',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
             const SizedBox(height: 8),
             Text(
@@ -805,14 +805,14 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
               const SizedBox(height: 8),
               Text(
                 'Recipient: ${history.recipientName}',
-                style: TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
             ],
             if (history.errorMessage != null) ...[
               const SizedBox(height: 8),
               Text(
                 'Error: ${history.errorMessage}',
-                style: TextStyle(color: AppColors.feedbackError),
+                style: AppTypography.button.copyWith(color: AppColors.feedbackError),
               ),
             ],
           ],
@@ -837,7 +837,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Detailed Statistics',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: SingleChildScrollView(
           child: Column(
