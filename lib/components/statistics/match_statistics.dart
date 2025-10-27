@@ -369,7 +369,7 @@ class _MatchStatisticsWidgetState extends State<MatchStatisticsWidget>
         child: const Center(
           child: Text(
             'No data available',
-            style: TextStyle(
+            style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
             ),
           ),

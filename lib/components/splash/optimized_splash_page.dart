@@ -382,7 +382,7 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                       // Progress percentage
                       Text(
                         '${(_progress * 100).round()}%',
-                        style: TextStyle(
+                        style: AppTypography.bodyMedium.copyWith(
                           color: Colors.white.withOpacity(0.8),
                           fontWeight: FontWeight.w400,
                         ),
@@ -394,14 +394,14 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                       if (kDebugMode) ...[
                         Text(
                           'Elapsed: ${splashDuration.inMilliseconds}ms',
-                          style: TextStyle(
+                          style: AppTypography.bodySmall.copyWith(
                             color: Colors.white.withOpacity(0.6),
                           ),
                         ),
                         if (_hasTimedOut)
                           const Text(
                             '⚠️ Timeout reached',
-                            style: TextStyle(
+                            style: AppTypography.bodySmall.copyWith(
                               color: Colors.orange,
                             ),
                           ),
@@ -416,7 +416,7 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                 padding: const EdgeInsets.only(bottom: 40),
                 child: const Text(
                   'LGBTinder by PrideTech',
-                  style: TextStyle(
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white54,
                     fontWeight: FontWeight.w300,
                   ),

@@ -261,7 +261,7 @@ class ProfileImage extends StatelessWidget {
           ? Center(
               child: Text(
                 _getInitials(name!),
-                style: TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: effectiveTextColor,
                   fontSize: size * 0.4,
                   fontWeight: FontWeight.bold,

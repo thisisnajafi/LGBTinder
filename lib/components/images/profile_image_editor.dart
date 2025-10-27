@@ -282,7 +282,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
                     child: Center(
                       child: Text(
                         _getFilterName(filter),
-                        style: TextStyle(
+                        style: AppTypography.bodyMedium.copyWith(
                           color: isSelected ? Colors.white : AppColors.textPrimaryDark,
                           fontWeight: FontWeight.bold,
                         ),
@@ -491,7 +491,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Error',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           message,
@@ -502,7 +502,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'OK',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
