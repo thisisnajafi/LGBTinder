@@ -63,7 +63,7 @@ class ApiErrorHandler {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -71,7 +71,7 @@ class ApiErrorHandler {
             const SizedBox(height: 4),
             Text(
               message,
-              style: const TextStyle(color: Colors.white),
+              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
             ),
           ],
         ),

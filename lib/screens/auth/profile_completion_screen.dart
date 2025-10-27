@@ -604,10 +604,10 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
           keyboardType: keyboardType,
           maxLines: maxLines,
           maxLength: maxLength,
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimaryDark),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.textSecondaryDark),
+            hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             filled: true,
             fillColor: AppColors.cardBackgroundDark,
             border: OutlineInputBorder(

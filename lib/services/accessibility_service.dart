@@ -354,7 +354,7 @@ class AccessibleText extends StatelessWidget {
       child: Text(
         text,
         style: accessibilityService.getAccessibleTextStyle(
-          baseStyle: style ?? const TextStyle(),
+          baseStyle: style ?? AppTypography.bodyMedium,
         ),
         textAlign: textAlign,
         maxLines: maxLines,

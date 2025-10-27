@@ -771,7 +771,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
         ),
         content: Text(
           'Are you sure you want to delete this export? This action cannot be undone.',
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
