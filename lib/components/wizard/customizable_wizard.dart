@@ -197,7 +197,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
         children: [
           Text(
             currentStep.title,
-            style: TextStyle(
+            style: AppTypography.titleLarge.copyWith(
               color: themeProvider.isDarkMode 
                   ? AppColors.textPrimaryDark 
                   : AppColors.textPrimary,
@@ -207,7 +207,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
           if (widget.customization.showStepNumbers)
             Text(
               'Step ${_currentStepIndex + 1} of ${widget.steps.length}',
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: themeProvider.isDarkMode 
                     ? AppColors.textSecondaryDark 
                     : AppColors.textSecondary,

@@ -145,7 +145,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       ),
       title: const Text(
         'Edit Profile',
-        style: TextStyle(
+        style: AppTypography.titleLarge.copyWith(
           color: AppColors.textPrimaryDark,
           fontWeight: FontWeight.bold,
         ),
@@ -165,7 +165,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                   )
                 : const Text(
                     'Save',
-                    style: TextStyle(
+                    style: AppTypography.button.copyWith(
                       color: AppColors.primaryLight,
                       fontWeight: FontWeight.bold,
                     ),
@@ -422,7 +422,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                   ),
                   child: Text(
                     interest,
-                    style: TextStyle(
+                    style: AppTypography.bodyMedium.copyWith(
                       color: isSelected 
                           ? Colors.white 
                           : AppColors.textPrimaryDark,
