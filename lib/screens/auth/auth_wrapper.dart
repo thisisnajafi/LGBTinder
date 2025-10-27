@@ -137,7 +137,7 @@ class BannedScreen extends StatelessWidget {
               Text(
                 reason ?? 'Your account has been banned. Please contact support for more information.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(),
+                style: AppTypography.bodyMedium,
               ),
               const SizedBox(height: 32),
               ElevatedButton(
@@ -191,7 +191,7 @@ class ErrorScreen extends StatelessWidget {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(),
+                style: AppTypography.bodyMedium,
               ),
               const SizedBox(height: 32),
               ElevatedButton(

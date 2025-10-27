@@ -536,8 +536,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email',
                       hintText: 'Enter your email',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      hintStyle: const TextStyle(color: Colors.white30),
+                      labelStyle: AppTypography.bodyMedium.copyWith(color: Colors.white70),
+                      hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white30),
                       prefixIcon: Icon(
                         Icons.email_outlined,
                         color: Colors.white70,
@@ -593,7 +593,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Password',
                       hintText: 'Enter your password',
-                      labelStyle: const TextStyle(color: Colors.white70),
+                      labelStyle: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                       prefixIcon: Icon(
                         Icons.lock_outlined,
                         color: Colors.white70,

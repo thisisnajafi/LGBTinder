@@ -215,7 +215,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Search templates...',
-                  hintStyle: const TextStyle(color: AppColors.textSecondaryDark),
+                  hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                   prefixIcon: const Icon(Icons.search, color: AppColors.textSecondaryDark),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
@@ -235,7 +235,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
                     borderSide: BorderSide.none,
                   ),
                 ),
-                style: const TextStyle(color: AppColors.textPrimaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimaryDark),
                 onChanged: (value) {
                   setState(() {
                     _searchQuery = value;
@@ -668,7 +668,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
         ),
         content: Text(
           'Are you sure you want to apply "${template.name}" to your profile? This will change your current profile layout.',
-          style: const TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(

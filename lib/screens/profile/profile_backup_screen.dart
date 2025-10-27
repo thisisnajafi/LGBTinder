@@ -842,11 +842,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
                 ),
                 title: Text(
                   item.name,
-                  style: const TextStyle(color: AppColors.textPrimaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimaryDark),
                 ),
                 subtitle: Text(
                   _formatDate(item.createdAt),
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 onTap: () {
                   Navigator.pop(context);
