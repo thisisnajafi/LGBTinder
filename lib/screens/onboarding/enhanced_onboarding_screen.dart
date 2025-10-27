@@ -547,7 +547,7 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
                 : AppColors.background,
             title: Text(
               'Skip Onboarding',
-              style: TextStyle(
+              style: AppTypography.titleMedium.copyWith(
                 color: themeProvider.isDarkMode 
                     ? AppColors.textPrimaryDark 
                     : AppColors.textPrimary,
@@ -555,7 +555,7 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
             ),
             content: Text(
               'Are you sure you want to skip the onboarding? You can always access this information later.',
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 color: themeProvider.isDarkMode 
                     ? AppColors.textSecondaryDark 
                     : AppColors.textSecondary,
@@ -581,7 +581,7 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
                 },
                 child: Text(
                   'Skip',
-                  style: TextStyle(color: AppColors.feedbackWarning),
+                  style: AppTypography.button.copyWith(color: AppColors.feedbackWarning),
                 ),
               ),
             ],

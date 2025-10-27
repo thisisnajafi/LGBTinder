@@ -68,7 +68,7 @@ class PhotoGallery extends StatelessWidget {
               if (showPhotoCount)
                 Text(
                   '${images.length} photo${images.length != 1 ? 's' : ''}',
-                  style: TextStyle(
+                  style: AppTypography.bodyMedium.copyWith(
                     color: Colors.grey[600],
                   ),
                 ),
@@ -147,7 +147,7 @@ class PhotoGallery extends StatelessWidget {
                 ),
                 child: const Text(
                   'Primary',
-                  style: TextStyle(
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -192,7 +192,7 @@ class PhotoGallery extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'No Photo',
-            style: TextStyle(
+            style: AppTypography.bodyMedium.copyWith(
               color: Colors.grey[500],
             ),
           ),
@@ -235,7 +235,7 @@ class PhotoGallery extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'No Photos Yet',
-            style: TextStyle(
+            style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.w500,
               color: Colors.grey[600],
             ),

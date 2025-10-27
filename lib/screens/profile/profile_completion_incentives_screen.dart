@@ -737,7 +737,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -811,7 +811,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -872,7 +872,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],

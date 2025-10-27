@@ -379,11 +379,11 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
         SwitchListTile(
           title: const Text(
             'Enable Sound Effects',
-            style: TextStyle(color: AppColors.textPrimaryDark),
+            style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
           ),
           subtitle: const Text(
             'Play sounds for matches, messages, and interactions',
-            style: TextStyle(color: AppColors.textSecondaryDark),
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
           ),
           value: _isEnabled,
           onChanged: (value) {
