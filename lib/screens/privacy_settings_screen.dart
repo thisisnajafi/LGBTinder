@@ -247,7 +247,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       ),
       title: const Text(
         'Privacy Settings',
-        style: TextStyle(
+        style: AppTypography.titleLarge.copyWith(
           color: AppColors.textPrimaryDark,
           fontWeight: FontWeight.bold,
         ),
@@ -258,7 +258,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             onPressed: _saveSettings,
             child: const Text(
               'Save',
-              style: TextStyle(
+              style: AppTypography.button.copyWith(
                 color: AppColors.primaryLight,
                 fontWeight: FontWeight.bold,
               ),
@@ -484,7 +484,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           ),
           title: const Text(
             'Blocked Users',
-            style: TextStyle(color: AppColors.textPrimaryDark),
+            style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
           ),
           subtitle: Text(
             '${_currentSettings.blockedUsers.userIds.length} users blocked',
@@ -507,7 +507,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           ),
           title: const Text(
             'Reported Users',
-            style: TextStyle(color: AppColors.textPrimaryDark),
+            style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
           ),
           subtitle: Text(
             '${_currentSettings.reportedUsers.userIds.length} users reported',
@@ -561,11 +561,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           ),
           title: const Text(
             'Delete Account',
-            style: TextStyle(color: AppColors.feedbackError),
+            style: AppTypography.titleMedium.copyWith(color: AppColors.feedbackError),
           ),
           subtitle: const Text(
             'Permanently delete your account and all data',
-            style: TextStyle(color: AppColors.textSecondaryDark),
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
           ),
           onTap: () {
             HapticFeedbackService.selection();
@@ -785,7 +785,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -795,7 +795,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             },
             child: const Text(
               'Delete',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.titleMedium.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],

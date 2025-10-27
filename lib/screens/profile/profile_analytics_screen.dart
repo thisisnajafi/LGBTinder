@@ -131,7 +131,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         ),
         title: const Text(
           'Profile Analytics',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
@@ -771,7 +771,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
       },
       selectedColor: AppColors.primaryLight.withOpacity(0.2),
       checkmarkColor: AppColors.primaryLight,
-      labelStyle: TextStyle(
+      labelStyle: AppTypography.bodyMedium.copyWith(
         color: isSelected ? AppColors.primaryLight : AppColors.textSecondaryDark,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
@@ -816,18 +816,18 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Clear Analytics Data',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: const Text(
           'Are you sure you want to clear all analytics data? This action cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -844,7 +844,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
             },
             child: const Text(
               'Clear',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],
@@ -870,7 +870,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Detailed Summary',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -921,7 +921,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Detailed Trends',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: SingleChildScrollView(
           child: Column(
