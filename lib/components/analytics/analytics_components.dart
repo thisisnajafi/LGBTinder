@@ -428,7 +428,6 @@ class AnalyticsEventCard extends StatelessWidget {
                   style: AppTypography.caption.copyWith(
                     color: AppColors.primaryLight,
                     fontWeight: FontWeight.w600,
-                    fontSize: 10,
                   ),
                 ),
               ),

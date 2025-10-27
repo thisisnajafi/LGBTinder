@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class TypingIndicator extends StatefulWidget {
   final bool isTyping;
@@ -66,9 +67,8 @@ class _TypingIndicatorState extends State<TypingIndicator>
           if (widget.typingText != null) ...[
             Text(
               widget.typingText!,
-              style: TextStyle(
+              style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondaryLight,
-                fontSize: 12,
               ),
             ),
             const SizedBox(width: 8),

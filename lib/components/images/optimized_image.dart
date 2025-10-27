@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 
 class OptimizedImage extends StatelessWidget {
   final String imageUrl;
@@ -414,9 +415,8 @@ class _ImageGalleryState extends State<ImageGallery> {
               ),
               child: Text(
                 '${_currentIndex + 1}/${widget.imageUrls.length}',
-                style: const TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   color: Colors.white,
-                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),

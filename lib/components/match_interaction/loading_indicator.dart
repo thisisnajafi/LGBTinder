@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/typography.dart';
 import '../../theme/colors.dart';
 
 class LoadingIndicator extends StatefulWidget {
@@ -112,9 +113,8 @@ class LoadingOverlay extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       message!,
-                      style: const TextStyle(
+                      style: AppTypography.bodyLarge.copyWith(
                         color: Colors.white,
-                        fontSize: 16,
                       ),
                     ),
                   ],

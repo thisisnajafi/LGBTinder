@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 import '../../services/haptic_feedback_service.dart';
 
 class MatchCelebration extends StatefulWidget {
@@ -564,9 +565,8 @@ class _MatchCelebrationOverlayState extends State<MatchCelebrationOverlay>
                   const SizedBox(height: 16),
                   Text(
                     widget.message,
-                    style: const TextStyle(
+                    style: AppTypography.headlineSmall.copyWith(
                       color: Colors.white,
-                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,

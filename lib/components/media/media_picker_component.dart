@@ -246,7 +246,6 @@ class _MediaPickerComponentState extends State<MediaPickerComponent> {
           label,
           style: AppTypography.caption.copyWith(
             color: Colors.white70,
-            fontSize: 10,
           ),
         ),
       ],

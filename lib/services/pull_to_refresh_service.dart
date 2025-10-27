@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/haptic_feedback_service.dart';
 import '../services/animation_service.dart';
+import '../theme/typography.dart';
 
 class PullToRefreshService {
   static final PullToRefreshService _instance = PullToRefreshService._internal();
@@ -307,9 +308,8 @@ class _CustomPullToRefreshState extends State<_CustomPullToRefresh>
         const SizedBox(height: 8),
         Text(
           text,
-          style: TextStyle(
+          style: AppTypography.bodySmall.copyWith(
             color: widget.color,
-            fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
         ),
