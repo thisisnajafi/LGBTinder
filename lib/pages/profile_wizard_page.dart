@@ -858,7 +858,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
               const SizedBox(width: 12),
               Text(
                 '${_currentStep + 1}/$_totalSteps',
-                style: const TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   color: Colors.white70,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1394,11 +1394,11 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
       initialValue: value,
       maxLines: maxLines,
       maxLength: maxLength,
-      style: const TextStyle(color: Colors.white),
+      style: AppTypography.bodyMedium.copyWith(color: Colors.white),
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: label,
-        hintStyle: const TextStyle(color: Colors.white30),
+        hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white30),
         filled: true,
         fillColor: Colors.white.withOpacity(0.1),
         border: OutlineInputBorder(
@@ -1439,7 +1439,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                 value != null
                     ? '${value.day}/${value.month}/${value.year}'
                     : label,
-                style: TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: value != null ? Colors.white : Colors.white30,
                 ),
               ),
@@ -1469,11 +1469,11 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
           value: value,
           hint: Text(
             label,
-            style: const TextStyle(color: Colors.white30),
+            style: AppTypography.bodyMedium.copyWith(color: Colors.white30),
           ),
           isExpanded: true,
           dropdownColor: AppColors.cardBackgroundDark,
-          style: const TextStyle(color: Colors.white),
+          style: AppTypography.bodyMedium.copyWith(color: Colors.white),
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
           items: items.map((item) {
             return DropdownMenuItem<T>(
@@ -1887,7 +1887,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
           backgroundColor: AppColors.cardBackgroundDark,
           title: Text(
             title,
-            style: const TextStyle(color: Colors.white),
+            style: AppTypography.bodyMedium.copyWith(color: Colors.white),
           ),
           content: SizedBox(
             width: double.maxFinite,
@@ -1896,10 +1896,10 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
               children: [
                 // Search field
                 TextField(
-                  style: const TextStyle(color: Colors.white),
+                  style: AppTypography.bodyMedium.copyWith(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Search...',
-                    hintStyle: const TextStyle(color: Colors.white30),
+                    hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white30),
                     prefixIcon: const Icon(Icons.search, color: Colors.white70),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),
