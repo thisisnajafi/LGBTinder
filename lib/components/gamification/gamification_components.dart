@@ -630,7 +630,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         elevation: 0,
         title: Text(
           'Achievements & Progress',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
@@ -847,7 +847,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
                 const SizedBox(width: 4),
                 Text(
                   '${achievement.points} points',
-                  style: TextStyle(color: AppColors.feedbackWarning),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.feedbackWarning),
                 ),
               ],
             ),
@@ -859,7 +859,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
                   const SizedBox(width: 4),
                   Text(
                     'Reward: ${achievement.reward}',
-                    style: TextStyle(color: AppColors.feedbackInfo),
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.feedbackInfo),
                   ),
                 ],
               ),

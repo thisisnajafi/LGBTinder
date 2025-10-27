@@ -223,7 +223,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
             onPressed: () => _showSkipConfirmation(currentStep),
             child: Text(
               'Skip',
-              style: TextStyle(
+              style: AppTypography.button.copyWith(
                 color: themeProvider.isDarkMode 
                     ? AppColors.textSecondaryDark 
                     : AppColors.textSecondary,
@@ -243,7 +243,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
             children: [
               Text(
                 'Progress',
-                style: TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   color: themeProvider.isDarkMode 
                       ? AppColors.textSecondaryDark 
                       : AppColors.textSecondary,
@@ -252,7 +252,7 @@ class _CustomizableWizardState extends State<CustomizableWizard>
               const Spacer(),
               Text(
                 '${((_currentStepIndex + 1) / widget.steps.length * 100).round()}%',
-                style: TextStyle(
+                style: AppTypography.bodySmall.copyWith(
                   color: themeProvider.isDarkMode 
                       ? AppColors.textSecondaryDark 
                       : AppColors.textSecondary,
@@ -405,18 +405,18 @@ class _CustomizableWizardState extends State<CustomizableWizard>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Skip Step',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           message,
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -675,7 +675,7 @@ class _WizardCustomizationScreenState extends State<WizardCustomizationScreen> {
     return SwitchListTile(
       title: Text(
         title,
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
       ),
       subtitle: Text(
         subtitle,
