@@ -50,7 +50,7 @@ class ProfileTextInput extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: AppTypography.titleMedium.copyWith(
                     color: Colors.white70,
                     fontWeight: FontWeight.w600,
                   ),
@@ -58,7 +58,7 @@ class ProfileTextInput extends StatelessWidget {
                 if (isRequired)
                   Text(
                     ' *',
-                    style: const TextStyle(
+                    style: AppTypography.titleMedium.copyWith(
                       color: Colors.red,
                       fontWeight: FontWeight.w600,
                     ),
@@ -82,10 +82,10 @@ class ProfileTextInput extends StatelessWidget {
                   minLength: minLength,
                 );
               },
-              style: const TextStyle(color: Colors.white),
+              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: Colors.white30),
+                hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white30),
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.1),
                 border: OutlineInputBorder(
@@ -113,7 +113,7 @@ class ProfileTextInput extends StatelessWidget {
                   horizontal: 16,
                   vertical: 12,
                 ),
-                counterStyle: const TextStyle(color: Colors.white70),
+                counterStyle: AppTypography.bodySmall.copyWith(color: Colors.white70),
               ),
             ),
           ],
@@ -157,7 +157,7 @@ class ProfileDropdownInput<T extends ReferenceItem> extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: AppTypography.titleMedium.copyWith(
                     color: Colors.white70,
                     fontWeight: FontWeight.w600,
                   ),
@@ -165,7 +165,7 @@ class ProfileDropdownInput<T extends ReferenceItem> extends StatelessWidget {
                 if (isRequired)
                   Text(
                     ' *',
-                    style: const TextStyle(
+                    style: AppTypography.titleMedium.copyWith(
                       color: Colors.red,
                       fontWeight: FontWeight.w600,
                     ),
@@ -189,7 +189,7 @@ class ProfileDropdownInput<T extends ReferenceItem> extends StatelessWidget {
               onChanged: onChanged,
               decoration: InputDecoration(
                 hintText: 'Select $label',
-                hintStyle: const TextStyle(color: Colors.white30),
+                hintStyle: AppTypography.bodyMedium.copyWith(color: Colors.white30),
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.1),
                 border: OutlineInputBorder(
@@ -223,7 +223,7 @@ class ProfileDropdownInput<T extends ReferenceItem> extends StatelessWidget {
                 color: Colors.white70,
               ),
               dropdownColor: Colors.white.withOpacity(0.1),
-              style: const TextStyle(color: Colors.white),
+              style: AppTypography.bodyMedium.copyWith(color: Colors.white),
             ),
           ],
         );
@@ -569,7 +569,7 @@ class ProfileDatePicker extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: AppTypography.titleMedium.copyWith(
                     color: Colors.white70,
                     fontWeight: FontWeight.w600,
                   ),
@@ -577,7 +577,7 @@ class ProfileDatePicker extends StatelessWidget {
                 if (isRequired)
                   Text(
                     ' *',
-                    style: const TextStyle(
+                    style: AppTypography.titleMedium.copyWith(
                       color: Colors.red,
                       fontWeight: FontWeight.w600,
                     ),
@@ -622,7 +622,7 @@ class ProfileDatePicker extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 errorText!,
-                style: const TextStyle(color: Colors.red),
+                style: AppTypography.bodySmall.copyWith(color: Colors.red),
               ),
             ],
           ],

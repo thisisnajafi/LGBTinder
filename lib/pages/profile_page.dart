@@ -220,7 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
           elevation: 0,
           title: Text(
             _isEditMode ? 'Edit Profile' : 'Profile',
-            style: const TextStyle(
+            style: AppTypography.titleLarge.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
@@ -243,14 +243,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 onPressed: () => setState(() => _isEditMode = false),
                 child: const Text(
                   'Cancel',
-                  style: TextStyle(color: Colors.white),
+                  style: AppTypography.button.copyWith(color: Colors.white),
                 ),
               ),
               TextButton(
                 onPressed: _saveProfile,
                 child: const Text(
                   'Save',
-                  style: TextStyle(
+                  style: AppTypography.button.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
@@ -661,7 +661,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const Text(
               'Add Photos',
-              style: TextStyle(
+              style: AppTypography.button.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -720,7 +720,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
+            style: AppTypography.titleMedium.copyWith(
               color: Colors.white,
             ),
           ),
