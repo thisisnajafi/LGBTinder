@@ -17,6 +17,17 @@ class WebSocketService {
   bool _isConnected = false;
   bool _isConnecting = false;
   
+  // Reconnection backoff
+  int _reconnectAttempts = 0;
+  static const int _maxReconnectAttempts = 10;
+  static const Duration _initialReconnectDelay = Duration(seconds: 1);
+  Timer? _reconnectTimer;
+  
+  // Heartbeat mechanism
+  Timer? _heartbeatTimer;
+  static const Duration _heartbeatInterval = Duration(seconds: 30);
+  DateTime? _lastPongTime;
+  
   // Stream controllers for different types of real-time events
   final StreamController<Map<String, dynamic>> _messageController = StreamController<Map<String, dynamic>>.broadcast();
   final StreamController<Map<String, dynamic>> _notificationController = StreamController<Map<String, dynamic>>.broadcast();
@@ -102,8 +113,12 @@ class WebSocketService {
     _socket!.onConnect((_) {
       _isConnected = true;
       _isConnecting = false;
+      _reconnectAttempts = 0; // Reset reconnect attempts on successful connection
       _connectionStateController.add('connected');
       debugPrint('WebSocket connected');
+      
+      // Start heartbeat mechanism
+      _startHeartbeat();
       
       // Join user-specific room
       _socket!.emit('join-user-room', {'userId': _userId});
@@ -112,8 +127,12 @@ class WebSocketService {
     _socket!.onDisconnect((_) {
       _isConnected = false;
       _isConnecting = false;
+      _stopHeartbeat();
       _connectionStateController.add('disconnected');
       debugPrint('WebSocket disconnected');
+      
+      // Attempt auto-reconnect with exponential backoff
+      _scheduleReconnect();
     });
 
     _socket!.onConnectError((error) {
@@ -260,6 +279,12 @@ class WebSocketService {
     _socket!.on('reconnect_error', (data) {
       debugPrint('WebSocket reconnect error: $data');
       _connectionStateController.add('reconnect_error');
+    });
+    
+    // Heartbeat events
+    _socket!.on('pong', (data) {
+      _lastPongTime = DateTime.now();
+      debugPrint('Received pong from server');
     });
   }
 
@@ -630,6 +655,82 @@ class WebSocketService {
   }
 
   // ============================================================================
+  // CONNECTION LIFECYCLE METHODS
+  // ============================================================================
+
+  /// Start heartbeat mechanism
+  void _startHeartbeat() {
+    _stopHeartbeat(); // Stop any existing heartbeat
+    
+    _heartbeatTimer = Timer.periodic(_heartbeatInterval, (timer) {
+      if (_isConnected && _socket != null) {
+        try {
+          // Send ping to server
+          _socket!.emit('ping', {'timestamp': DateTime.now().toIso8601String()});
+          debugPrint('Sent ping to server');
+          
+          // Check if we received pong recently
+          if (_lastPongTime != null) {
+            final timeSinceLastPong = DateTime.now().difference(_lastPongTime!);
+            if (timeSinceLastPong > _heartbeatInterval * 2) {
+              debugPrint('No pong received for ${timeSinceLastPong.inSeconds}s, reconnecting...');
+              _scheduleReconnect();
+            }
+          }
+        } catch (e) {
+          debugPrint('Error sending heartbeat: $e');
+        }
+      }
+    });
+  }
+
+  /// Stop heartbeat mechanism
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+    _lastPongTime = null;
+  }
+
+  /// Schedule reconnect with exponential backoff
+  void _scheduleReconnect() {
+    // Cancel any existing reconnect timer
+    _reconnectTimer?.cancel();
+    
+    if (_reconnectAttempts >= _maxReconnectAttempts) {
+      debugPrint('Max reconnect attempts reached. Giving up.');
+      _connectionStateController.add('max_reconnect_attempts');
+      return;
+    }
+    
+    // Calculate delay with exponential backoff
+    // Delay = initialDelay * 2^attempts (1s, 2s, 4s, 8s, 16s, 32s, etc.)
+    final delay = _initialReconnectDelay * (1 << _reconnectAttempts);
+    _reconnectAttempts++;
+    
+    debugPrint('Scheduling reconnect attempt $_reconnectAttempts in ${delay.inSeconds}s');
+    _connectionStateController.add('reconnecting');
+    
+    _reconnectTimer = Timer(delay, () async {
+      if (!_isConnected && !_isConnecting) {
+        debugPrint('Attempting reconnect (attempt $_reconnectAttempts)...');
+        try {
+          await reconnect();
+        } catch (e) {
+          debugPrint('Reconnect attempt $_reconnectAttempts failed: $e');
+          _scheduleReconnect(); // Schedule next attempt
+        }
+      }
+    });
+  }
+
+  /// Cancel scheduled reconnect
+  void _cancelReconnect() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _reconnectAttempts = 0;
+  }
+
+  // ============================================================================
 
   /// Reconnect to WebSocket
   Future<void> reconnect() async {
@@ -659,6 +760,10 @@ class WebSocketService {
   /// Disconnect from WebSocket
   void disconnect() {
     try {
+      // Cancel timers
+      _stopHeartbeat();
+      _cancelReconnect();
+      
       if (_socket != null) {
         _socket!.disconnect();
         _socket = null;
