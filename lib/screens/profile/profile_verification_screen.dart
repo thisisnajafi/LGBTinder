@@ -561,18 +561,18 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
             if (_verificationResult != null) ...[
               Text(
                 'Verification Score: ${_verificationResult!.verificationScore.round()}%',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
               const SizedBox(height: 8),
               Text(
                 'Verified Types: ${_verificationResult!.verifiedTypes.length}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
               if (_verificationResult!.lastVerifiedAt != null) ...[
                 const SizedBox(height: 8),
                 Text(
                   'Last Verified: ${_formatDate(_verificationResult!.lastVerifiedAt!)}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
               ],
             ],
@@ -607,22 +607,22 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
             if (_progress != null) ...[
               Text(
                 'Required: ${_progress!['completedRequired']}/${_progress!['totalRequired']}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
               const SizedBox(height: 8),
               Text(
                 'Optional: ${_progress!['completedOptional']}/${_progress!['totalOptional']}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
               const SizedBox(height: 8),
               Text(
                 'Points: ${_progress!['earnedPoints']}/${_progress!['totalPoints']}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
               const SizedBox(height: 8),
               Text(
                 'Completion: ${_progress!['completionPercentage'].round()}%',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
             ],
           ],
@@ -666,7 +666,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
               const SizedBox(height: 8),
               Text(
                 'Reviewed: ${_formatDate(document.reviewedAt!)}',
-                style: const TextStyle(color: AppColors.textSecondaryDark),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               ),
             ],
             if (document.rejectionReason != null) ...[
@@ -730,7 +730,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
                 ),
                 subtitle: Text(
                   requirement['description'],
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 trailing: isCompleted
                     ? Icon(Icons.check_circle, color: AppColors.feedbackSuccess)

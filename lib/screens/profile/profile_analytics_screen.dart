@@ -880,22 +880,22 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
               if (_summary != null) ...[
                 Text(
                   'Total Views: ${_summary!['totalViews']}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Total Likes: ${_summary!['totalLikes']}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Total Messages: ${_summary!['totalMessages']}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Engagement Rate: ${_summary!['engagementRate'].toStringAsFixed(1)}%',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
               ],
             ],
@@ -931,22 +931,22 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
               if (_trends != null) ...[
                 Text(
                   'Period: ${_trends!['period']}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Average Views/Day: ${_trends!['averageViewsPerDay'].toStringAsFixed(1)}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Average Likes/Day: ${_trends!['averageLikesPerDay'].toStringAsFixed(1)}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Average Messages/Day: ${_trends!['averageMessagesPerDay'].toStringAsFixed(1)}',
-                  style: const TextStyle(color: AppColors.textSecondaryDark),
+                  style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
                 ),
               ],
             ],

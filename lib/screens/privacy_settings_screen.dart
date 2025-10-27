@@ -488,7 +488,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           ),
           subtitle: Text(
             '${_currentSettings.blockedUsers.userIds.length} users blocked',
-            style: const TextStyle(color: AppColors.textSecondaryDark),
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
           ),
           trailing: const Icon(
             Icons.arrow_forward_ios,
@@ -511,7 +511,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           ),
           subtitle: Text(
             '${_currentSettings.reportedUsers.userIds.length} users reported',
-            style: const TextStyle(color: AppColors.textSecondaryDark),
+            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
           ),
           trailing: const Icon(
             Icons.arrow_forward_ios,
@@ -624,7 +624,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
     return SwitchListTile(
       title: Text(
         title,
-        style: const TextStyle(color: AppColors.textPrimaryDark),
+        style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
       ),
       subtitle: Text(
         subtitle,
@@ -649,7 +649,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
     return RadioListTile<PrivacyLevel>(
       title: Text(
         title,
-        style: const TextStyle(color: AppColors.textPrimaryDark),
+        style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
       ),
       subtitle: Text(
         subtitle,
