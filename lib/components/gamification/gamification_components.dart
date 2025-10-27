@@ -830,7 +830,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           achievement.title,
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -838,7 +838,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
           children: [
             Text(
               achievement.description,
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
             const SizedBox(height: 16),
             Row(
@@ -886,7 +886,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
         backgroundColor: AppColors.navbarBackground,
         title: Text(
           badge.name,
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -907,7 +907,7 @@ class _GamificationDashboardState extends State<GamificationDashboard>
             const SizedBox(height: 16),
             Text(
               badge.description,
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
