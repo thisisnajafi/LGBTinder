@@ -17,6 +17,7 @@ import '../services/sound_effects_service.dart';
 import '../services/match_sharing_service.dart';
 import '../services/cache_service.dart';
 import '../screens/discovery/filter_screen.dart';
+import '../screens/discovery/search_screen.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({Key? key}) : super(key: key);
@@ -834,6 +835,19 @@ class _DiscoveryPageState extends State<DiscoveryPage>
         backgroundColor: AppColors.background,
         elevation: 0,
         actions: [
+          // Search button
+          IconButton(
+            icon: const Icon(
+              Icons.search,
+              color: AppColors.textPrimary,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchScreen()),
+              );
+            },
+          ),
           // Filter button with badge
           Stack(
             children: [
