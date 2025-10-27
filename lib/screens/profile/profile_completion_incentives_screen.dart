@@ -141,7 +141,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
         ),
         title: const Text(
           'Complete Your Profile',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
@@ -661,7 +661,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Profile Completion Details',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: SingleChildScrollView(
           child: Column(

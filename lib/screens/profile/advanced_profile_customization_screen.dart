@@ -177,7 +177,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
         ),
         title: const Text(
           'Profile Customization',
-          style: TextStyle(
+          style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
             fontWeight: FontWeight.bold,
           ),
