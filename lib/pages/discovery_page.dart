@@ -18,6 +18,7 @@ import '../services/match_sharing_service.dart';
 import '../services/cache_service.dart';
 import '../screens/discovery/filter_screen.dart';
 import '../screens/discovery/search_screen.dart';
+import '../screens/discovery/likes_received_screen.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({Key? key}) : super(key: key);
@@ -37,6 +38,8 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   bool _isLoading = true;
   dynamic _error;
   DiscoveryFilters _filters = DiscoveryFilters.defaultFilters;
+  bool _canUndo = false;
+  User? _lastSwipedUser;
   
   // Swipe directions
   double _dragStartX = 0;
@@ -754,6 +757,14 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   }
 
   void _moveToNextCard() {
+    // Save last swiped user for undo feature
+    if (_currentIndex < _potentialMatches.length) {
+      setState(() {
+        _lastSwipedUser = _potentialMatches[_currentIndex];
+        _canUndo = true;
+      });
+    }
+    
     setState(() {
       _currentIndex++;
     });
@@ -761,6 +772,74 @@ class _DiscoveryPageState extends State<DiscoveryPage>
     // Load more matches if we're running low
     if (_currentIndex >= _potentialMatches.length - 2) {
       _loadPotentialMatches();
+    }
+  }
+  
+  Future<void> _handleUndo() async {
+    if (!_canUndo) return;
+    
+    try {
+      final matchingProvider = context.read<MatchingStateProvider>();
+      final user = await matchingProvider.undoLastSwipe();
+      
+      if (user != null) {
+        setState(() {
+          _currentIndex = _currentIndex > 0 ? _currentIndex - 1 : 0;
+          _canUndo = false;
+          _lastSwipedUser = null;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Swipe undone!'),
+            backgroundColor: AppColors.primary,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to undo swipe'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+  
+  Future<void> _handleBoost() async {
+    try {
+      final matchingProvider = context.read<MatchingStateProvider>();
+      final success = await matchingProvider.boostProfile();
+      
+      if (success) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.rocket_launch, color: AppColors.primary),
+                SizedBox(width: 8),
+                Text('Profile Boosted!'),
+              ],
+            ),
+            content: Text('Your profile will be shown to more people for the next 30 minutes.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Got it!'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to boost profile'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
   
@@ -835,6 +914,45 @@ class _DiscoveryPageState extends State<DiscoveryPage>
         backgroundColor: AppColors.background,
         elevation: 0,
         actions: [
+          // Likes You button (Premium)
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.favorite,
+                  color: AppColors.primary,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LikesReceivedScreen()),
+                  );
+                },
+              ),
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 14,
+                    minHeight: 14,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.star,
+                      size: 10,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
           // Search button
           IconButton(
             icon: const Icon(
@@ -899,6 +1017,37 @@ class _DiscoveryPageState extends State<DiscoveryPage>
           eventTypes: ['match', 'like'],
           child: _buildBody(),
         ),
+      ),
+      floatingActionButton: _canUndo ? _buildUndoButton() : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+  
+  Widget _buildUndoButton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: _handleUndo,
+            backgroundColor: AppColors.accent,
+            icon: const Icon(Icons.undo, color: Colors.white),
+            label: Text(
+              'Undo',
+              style: AppTypography.button.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          FloatingActionButton(
+            onPressed: _handleBoost,
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.rocket_launch, color: Colors.white),
+          ),
+        ],
       ),
     );
   }

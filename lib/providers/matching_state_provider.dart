@@ -333,6 +333,83 @@ class MatchingStateProvider extends ChangeNotifier {
     }
   }
 
+  // ============================================================================
+  // PREMIUM FEATURES
+  // ============================================================================
+
+  /// Undo last swipe (Premium feature)
+  Future<User?> undoLastSwipe() async {
+    try {
+      _setLoading(true);
+      _clearError();
+
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) {
+        throw AuthError(
+          type: AuthErrorType.unknownError,
+          message: 'No authentication token found',
+        );
+      }
+
+      final result = await MatchingApiService.undoLastSwipe(token);
+
+      if (result['success'] == true) {
+        // Parse user data if available
+        if (result['user'] != null) {
+          final user = User.fromJson(result['user'] as Map<String, dynamic>);
+          notifyListeners();
+          return user;
+        }
+      } else {
+        throw AuthError(
+          type: AuthErrorType.networkError,
+          message: result['error'] as String? ?? 'Failed to undo swipe',
+        );
+      }
+      
+      notifyListeners();
+      return null;
+    } catch (e) {
+      _handleError(e);
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Boost profile (Premium feature)
+  Future<bool> boostProfile() async {
+    try {
+      _setLoading(true);
+      _clearError();
+
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) {
+        throw AuthError(
+          type: AuthErrorType.unknownError,
+          message: 'No authentication token found',
+        );
+      }
+
+      final result = await MatchingApiService.boostProfile(token);
+
+      if (result['success'] == true) {
+        notifyListeners();
+        return true;
+      } else {
+        throw AuthError(
+          type: AuthErrorType.networkError,
+          message: result['error'] as String? ?? 'Failed to boost profile',
+        );
+      }
+    } catch (e) {
+      _handleError(e);
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   // Dispose method
   @override
   void dispose() {

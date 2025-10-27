@@ -347,6 +347,94 @@ class MatchingApiService {
   }
 
   // ============================================================================
+  // PREMIUM FEATURES
+  // ============================================================================
+
+  /// Undo last swipe (Premium feature)
+  /// 
+  /// [token] - Full access token for authentication
+  /// Returns [Map<String, dynamic>] with result
+  static Future<Map<String, dynamic>> undoLastSwipe(String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/matches/undo'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && responseData['status'] == true) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Swipe undone successfully',
+          'user': responseData['data'],
+          'error': null,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': null,
+          'user': null,
+          'error': responseData['message'] ?? 'Failed to undo swipe',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': null,
+        'user': null,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Boost profile (Premium feature)
+  /// 
+  /// [token] - Full access token for authentication
+  /// Returns [Map<String, dynamic>] with result
+  static Future<Map<String, dynamic>> boostProfile(String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/profile/boost'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && responseData['status'] == true) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Profile boosted successfully',
+          'boostEndTime': responseData['data']?['boost_end_time'],
+          'error': null,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': null,
+          'boostEndTime': null,
+          'error': responseData['message'] ?? 'Failed to boost profile',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': null,
+        'boostEndTime': null,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  // ============================================================================
   // UTILITY METHODS
   // ============================================================================
 
