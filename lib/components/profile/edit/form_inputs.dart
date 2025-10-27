@@ -604,7 +604,7 @@ class ProfileDatePicker extends StatelessWidget {
                         selectedDate != null
                             ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
                             : 'Select date',
-                        style: TextStyle(
+                        style: AppTypography.bodyMedium.copyWith(
                           color: selectedDate != null ? Colors.white : Colors.white30,
                         ),
                       ),

@@ -304,12 +304,12 @@ class _FadeConfirmDialogState extends State<_FadeConfirmDialog> with SingleTicke
         child: AlertDialog(
           backgroundColor: AppColors.backgroundDark,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(widget.title, style: TextStyle(color: AppColors.primaryLight)),
-          content: Text(widget.message, style: TextStyle(color: Colors.white)),
+          title: Text(widget.title, style: AppTypography.titleMedium.copyWith(color: AppColors.primaryLight)),
+          content: Text(widget.message, style: AppTypography.bodyMedium.copyWith(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: widget.onCancel,
-              child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+              child: Text('Cancel', style: AppTypography.button.copyWith(color: Colors.white)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

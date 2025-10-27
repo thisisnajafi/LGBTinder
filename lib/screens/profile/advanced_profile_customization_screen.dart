@@ -1068,7 +1068,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
         ),
         content: const Text(
           'Are you sure you want to reset all customizations to default settings?',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
@@ -1125,7 +1125,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
         ),
         content: const Text(
           'Use the customization options to personalize your profile. Premium features are marked with a star icon.',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(

@@ -222,9 +222,9 @@ class ProfileHeader extends StatelessWidget {
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'Online',
-                  style: TextStyle(
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
                   ),
@@ -238,9 +238,9 @@ class ProfileHeader extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'Verified',
-                  style: TextStyle(
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
                   ),
@@ -257,9 +257,9 @@ class ProfileHeader extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'Premium',
-                  style: TextStyle(
+                  style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
                   ),

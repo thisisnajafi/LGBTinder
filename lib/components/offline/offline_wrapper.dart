@@ -253,7 +253,7 @@ class OfflineStatusCompact extends StatelessWidget {
               isOnline 
                   ? (onlineText ?? 'Online')
                   : (offlineText ?? 'Offline'),
-              style: TextStyle(
+              style: AppTypography.bodyMedium.copyWith(
                 fontSize: fontSize,
                 color: isOnline 
                     ? (onlineColor ?? AppColors.success)
