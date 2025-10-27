@@ -310,7 +310,7 @@ class _PhotoManagementState extends State<PhotoManagement> {
               leading: const Icon(Icons.delete_outline, color: AppColors.error),
               title: Text(
                 'Delete Photo',
-                style: TextStyle(color: AppColors.error),
+                style: AppTypography.bodyMedium.copyWith(color: AppColors.error),
               ),
               onTap: () {
                 Navigator.pop(context);

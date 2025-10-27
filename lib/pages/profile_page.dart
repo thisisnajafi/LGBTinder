@@ -743,7 +743,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const Text(
               'Verify Your Profile',
-              style: TextStyle(
+              style: AppTypography.button.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),

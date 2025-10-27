@@ -906,7 +906,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -957,7 +957,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -1010,7 +1010,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Close',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],

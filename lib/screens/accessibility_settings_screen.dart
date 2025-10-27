@@ -386,8 +386,8 @@ class _AccessibilitySettingsScreenState extends State<AccessibilitySettingsScree
             ),
             child: Text(
               'Sample Button',
-              style: TextStyle(
-                fontSize: AppTypography.bodyLarge * _textScaleFactor,
+              style: AppTypography.button.copyWith(
+                fontSize: AppTypography.bodyLarge.fontSize! * _textScaleFactor,
               ),
             ),
           ),

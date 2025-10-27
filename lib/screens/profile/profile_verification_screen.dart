@@ -723,7 +723,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
                 ),
                 title: Text(
                   requirement['title'],
-                  style: TextStyle(
+                  style: AppTypography.titleMedium.copyWith(
                     color: AppColors.textPrimaryDark,
                     fontWeight: FontWeight.w600,
                   ),
@@ -940,14 +940,14 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
         ),
         content: const Text(
           'Are you sure you want to delete this verification document?',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryDark),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
           ),
           TextButton(
@@ -964,7 +964,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
             },
             child: const Text(
               'Delete',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],
