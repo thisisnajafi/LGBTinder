@@ -3,8 +3,10 @@ import '../models/api_models/matching_models.dart';
 import '../models/api_models/auth_models.dart';
 import '../models/user.dart';
 import '../services/api_services/matching_api_service.dart';
+import '../services/api_services/discovery_api_service.dart';
 import '../services/token_management_service.dart';
 import '../services/rate_limiting_service.dart';
+import '../services/cache_service.dart';
 import '../models/user_state_models.dart';
 
 class MatchingStateProvider extends ChangeNotifier {
@@ -176,15 +178,56 @@ class MatchingStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Load potential matches
-  Future<void> loadPotentialMatches() async {
+  // Load potential matches from discovery API
+  Future<void> loadPotentialMatches({
+    int page = 1,
+    int limit = 20,
+    Map<String, dynamic>? filters,
+  }) async {
     try {
       _setLoading(true);
-      final token = await TokenManagementService.getAccessToken();
-      if (token == null) throw Exception('No token');
+      _clearError();
       
-      // Mock potential matches for now
-      _potentialMatches = [];
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) {
+        throw AuthError(
+          type: AuthErrorType.unknownError,
+          message: 'No authentication token found',
+        );
+      }
+
+      // Fetch profiles from discovery API
+      final result = await DiscoveryApiService.getDiscoveryProfiles(
+        token: token,
+        page: page,
+        limit: limit,
+        filters: filters,
+      );
+
+      if (result['success'] == true) {
+        _potentialMatches = result['profiles'] as List<User>;
+        
+        // Cache the profiles for offline access
+        await CacheService.setData(
+          key: 'discovery_profiles',
+          value: _potentialMatches.map((u) => u.toJson()).toList(),
+          expiryMinutes: 30,
+        );
+      } else {
+        // Try to load from cache if API fails
+        final cachedData = await CacheService.getData('discovery_profiles');
+        if (cachedData != null && cachedData is List) {
+          _potentialMatches = cachedData
+              .map((json) => User.fromJson(json as Map<String, dynamic>))
+              .toList();
+        } else {
+          throw AuthError(
+            type: AuthErrorType.networkError,
+            message: result['error'] as String? ?? 'Failed to load profiles',
+          );
+        }
+      }
+      
       notifyListeners();
     } catch (e) {
       _handleError(e);
@@ -197,18 +240,48 @@ class MatchingStateProvider extends ChangeNotifier {
   Future<bool> superLikeUser(int userId) async {
     try {
       _setLiking(true);
-      final token = await TokenManagementService.getAccessToken();
-      if (token == null) throw Exception('No token');
-      
-      // Mock super like for now - return true to indicate match
+      _clearError();
+      _lastLikeError = null;
       _lastLikedUserId = userId;
-      _setLiking(false);
-      notifyListeners();
-      return false; // Not a match for now
+
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) {
+        throw AuthError(
+          type: AuthErrorType.unknownError,
+          message: 'No authentication token found',
+        );
+      }
+
+      // Check rate limiting for superlikes
+      await RateLimitingService.checkRateLimit('superlikes');
+
+      final result = await MatchingApiService.superlikeUser(userId, token);
+
+      if (result['success'] == true) {
+        final isMatch = result['isMatch'] as bool? ?? false;
+        
+        // If it's a match, refresh matches to get the new match
+        if (isMatch) {
+          await loadMatches();
+        }
+        
+        notifyListeners();
+        return isMatch;
+      } else {
+        _lastLikeError = result['error'] as String?;
+        notifyListeners();
+        return false;
+      }
     } catch (e) {
-      _setLiking(false);
-      _handleError(e);
+      if (e is RateLimitExceededException) {
+        _lastLikeError = e.message;
+      } else {
+        _handleError(e);
+      }
+      notifyListeners();
       return false;
+    } finally {
+      _setLiking(false);
     }
   }
 
@@ -216,10 +289,25 @@ class MatchingStateProvider extends ChangeNotifier {
   Future<void> dislikeUser(int userId) async {
     try {
       _setLoading(true);
+      _clearError();
+
       final token = await TokenManagementService.getAccessToken();
-      if (token == null) throw Exception('No token');
+      if (token == null) {
+        throw AuthError(
+          type: AuthErrorType.unknownError,
+          message: 'No authentication token found',
+        );
+      }
+
+      final result = await MatchingApiService.dislikeUser(userId, token);
+
+      if (result['success'] != true) {
+        throw AuthError(
+          type: AuthErrorType.networkError,
+          message: result['error'] as String? ?? 'Failed to dislike user',
+        );
+      }
       
-      // Mock dislike for now
       notifyListeners();
     } catch (e) {
       _handleError(e);

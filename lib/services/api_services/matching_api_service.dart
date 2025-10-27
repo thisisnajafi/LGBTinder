@@ -82,6 +82,98 @@ class MatchingApiService {
     }
   }
 
+  /// Dislike/Pass on a user
+  /// 
+  /// [targetUserId] - ID of the user to dislike
+  /// [token] - Full access token for authentication
+  /// Returns [Map<String, dynamic>] with result
+  static Future<Map<String, dynamic>> dislikeUser(int targetUserId, String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/matches/dislike'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'target_user_id': targetUserId,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && responseData['status'] == true) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'User disliked successfully',
+          'error': null,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': null,
+          'error': responseData['message'] ?? 'Failed to dislike user',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': null,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Superlike a user
+  /// 
+  /// [targetUserId] - ID of the user to superlike
+  /// [token] - Full access token for authentication
+  /// Returns [Map<String, dynamic>] with result and match status
+  static Future<Map<String, dynamic>> superlikeUser(int targetUserId, String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/matches/superlike'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'target_user_id': targetUserId,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && responseData['status'] == true) {
+        return {
+          'success': true,
+          'isMatch': responseData['data']?['is_match'] ?? false,
+          'message': responseData['message'] ?? 'User superliked successfully',
+          'data': responseData['data'],
+          'error': null,
+        };
+      } else {
+        return {
+          'success': false,
+          'isMatch': false,
+          'message': null,
+          'data': null,
+          'error': responseData['message'] ?? 'Failed to superlike user',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'isMatch': false,
+        'message': null,
+        'data': null,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
   // ============================================================================
   // MATCHES
   // ============================================================================
