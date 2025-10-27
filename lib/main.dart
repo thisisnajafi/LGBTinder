@@ -50,6 +50,7 @@ import 'models/premium_plan.dart';
 import 'models/user.dart';
 import 'services/firebase_notification_service.dart';
 import 'services/sound_effects_service.dart';
+import 'services/deep_link_service.dart';
 import 'pages/feed_page.dart';
 import 'components/navbar/bottom_navbar.dart';
 import 'pages/chat_list_page.dart';
@@ -67,8 +68,24 @@ void main() async {
   runApp(const LGBTinderApp());
 }
 
-class LGBTinderApp extends StatelessWidget {
+class LGBTinderApp extends StatefulWidget {
   const LGBTinderApp({Key? key}) : super(key: key);
+
+  @override
+  State<LGBTinderApp> createState() => _LGBTinderAppState();
+}
+
+class _LGBTinderAppState extends State<LGBTinderApp> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Deep Link Service
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService().initialize(navigatorKey: _navigatorKey);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +116,7 @@ class LGBTinderApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
+            navigatorKey: _navigatorKey,
             debugShowCheckedModeBanner: false,
             themeMode: themeProvider.themeMode,
             theme: themeProvider.lightTheme,
