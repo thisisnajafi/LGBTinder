@@ -37,12 +37,12 @@ class _MediaPickerState extends State<MediaPicker> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 200,
       decoration: BoxDecoration(
         color: AppColors.navbarBackground,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
           Container(
@@ -85,10 +85,9 @@ class _MediaPickerState extends State<MediaPicker> {
           const SizedBox(height: 16),
           
           // Media type buttons
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
                 children: [
                   if (widget.allowedTypes.contains(MediaType.image))
                     Expanded(
@@ -130,7 +129,6 @@ class _MediaPickerState extends State<MediaPicker> {
                   ],
                 ],
               ),
-            ),
           ),
           
           // Selected files preview
