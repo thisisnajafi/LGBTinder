@@ -875,7 +875,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Restore Backup',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           'Are you sure you want to restore "${item.name}"? This will replace your current profile data.',
@@ -924,7 +924,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             },
             child: const Text(
               'Restore',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -941,7 +941,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Delete Backup',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           'Are you sure you want to delete "${item.name}"? This action cannot be undone.',
@@ -979,7 +979,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             },
             child: const Text(
               'Delete',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],
@@ -1004,11 +1004,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Clear Backup History',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: const Text(
           'Are you sure you want to clear all backup history? This action cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
@@ -1032,7 +1032,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             },
             child: const Text(
               'Clear',
-              style: TextStyle(color: AppColors.feedbackError),
+              style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
           ),
         ],
@@ -1075,18 +1075,18 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Selective Backup',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: const Text(
           'Selective backup options coming soon!',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'OK',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],

@@ -218,14 +218,14 @@ class _SearchPageState extends State<SearchPage> {
         return AlertDialog(
           backgroundColor: AppColors.appBackground,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Filters', style: TextStyle(color: Colors.white)),
+          title: Text('Filters', style: AppTypography.titleMedium.copyWith(color: Colors.white)),
           content: SizedBox(
             width: 320,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 8),
-                Text('Age Range', style: TextStyle(color: Colors.white)),
+                Text('Age Range', style: AppTypography.bodyMedium.copyWith(color: Colors.white)),
                 RangeSlider(
                   values: tempAge,
                   min: 18,
@@ -240,7 +240,7 @@ class _SearchPageState extends State<SearchPage> {
                   onChanged: (v) => setState(() => tempAge = v),
                 ),
                 const SizedBox(height: 8),
-                Text('Gender', style: TextStyle(color: Colors.white)),
+                Text('Gender', style: AppTypography.bodyMedium.copyWith(color: Colors.white)),
                 Wrap(
                   spacing: 8,
                   children: [
@@ -263,7 +263,7 @@ class _SearchPageState extends State<SearchPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text('Distance (km)', style: TextStyle(color: Colors.white)),
+                Text('Distance (km)', style: AppTypography.bodyMedium.copyWith(color: Colors.white)),
                 Slider(
                   value: tempDistance,
                   min: 1,
@@ -280,7 +280,7 @@ class _SearchPageState extends State<SearchPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+              child: Text('Cancel', style: AppTypography.button.copyWith(color: Colors.white)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

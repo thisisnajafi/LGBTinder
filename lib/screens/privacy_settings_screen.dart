@@ -722,7 +722,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Blocked Users',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           'You have blocked ${_currentSettings.blockedUsers.userIds.length} users.',
@@ -733,7 +733,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'OK',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -748,7 +748,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Reported Users',
-          style: TextStyle(color: AppColors.textPrimaryDark),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
         content: Text(
           'You have reported ${_currentSettings.reportedUsers.userIds.length} users.',
@@ -759,7 +759,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'OK',
-              style: TextStyle(color: AppColors.primaryLight),
+              style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
           ),
         ],
@@ -774,11 +774,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         backgroundColor: AppColors.navbarBackground,
         title: const Text(
           'Delete Account',
-          style: TextStyle(color: AppColors.feedbackError),
+          style: AppTypography.titleMedium.copyWith(color: AppColors.feedbackError),
         ),
         content: const Text(
           'Are you sure you want to delete your account? This action cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondaryDark),
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
