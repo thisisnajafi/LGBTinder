@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
 import '../models/user.dart';
+import '../models/discovery_filters.dart';
 import '../components/profile_cards/swipeable_profile_card.dart';
 import '../components/error_handling/error_display_widget.dart';
 import '../components/loading/loading_widgets.dart';
@@ -14,6 +15,8 @@ import '../services/analytics_service.dart';
 import '../services/error_monitoring_service.dart';
 import '../services/sound_effects_service.dart';
 import '../services/match_sharing_service.dart';
+import '../services/cache_service.dart';
+import '../screens/discovery/filter_screen.dart';
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({Key? key}) : super(key: key);
@@ -32,6 +35,7 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   int _currentIndex = 0;
   bool _isLoading = true;
   dynamic _error;
+  DiscoveryFilters _filters = DiscoveryFilters.defaultFilters;
   
   // Swipe directions
   double _dragStartX = 0;
@@ -42,7 +46,34 @@ class _DiscoveryPageState extends State<DiscoveryPage>
   void initState() {
     super.initState();
     _initializeAnimations();
+    _loadSavedFilters();
     _loadPotentialMatches();
+  }
+  
+  Future<void> _loadSavedFilters() async {
+    final savedFilters = await CacheService.getData('discovery_filters');
+    if (savedFilters != null && savedFilters is Map<String, dynamic>) {
+      setState(() {
+        _filters = DiscoveryFilters.fromJson(savedFilters);
+      });
+    }
+  }
+  
+  void _openFilters() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilterScreen(
+          initialFilters: _filters,
+          onApply: (newFilters) {
+            setState(() {
+              _filters = newFilters;
+            });
+            _loadPotentialMatches();
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -87,7 +118,9 @@ class _DiscoveryPageState extends State<DiscoveryPage>
       );
 
       final matchingProvider = context.read<MatchingStateProvider>();
-      await matchingProvider.loadPotentialMatches();
+      await matchingProvider.loadPotentialMatches(
+        filters: _filters.toApiParams(),
+      );
       
       setState(() {
         _potentialMatches = matchingProvider.potentialMatches;
@@ -801,6 +834,43 @@ class _DiscoveryPageState extends State<DiscoveryPage>
         backgroundColor: AppColors.background,
         elevation: 0,
         actions: [
+          // Filter button with badge
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.tune,
+                  color: AppColors.textPrimary,
+                ),
+                onPressed: _openFilters,
+              ),
+              if (_filters.activeFilterCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${_filters.activeFilterCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             icon: const Icon(
               Icons.refresh,
