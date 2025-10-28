@@ -1,493 +1,402 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/colors.dart';
 import '../theme/typography.dart';
-import '../providers/auth_provider.dart';
-import '../services/firebase_notification_service.dart';
-import '../services/notifications_service.dart';
 
+/// Notification Settings Screen
+/// 
+/// Manage all notification preferences:
+/// - Enable/disable by type (matches, messages, likes, calls)
+/// - Quiet hours (Do Not Disturb)
+/// - Notification preview settings
+/// - Sound and vibration preferences
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({Key? key}) : super(key: key);
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  State<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
-  bool _isLoading = true;
-  Map<String, dynamic> _notificationSettings = {};
-  bool _pushNotificationsEnabled = true;
-  bool _emailNotificationsEnabled = true;
-  bool _smsNotificationsEnabled = false;
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
+  // Notification toggles
+  bool _matchNotifications = true;
+  bool _messageNotifications = true;
+  bool _likeNotifications = true;
+  bool _superlikeNotifications = true;
+  bool _callNotifications = true;
+  
+  // Quiet hours
+  bool _quietHoursEnabled = false;
+  TimeOfDay _quietHoursStart = const TimeOfDay(hour: 22, minute: 0);
+  TimeOfDay _quietHoursEnd = const TimeOfDay(hour: 8, minute: 0);
+  
+  // Notification preferences
+  bool _showPreviews = true;
+  bool _soundEnabled = true;
+  bool _vibrationEnabled = true;
 
   @override
   void initState() {
     super.initState();
-    _loadNotificationSettings();
+    _loadPreferences();
   }
 
-  Future<void> _loadNotificationSettings() async {
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    
     setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
-
-      if (accessToken != null) {
-        final settings = await NotificationsService.getNotificationSettings(
-          accessToken: await accessToken,
-        );
-        
-        setState(() {
-          _notificationSettings = settings;
-          _pushNotificationsEnabled = settings['push_notifications'] ?? true;
-          _emailNotificationsEnabled = settings['email_notifications'] ?? true;
-          _smsNotificationsEnabled = settings['sms_notifications'] ?? false;
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to load notification settings: $e'),
-          backgroundColor: Colors.red,
-        ),
+      _matchNotifications = prefs.getBool('notif_matches') ?? true;
+      _messageNotifications = prefs.getBool('notif_messages') ?? true;
+      _likeNotifications = prefs.getBool('notif_likes') ?? true;
+      _superlikeNotifications = prefs.getBool('notif_superlikes') ?? true;
+      _callNotifications = prefs.getBool('notif_calls') ?? true;
+      
+      _quietHoursEnabled = prefs.getBool('quiet_hours_enabled') ?? false;
+      _quietHoursStart = TimeOfDay(
+        hour: prefs.getInt('quiet_hours_start_hour') ?? 22,
+        minute: prefs.getInt('quiet_hours_start_minute') ?? 0,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+      _quietHoursEnd = TimeOfDay(
+        hour: prefs.getInt('quiet_hours_end_hour') ?? 8,
+        minute: prefs.getInt('quiet_hours_end_minute') ?? 0,
+      );
+      
+      _showPreviews = prefs.getBool('notif_show_previews') ?? true;
+      _soundEnabled = prefs.getBool('notif_sound') ?? true;
+      _vibrationEnabled = prefs.getBool('notif_vibration') ?? true;
+    });
   }
 
-  Future<void> _updateNotificationSetting(String key, bool value) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
+  Future<void> _savePreference(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
 
-      if (accessToken != null) {
-        await NotificationsService.updateNotificationSetting(
-          key: key,
-          value: value,
-          accessToken: await accessToken,
-        );
+  Future<void> _saveTimePreference(String key, int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(key, value);
+  }
 
-        setState(() {
-          _notificationSettings[key] = value;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Notification setting updated'),
-            backgroundColor: Colors.green,
+  Future<void> _selectTime(BuildContext context, bool isStart) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: isStart ? _quietHoursStart : _quietHoursEnd,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.primary,
+              surface: AppColors.navbarBackground,
+            ),
           ),
+          child: child!,
         );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to update setting: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        if (isStart) {
+          _quietHoursStart = picked;
+          _saveTimePreference('quiet_hours_start_hour', picked.hour);
+          _saveTimePreference('quiet_hours_start_minute', picked.minute);
+        } else {
+          _quietHoursEnd = picked;
+          _saveTimePreference('quiet_hours_end_hour', picked.hour);
+          _saveTimePreference('quiet_hours_end_minute', picked.minute);
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.appBackground,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Notification Settings'),
         backgroundColor: AppColors.navbarBackground,
-        foregroundColor: Colors.white,
         elevation: 0,
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader('General Notifications'),
-                  _buildNotificationToggle(
-                    'Push Notifications',
-                    'Receive push notifications on your device',
-                    _pushNotificationsEnabled,
-                    (value) {
-                      setState(() {
-                        _pushNotificationsEnabled = value;
-                      });
-                      _updateNotificationSetting('push_notifications', value);
-                    },
-                  ),
-                  _buildNotificationToggle(
-                    'Email Notifications',
-                    'Receive notifications via email',
-                    _emailNotificationsEnabled,
-                    (value) {
-                      setState(() {
-                        _emailNotificationsEnabled = value;
-                      });
-                      _updateNotificationSetting('email_notifications', value);
-                    },
-                  ),
-                  _buildNotificationToggle(
-                    'SMS Notifications',
-                    'Receive notifications via SMS',
-                    _smsNotificationsEnabled,
-                    (value) {
-                      setState(() {
-                        _smsNotificationsEnabled = value;
-                      });
-                      _updateNotificationSetting('sms_notifications', value);
-                    },
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  _buildSectionHeader('Activity Notifications'),
-                  _buildNotificationToggle(
-                    'New Matches',
-                    'Get notified when someone likes you back',
-                    _notificationSettings['new_matches'] ?? true,
-                    (value) => _updateNotificationSetting('new_matches', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Messages',
-                    'Get notified when you receive new messages',
-                    _notificationSettings['messages'] ?? true,
-                    (value) => _updateNotificationSetting('messages', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Super Likes',
-                    'Get notified when someone super likes you',
-                    _notificationSettings['super_likes'] ?? true,
-                    (value) => _updateNotificationSetting('super_likes', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Story Views',
-                    'Get notified when someone views your story',
-                    _notificationSettings['story_views'] ?? false,
-                    (value) => _updateNotificationSetting('story_views', value),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  _buildSectionHeader('Social Notifications'),
-                  _buildNotificationToggle(
-                    'Story Reactions',
-                    'Get notified when someone reacts to your story',
-                    _notificationSettings['story_reactions'] ?? true,
-                    (value) => _updateNotificationSetting('story_reactions', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Comments',
-                    'Get notified when someone comments on your posts',
-                    _notificationSettings['comments'] ?? true,
-                    (value) => _updateNotificationSetting('comments', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Follows',
-                    'Get notified when someone follows you',
-                    _notificationSettings['follows'] ?? true,
-                    (value) => _updateNotificationSetting('follows', value),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  _buildSectionHeader('Marketing & Updates'),
-                  _buildNotificationToggle(
-                    'Promotional Offers',
-                    'Get notified about special offers and promotions',
-                    _notificationSettings['promotional'] ?? false,
-                    (value) => _updateNotificationSetting('promotional', value),
-                  ),
-                  _buildNotificationToggle(
-                    'App Updates',
-                    'Get notified about new features and updates',
-                    _notificationSettings['app_updates'] ?? true,
-                    (value) => _updateNotificationSetting('app_updates', value),
-                  ),
-                  _buildNotificationToggle(
-                    'Safety Alerts',
-                    'Get notified about important safety information',
-                    _notificationSettings['safety_alerts'] ?? true,
-                    (value) => _updateNotificationSetting('safety_alerts', value),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  _buildSectionHeader('Quiet Hours'),
-                  _buildQuietHoursSettings(),
-
-                  const SizedBox(height: 32),
-
-                  _buildSectionHeader('Test Notifications'),
-                  _buildTestNotificationButton(),
-
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        title,
-        style: AppTypography.h4.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+        title: Text(
+          'Notification Settings',
+          style: AppTypography.h4.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-    );
-  }
-
-  Widget _buildNotificationToggle(
-    String title,
-    String subtitle,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.navbarBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Row(
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.body1.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+          // Notification Types Section
+          _buildSection(
+            title: 'Notification Types',
+            children: [
+              _buildSwitchTile(
+                title: 'New Matches',
+                subtitle: 'Get notified when you have a new match',
+                icon: Icons.favorite,
+                value: _matchNotifications,
+                onChanged: (value) {
+                  setState(() => _matchNotifications = value);
+                  _savePreference('notif_matches', value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'Messages',
+                subtitle: 'Get notified for new messages',
+                icon: Icons.message,
+                value: _messageNotifications,
+                onChanged: (value) {
+                  setState(() => _messageNotifications = value);
+                  _savePreference('notif_messages', value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'Likes',
+                subtitle: 'Get notified when someone likes you',
+                icon: Icons.thumb_up,
+                value: _likeNotifications,
+                onChanged: (value) {
+                  setState(() => _likeNotifications = value);
+                  _savePreference('notif_likes', value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'Superlikes',
+                subtitle: 'Get notified for superlikes',
+                icon: Icons.star,
+                value: _superlikeNotifications,
+                onChanged: (value) {
+                  setState(() => _superlikeNotifications = value);
+                  _savePreference('notif_superlikes', value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'Calls',
+                subtitle: 'Get notified for incoming calls',
+                icon: Icons.phone,
+                value: _callNotifications,
+                onChanged: (value) {
+                  setState(() => _callNotifications = value);
+                  _savePreference('notif_calls', value);
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Quiet Hours Section
+          _buildSection(
+            title: 'Quiet Hours (Do Not Disturb)',
+            children: [
+              _buildSwitchTile(
+                title: 'Enable Quiet Hours',
+                subtitle: 'Mute notifications during specific hours',
+                icon: Icons.nights_stay,
+                value: _quietHoursEnabled,
+                onChanged: (value) {
+                  setState(() => _quietHoursEnabled = value);
+                  _savePreference('quiet_hours_enabled', value);
+                },
+              ),
+              if (_quietHoursEnabled) ...[
+                _buildTimeTile(
+                  title: 'Start Time',
+                  time: _quietHoursStart,
+                  onTap: () => _selectTime(context, true),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: AppTypography.body2.copyWith(
-                    color: Colors.white70,
+                _buildTimeTile(
+                  title: 'End Time',
+                  time: _quietHoursEnd,
+                  onTap: () => _selectTime(context, false),
+                ),
+              ],
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Display Preferences Section
+          _buildSection(
+            title: 'Display Preferences',
+            children: [
+              _buildSwitchTile(
+                title: 'Show Previews',
+                subtitle: 'Show message content in notifications',
+                icon: Icons.visibility,
+                value: _showPreviews,
+                onChanged: (value) {
+                  setState(() => _showPreviews = value);
+                  _savePreference('notif_show_previews', value);
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Sound & Vibration Section
+          _buildSection(
+            title: 'Sound & Vibration',
+            children: [
+              _buildSwitchTile(
+                title: 'Notification Sound',
+                subtitle: 'Play sound for notifications',
+                icon: Icons.volume_up,
+                value: _soundEnabled,
+                onChanged: (value) {
+                  setState(() => _soundEnabled = value);
+                  _savePreference('notif_sound', value);
+                },
+              ),
+              _buildSwitchTile(
+                title: 'Vibration',
+                subtitle: 'Vibrate for notifications',
+                icon: Icons.vibration,
+                value: _vibrationEnabled,
+                onChanged: (value) {
+                  setState(() => _vibrationEnabled = value);
+                  _savePreference('notif_vibration', value);
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 32),
+
+          // Info Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.primary.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'System notification settings may override these preferences. Check your device settings if needed.',
+                    style: AppTypography.caption.copyWith(
+                      color: Colors.white70,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.primary,
-            activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
-            inactiveThumbColor: Colors.white70,
-            inactiveTrackColor: Colors.white24,
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildQuietHoursSettings() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.navbarBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Quiet Hours',
-            style: AppTypography.body1.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Set specific hours when you don\'t want to receive notifications',
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16, bottom: 8),
+          child: Text(
+            title,
             style: AppTypography.body2.copyWith(
-              color: Colors.white70,
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Start Time',
-                      style: AppTypography.caption.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '10:00 PM',
-                        style: AppTypography.body2.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'End Time',
-                      style: AppTypography.caption.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '8:00 AM',
-                        style: AppTypography.body2.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SwitchListTile(
-            title: Text(
-              'Enable Quiet Hours',
-              style: AppTypography.body2.copyWith(
-                color: Colors.white,
-              ),
-            ),
-            value: _notificationSettings['quiet_hours'] ?? false,
-            onChanged: (value) => _updateNotificationSetting('quiet_hours', value),
-            activeColor: AppColors.primary,
-            contentPadding: EdgeInsets.zero,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTestNotificationButton() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.navbarBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Test Notifications',
-            style: AppTypography.body1.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Send a test notification to verify your settings',
-            style: AppTypography.body2.copyWith(
-              color: Colors.white70,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _sendTestNotification,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: const Text('Send Test Notification'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _sendTestNotification() async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
-
-      if (accessToken != null) {
-        final success = await FirebaseNotificationService.sendNotificationToUser(
-          userId: authProvider.user?.id.toString() ?? '',
-          title: 'Test Notification',
-          body: 'This is a test notification from LGBTinder!',
-          accessToken: await accessToken,
-        );
-
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Test notification sent successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to send test notification'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error sending test notification: $e'),
-          backgroundColor: Colors.red,
         ),
-      );
-    }
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.navbarBackground,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: children,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool value,
+    required Function(bool) onChanged,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Icon(icon, color: AppColors.primary),
+      title: Text(
+        title,
+        style: AppTypography.body1.copyWith(
+          color: Colors.white,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: AppTypography.caption.copyWith(
+          color: Colors.white54,
+        ),
+      ),
+      trailing: Switch(
+        value: value,
+        onChanged: onChanged,
+        activeColor: AppColors.primary,
+      ),
+    );
+  }
+
+  Widget _buildTimeTile({
+    required String title,
+    required TimeOfDay time,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: const Icon(Icons.access_time, color: AppColors.primary),
+      title: Text(
+        title,
+        style: AppTypography.body1.copyWith(
+          color: Colors.white,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            time.format(context),
+            style: AppTypography.body1.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.chevron_right,
+            color: Colors.white54,
+          ),
+        ],
+      ),
+      onTap: onTap,
+    );
   }
 }
