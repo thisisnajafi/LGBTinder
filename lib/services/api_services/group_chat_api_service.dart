@@ -1,96 +1,67 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../../config/api_config.dart';
 
 /// Group Chat API Service
 /// 
-/// Handles all group chat API calls:
-/// - Create group chats
-/// - Manage members (add/remove)
-/// - Update group info
-/// - Admin management
+/// Handles all group chat-related API calls:
+/// - Create/edit/delete groups
+/// - Add/remove members
+/// - Manage admin roles
 class GroupChatApiService {
   static const String _baseUrl = ApiConfig.baseUrl;
 
-  // ============================================================================
-  // GROUP MANAGEMENT
-  // ============================================================================
-
-  /// Create new group chat
-  /// 
-  /// [token] - Authentication token
-  /// [name] - Group name
-  /// [description] - Group description
-  /// [memberIds] - List of member IDs (min 2, max 50)
-  /// [photo] - Group photo file (optional)
+  /// Create group chat
   static Future<GroupChatResponse> createGroup({
     required String token,
     required String name,
-    String? description,
     required List<String> memberIds,
-    File? photo,
+    String? description,
+    String? photoUrl,
   }) async {
     try {
       debugPrint('Creating group chat: $name with ${memberIds.length} members');
 
-      final uri = Uri.parse('$_baseUrl/chat/groups');
-      final request = http.MultipartRequest('POST', uri);
+      final response = await http.post(
+        Uri.parse('$_baseUrl/chat/groups'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'name': name,
+          'member_ids': memberIds,
+          'description': description,
+          'photo_url': photoUrl,
+        }),
+      );
 
-      // Add headers
-      request.headers['Authorization'] = 'Bearer $token';
-      request.headers['Accept'] = 'application/json';
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      // Add fields
-      request.fields['name'] = name;
-      if (description != null) {
-        request.fields['description'] = description;
-      }
-      request.fields['member_ids'] = jsonEncode(memberIds);
-
-      // Add photo if provided
-      if (photo != null) {
-        final fileStream = http.ByteStream(photo.openRead());
-        final fileLength = await photo.length();
-        
-        request.files.add(http.MultipartFile(
-          'photo',
-          fileStream,
-          fileLength,
-          filename: photo.path.split('/').last,
-        ));
-      }
-
-      // Send request
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
-      if (response.statusCode == 200 && responseData['status'] == true) {
+      if (response.statusCode == 200 && data['status'] == true) {
         return GroupChatResponse(
           success: true,
-          groupChat: GroupChat.fromJson(responseData['data'] as Map<String, dynamic>),
-        );
-      } else {
-        return GroupChatResponse(
-          success: false,
-          error: responseData['message'] as String? ?? 'Failed to create group',
+          group: GroupChat.fromJson(data['data'] as Map<String, dynamic>),
+          message: data['message'] as String?,
         );
       }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
     } catch (e) {
       debugPrint('Error creating group: $e');
       return GroupChatResponse(
         success: false,
-        error: 'Network error: ${e.toString()}',
+        error: e.toString(),
       );
     }
   }
 
-  /// Get group chat details
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
+  /// Get group details
   static Future<GroupChatResponse> getGroup({
     required String token,
     required String groupId,
@@ -104,124 +75,77 @@ class GroupChatApiService {
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      if (response.statusCode == 200 && responseData['status'] == true) {
+      if (response.statusCode == 200 && data['status'] == true) {
         return GroupChatResponse(
           success: true,
-          groupChat: GroupChat.fromJson(responseData['data'] as Map<String, dynamic>),
-        );
-      } else {
-        return GroupChatResponse(
-          success: false,
-          error: responseData['message'] as String? ?? 'Failed to fetch group',
+          group: GroupChat.fromJson(data['data'] as Map<String, dynamic>),
         );
       }
-    } catch (e) {
-      debugPrint('Error fetching group: $e');
+
       return GroupChatResponse(
         success: false,
-        error: 'Network error: ${e.toString()}',
+        error: data['message'] as String?,
+      );
+    } catch (e) {
+      debugPrint('Error getting group: $e');
+      return GroupChatResponse(
+        success: false,
+        error: e.toString(),
       );
     }
   }
 
   /// Update group info
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
-  /// [name] - New group name (optional)
-  /// [description] - New description (optional)
-  /// [photo] - New group photo (optional)
   static Future<GroupChatResponse> updateGroup({
     required String token,
     required String groupId,
     String? name,
     String? description,
-    File? photo,
+    String? photoUrl,
   }) async {
     try {
-      final uri = Uri.parse('$_baseUrl/chat/groups/$groupId');
-      final request = http.MultipartRequest('PUT', uri);
+      final body = <String, dynamic>{};
+      if (name != null) body['name'] = name;
+      if (description != null) body['description'] = description;
+      if (photoUrl != null) body['photo_url'] = photoUrl;
 
-      request.headers['Authorization'] = 'Bearer $token';
-      request.headers['Accept'] = 'application/json';
+      final response = await http.put(
+        Uri.parse('$_baseUrl/chat/groups/$groupId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      );
 
-      if (name != null) request.fields['name'] = name;
-      if (description != null) request.fields['description'] = description;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      if (photo != null) {
-        final fileStream = http.ByteStream(photo.openRead());
-        final fileLength = await photo.length();
-        
-        request.files.add(http.MultipartFile(
-          'photo',
-          fileStream,
-          fileLength,
-          filename: photo.path.split('/').last,
-        ));
-      }
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
-      if (response.statusCode == 200 && responseData['status'] == true) {
+      if (response.statusCode == 200 && data['status'] == true) {
         return GroupChatResponse(
           success: true,
-          groupChat: GroupChat.fromJson(responseData['data'] as Map<String, dynamic>),
-        );
-      } else {
-        return GroupChatResponse(
-          success: false,
-          error: responseData['message'] as String? ?? 'Failed to update group',
+          group: GroupChat.fromJson(data['data'] as Map<String, dynamic>),
+          message: data['message'] as String?,
         );
       }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
     } catch (e) {
       debugPrint('Error updating group: $e');
       return GroupChatResponse(
         success: false,
-        error: 'Network error: ${e.toString()}',
+        error: e.toString(),
       );
     }
   }
-
-  /// Delete group chat
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
-  static Future<bool> deleteGroup({
-    required String token,
-    required String groupId,
-  }) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$_baseUrl/chat/groups/$groupId'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
-      return response.statusCode == 200 && responseData['status'] == true;
-    } catch (e) {
-      debugPrint('Error deleting group: $e');
-      return false;
-    }
-  }
-
-  // ============================================================================
-  // MEMBER MANAGEMENT
-  // ============================================================================
 
   /// Add members to group
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
-  /// [memberIds] - List of user IDs to add
-  static Future<bool> addMembers({
+  static Future<GroupChatResponse> addMembers({
     required String token,
     required String groupId,
     required List<String> memberIds,
@@ -239,21 +163,30 @@ class GroupChatApiService {
         }),
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      return response.statusCode == 200 && responseData['status'] == true;
+      if (response.statusCode == 200 && data['status'] == true) {
+        return GroupChatResponse(
+          success: true,
+          message: data['message'] as String?,
+        );
+      }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
     } catch (e) {
       debugPrint('Error adding members: $e');
-      return false;
+      return GroupChatResponse(
+        success: false,
+        error: e.toString(),
+      );
     }
   }
 
   /// Remove member from group
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
-  /// [memberId] - User ID to remove
-  static Future<bool> removeMember({
+  static Future<GroupChatResponse> removeMember({
     required String token,
     required String groupId,
     required String memberId,
@@ -267,57 +200,36 @@ class GroupChatApiService {
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      return response.statusCode == 200 && responseData['status'] == true;
+      if (response.statusCode == 200 && data['status'] == true) {
+        return GroupChatResponse(
+          success: true,
+          message: data['message'] as String?,
+        );
+      }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
     } catch (e) {
       debugPrint('Error removing member: $e');
-      return false;
-    }
-  }
-
-  /// Leave group
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
-  static Future<bool> leaveGroup({
-    required String token,
-    required String groupId,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/chat/groups/$groupId/leave'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      return GroupChatResponse(
+        success: false,
+        error: e.toString(),
       );
-
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-
-      return response.statusCode == 200 && responseData['status'] == true;
-    } catch (e) {
-      debugPrint('Error leaving group: $e');
-      return false;
     }
   }
-
-  // ============================================================================
-  // ADMIN MANAGEMENT
-  // ============================================================================
 
   /// Promote member to admin
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
-  /// [memberId] - User ID to promote
-  static Future<bool> promoteToAdmin({
+  static Future<GroupChatResponse> promoteToAdmin({
     required String token,
     required String groupId,
     required String memberId,
   }) async {
     try {
-      final response = await http.post(
+      final response = await http.put(
         Uri.parse('$_baseUrl/chat/groups/$groupId/admins/$memberId'),
         headers: {
           'Accept': 'application/json',
@@ -325,21 +237,30 @@ class GroupChatApiService {
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      return response.statusCode == 200 && responseData['status'] == true;
+      if (response.statusCode == 200 && data['status'] == true) {
+        return GroupChatResponse(
+          success: true,
+          message: data['message'] as String?,
+        );
+      }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
     } catch (e) {
       debugPrint('Error promoting to admin: $e');
-      return false;
+      return GroupChatResponse(
+        success: false,
+        error: e.toString(),
+      );
     }
   }
 
-  /// Demote admin to regular member
-  /// 
-  /// [token] - Authentication token
-  /// [groupId] - Group ID
-  /// [memberId] - User ID to demote
-  static Future<bool> demoteAdmin({
+  /// Demote admin to member
+  static Future<GroupChatResponse> demoteFromAdmin({
     required String token,
     required String groupId,
     required String memberId,
@@ -353,36 +274,117 @@ class GroupChatApiService {
         },
       );
 
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      return response.statusCode == 200 && responseData['status'] == true;
+      if (response.statusCode == 200 && data['status'] == true) {
+        return GroupChatResponse(
+          success: true,
+          message: data['message'] as String?,
+        );
+      }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
     } catch (e) {
       debugPrint('Error demoting admin: $e');
-      return false;
+      return GroupChatResponse(
+        success: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  /// Leave group
+  static Future<GroupChatResponse> leaveGroup({
+    required String token,
+    required String groupId,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/chat/groups/$groupId/leave'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        return GroupChatResponse(
+          success: true,
+          message: data['message'] as String?,
+        );
+      }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
+    } catch (e) {
+      debugPrint('Error leaving group: $e');
+      return GroupChatResponse(
+        success: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  /// Delete group
+  static Future<GroupChatResponse> deleteGroup({
+    required String token,
+    required String groupId,
+  }) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/chat/groups/$groupId'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        return GroupChatResponse(
+          success: true,
+          message: data['message'] as String?,
+        );
+      }
+
+      return GroupChatResponse(
+        success: false,
+        error: data['message'] as String?,
+      );
+    } catch (e) {
+      debugPrint('Error deleting group: $e');
+      return GroupChatResponse(
+        success: false,
+        error: e.toString(),
+      );
     }
   }
 }
 
-// ============================================================================
-// RESPONSE MODELS
-// ============================================================================
-
+/// Group Chat Response
 class GroupChatResponse {
   final bool success;
-  final GroupChat? groupChat;
+  final GroupChat? group;
+  final String? message;
   final String? error;
 
   GroupChatResponse({
     required this.success,
-    this.groupChat,
+    this.group,
+    this.message,
     this.error,
   });
 }
 
-// ============================================================================
-// DATA MODELS
-// ============================================================================
-
+/// Group Chat Model
 class GroupChat {
   final String id;
   final String name;
@@ -432,18 +434,19 @@ class GroupChat {
   bool isCreator(String userId) => creatorId == userId;
 }
 
+/// Group Member Model
 class GroupMember {
   final String id;
   final String name;
-  final String? photoUrl;
+  final String? avatarUrl;
   final bool isAdmin;
   final DateTime joinedAt;
 
   GroupMember({
     required this.id,
     required this.name,
-    this.photoUrl,
-    required this.isAdmin,
+    this.avatarUrl,
+    this.isAdmin = false,
     required this.joinedAt,
   });
 
@@ -451,10 +454,9 @@ class GroupMember {
     return GroupMember(
       id: json['id'].toString(),
       name: json['name'] as String,
-      photoUrl: json['photo_url'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
       isAdmin: json['is_admin'] as bool? ?? false,
       joinedAt: DateTime.parse(json['joined_at'] as String),
     );
   }
 }
-
