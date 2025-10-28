@@ -15,7 +15,8 @@ import 'dart:async';
 /// - lgbtinder://discovery/likes - Open likes received (premium)
 /// - lgbtinder://chat - Open chat list
 /// - lgbtinder://chat/{user_id} - Open specific chat
-/// - lgbtinder://chat/{user_id}/message/{message_id} - Scroll to specific message
+/// - lgbtinder://chat/{chat_id}/message/{message_id} - Scroll to specific message
+/// - lgbtinder://chat/group/{group_id} - Open group chat
 /// - lgbtinder://stories - Open stories feed
 /// - lgbtinder://stories/{user_id} - View user's stories
 /// - lgbtinder://feed - Open social feed
