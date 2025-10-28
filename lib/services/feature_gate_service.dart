@@ -1,314 +1,311 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user.dart';
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
+import 'token_management_service.dart';
+import 'cache_service.dart';
 
 /// Feature Gate Service
 /// 
-/// Manages feature access based on subscription tier and usage limits:
-/// - Check feature availability
-/// - Track daily usage
-/// - Enforce limits for free users
-/// - Reset counters at midnight
+/// Manages feature access based on subscription tier
+/// Tracks daily usage limits for free users
 class FeatureGateService {
   static final FeatureGateService _instance = FeatureGateService._internal();
   factory FeatureGateService() => _instance;
   FeatureGateService._internal();
 
-  // Feature limits for free users
-  static const int FREE_DAILY_LIKES = 10;
-  static const int FREE_DAILY_SUPERLIKES = 1;
-  static const int FREE_DAILY_REWINDS = 3;
-
-  // Cache for feature permissions
-  Map<String, bool> _featureCache = {};
+  static const String _baseUrl = ApiConfig.baseUrl;
+  
+  // Cache keys
+  static const String _featurePermissionsKey = 'feature_permissions';
+  static const String _usageTrackingKey = 'usage_tracking';
+  
+  // Daily limits for free users
+  static const int freeLikesPerDay = 10;
+  static const int freeRewindsPerDay = 3;
+  
+  Map<String, dynamic>? _cachedPermissions;
+  Map<String, int>? _usageCounters;
   DateTime? _lastResetDate;
 
-  /// Initialize service and load cached data
+  /// Initialize feature gates
   Future<void> initialize() async {
-    await _loadCachedData();
-    await _checkAndResetDaily();
-  }
-
-  /// Check if user can access a feature
-  /// 
-  /// [feature] - Feature identifier
-  /// [user] - Current user
-  /// Returns true if user can access the feature
-  Future<bool> canAccessFeature({
-    required PremiumFeature feature,
-    required User? user,
-  }) async {
-    if (user == null) return false;
-
-    // Check subscription status
-    if (_isPremiumUser(user)) {
-      return true; // Premium users have access to all features
-    }
-
-    // Check feature-specific logic for free users
-    switch (feature) {
-      case PremiumFeature.unlimitedLikes:
-        return await getRemainingLikes() > 0;
-      
-      case PremiumFeature.unlimitedSuperlikes:
-        return await getRemainingSuperlikes() > 0;
-      
-      case PremiumFeature.unlimitedRewinds:
-        return await getRemainingRewinds() > 0;
-      
-      case PremiumFeature.seeWhoLikedYou:
-      case PremiumFeature.advancedFilters:
-      case PremiumFeature.boostProfile:
-      case PremiumFeature.readReceipts:
-      case PremiumFeature.priorityLikes:
-      case PremiumFeature.adFree:
-      case PremiumFeature.profileInsights:
-      case PremiumFeature.incognitoMode:
-        return false; // Premium only features
-      
-      default:
-        return true; // Unknown feature, allow by default
-    }
-  }
-
-  /// Get remaining likes for today
-  Future<int> getRemainingLikes() async {
-    await _checkAndResetDaily();
-    final used = await _getDailyUsage('likes');
-    return (FREE_DAILY_LIKES - used).clamp(0, FREE_DAILY_LIKES);
-  }
-
-  /// Get remaining superlikes for today
-  Future<int> getRemainingSuperlikes() async {
-    await _checkAndResetDaily();
-    final used = await _getDailyUsage('superlikes');
-    return (FREE_DAILY_SUPERLIKES - used).clamp(0, FREE_DAILY_SUPERLIKES);
-  }
-
-  /// Get remaining rewinds for today
-  Future<int> getRemainingRewinds() async {
-    await _checkAndResetDaily();
-    final used = await _getDailyUsage('rewinds');
-    return (FREE_DAILY_REWINDS - used).clamp(0, FREE_DAILY_REWINDS);
-  }
-
-  /// Track a like action
-  Future<bool> trackLike(User? user) async {
-    if (_isPremiumUser(user)) return true; // No tracking for premium users
-
-    await _checkAndResetDaily();
-    final remaining = await getRemainingLikes();
-    
-    if (remaining > 0) {
-      await _incrementUsage('likes');
-      return true;
-    }
-    
-    return false;
-  }
-
-  /// Track a superlike action
-  Future<bool> trackSuperlike(User? user) async {
-    if (_isPremiumUser(user)) return true; // No tracking for premium users
-
-    await _checkAndResetDaily();
-    final remaining = await getRemainingSuperlikes();
-    
-    if (remaining > 0) {
-      await _incrementUsage('superlikes');
-      return true;
-    }
-    
-    return false;
-  }
-
-  /// Track a rewind action
-  Future<bool> trackRewind(User? user) async {
-    if (_isPremiumUser(user)) return true; // No tracking for premium users
-
-    await _checkAndResetDaily();
-    final remaining = await getRemainingRewinds();
-    
-    if (remaining > 0) {
-      await _incrementUsage('rewinds');
-      return true;
-    }
-    
-    return false;
-  }
-
-  /// Get feature description
-  String getFeatureDescription(PremiumFeature feature) {
-    switch (feature) {
-      case PremiumFeature.unlimitedLikes:
-        return 'Like as many profiles as you want without daily limits';
-      case PremiumFeature.seeWhoLikedYou:
-        return 'See everyone who has liked your profile instantly';
-      case PremiumFeature.advancedFilters:
-        return 'Use detailed filters to find your perfect match';
-      case PremiumFeature.unlimitedRewinds:
-        return 'Go back on any profile you accidentally passed';
-      case PremiumFeature.unlimitedSuperlikes:
-        return 'Send unlimited superlikes to stand out';
-      case PremiumFeature.boostProfile:
-        return 'Boost your profile for 10x more visibility';
-      case PremiumFeature.readReceipts:
-        return 'See when your messages have been read';
-      case PremiumFeature.priorityLikes:
-        return 'Your likes appear first to others';
-      case PremiumFeature.adFree:
-        return 'Enjoy an ad-free experience';
-      case PremiumFeature.profileInsights:
-        return 'Get detailed insights about your profile performance';
-      case PremiumFeature.incognitoMode:
-        return 'Browse profiles privately';
-      default:
-        return 'Premium feature';
-    }
-  }
-
-  /// Get upgrade message for feature
-  String getUpgradeMessage(PremiumFeature feature) {
-    switch (feature) {
-      case PremiumFeature.unlimitedLikes:
-        return 'You\'ve reached your daily like limit. Upgrade to Premium for unlimited likes!';
-      case PremiumFeature.unlimitedSuperlikes:
-        return 'You\'ve used your daily superlike. Upgrade to Premium for unlimited superlikes!';
-      case PremiumFeature.unlimitedRewinds:
-        return 'You\'ve used your daily rewinds. Upgrade to Premium for unlimited rewinds!';
-      default:
-        return 'Upgrade to Premium to unlock ${_getFeatureName(feature)}!';
-    }
-  }
-
-  /// Check if user is premium
-  bool _isPremiumUser(User? user) {
-    if (user == null) return false;
-    
-    // Check subscription status
-    // This would typically check user.subscription?.status == 'active'
-    // For now, we'll check if user has any subscription tier
-    return user.premiumStatus == 'active' || 
-           user.subscriptionTier != null && user.subscriptionTier != 'free';
-  }
-
-  /// Get daily usage for a specific action
-  Future<int> _getDailyUsage(String action) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'usage_$action';
-    return prefs.getInt(key) ?? 0;
-  }
-
-  /// Increment usage counter
-  Future<void> _incrementUsage(String action) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'usage_$action';
-    final current = prefs.getInt(key) ?? 0;
-    await prefs.setInt(key, current + 1);
-    
-    debugPrint('Incremented $action usage to ${current + 1}');
-  }
-
-  /// Check and reset daily counters if needed
-  Future<void> _checkAndResetDaily() async {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    if (_lastResetDate == null || _lastResetDate!.isBefore(today)) {
-      await _resetDailyCounters();
-      _lastResetDate = today;
-      
-      // Save reset date
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('last_reset_date', today.toIso8601String());
-      
-      debugPrint('Daily usage counters reset');
-    }
-  }
-
-  /// Reset all daily counters
-  Future<void> _resetDailyCounters() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('usage_likes', 0);
-    await prefs.setInt('usage_superlikes', 0);
-    await prefs.setInt('usage_rewinds', 0);
-  }
-
-  /// Load cached data
-  Future<void> _loadCachedData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Load last reset date
-      final resetDateStr = prefs.getString('last_reset_date');
-      if (resetDateStr != null) {
-        _lastResetDate = DateTime.parse(resetDateStr);
-      }
-      
-      // Load feature cache
-      final cacheStr = prefs.getString('feature_cache');
-      if (cacheStr != null) {
-        final decoded = jsonDecode(cacheStr) as Map<String, dynamic>;
-        _featureCache = decoded.map((key, value) => MapEntry(key, value as bool));
-      }
-    } catch (e) {
-      debugPrint('Error loading cached data: $e');
-    }
-  }
-
-  /// Save feature cache
-  Future<void> _saveFeatureCache() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('feature_cache', jsonEncode(_featureCache));
-    } catch (e) {
-      debugPrint('Error saving feature cache: $e');
-    }
+    await _loadCachedPermissions();
+    await _loadUsageCounters();
+    await refreshPermissions();
   }
 
   /// Refresh feature permissions from backend
-  Future<void> refreshPermissions(User user) async {
-    // In a real app, this would fetch from the backend
-    // For now, we'll just clear the cache
-    _featureCache.clear();
-    await _saveFeatureCache();
+  Future<void> refreshPermissions() async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) return;
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/user/permissions'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        _cachedPermissions = data['data'] as Map<String, dynamic>;
+        await CacheService.setData(
+          key: _featurePermissionsKey,
+          value: _cachedPermissions,
+          expiryMinutes: 60,
+        );
+        debugPrint('Feature permissions refreshed');
+      }
+    } catch (e) {
+      debugPrint('Error refreshing permissions: $e');
+    }
   }
 
-  /// Clear all data (for logout)
-  Future<void> clearData() async {
-    _featureCache.clear();
-    _lastResetDate = null;
+  /// Load cached permissions
+  Future<void> _loadCachedPermissions() async {
+    final cached = await CacheService.getData(_featurePermissionsKey);
+    if (cached != null && cached is Map<String, dynamic>) {
+      _cachedPermissions = cached;
+    }
+  }
+
+  /// Load usage counters
+  Future<void> _loadUsageCounters() async {
+    final cached = await CacheService.getData(_usageTrackingKey);
+    if (cached != null && cached is Map<String, dynamic>) {
+      _usageCounters = Map<String, int>.from(cached);
+      
+      // Check if we need to reset counters (new day)
+      final lastReset = cached['last_reset'] as String?;
+      if (lastReset != null) {
+        _lastResetDate = DateTime.parse(lastReset);
+        if (!_isSameDay(_lastResetDate!, DateTime.now())) {
+          await _resetDailyCounters();
+        }
+      }
+    } else {
+      _usageCounters = {};
+      await _resetDailyCounters();
+    }
+  }
+
+  /// Reset daily usage counters
+  Future<void> _resetDailyCounters() async {
+    _usageCounters = {
+      'likes': 0,
+      'superlikes': 0,
+      'rewinds': 0,
+      'boosts': 0,
+    };
+    _lastResetDate = DateTime.now();
     
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('usage_likes');
-    await prefs.remove('usage_superlikes');
-    await prefs.remove('usage_rewinds');
-    await prefs.remove('last_reset_date');
-    await prefs.remove('feature_cache');
+    await _saveUsageCounters();
+    debugPrint('Daily usage counters reset');
   }
 
-  /// Get feature name
-  String _getFeatureName(PremiumFeature feature) {
-    return feature.toString().split('.').last.replaceAllMapped(
-      RegExp(r'([A-Z])'),
-      (match) => ' ${match.group(0)}',
-    ).trim();
+  /// Save usage counters to cache
+  Future<void> _saveUsageCounters() async {
+    await CacheService.setData(
+      key: _usageTrackingKey,
+      value: {
+        ..._usageCounters!,
+        'last_reset': _lastResetDate!.toIso8601String(),
+      },
+    );
+  }
+
+  /// Check if user has access to a feature
+  bool canAccessFeature(String featureName) {
+    if (_cachedPermissions == null) return false;
+    return _cachedPermissions!['features']?[featureName] as bool? ?? false;
+  }
+
+  /// Check if user can perform an action (with usage tracking)
+  Future<FeatureAccessResult> canPerformAction(String actionName) async {
+    // Check if subscription includes unlimited access
+    if (canAccessFeature('unlimited_$actionName')) {
+      return FeatureAccessResult(
+        allowed: true,
+        reason: 'Unlimited with premium',
+      );
+    }
+
+    // Check daily limit for free users
+    final currentUsage = _usageCounters![actionName] ?? 0;
+    int dailyLimit;
+
+    switch (actionName) {
+      case 'likes':
+        dailyLimit = freeLikesPerDay;
+        break;
+      case 'rewinds':
+        dailyLimit = freeRewindsPerDay;
+        break;
+      default:
+        // Premium-only features
+        return FeatureAccessResult(
+          allowed: false,
+          reason: 'Premium feature',
+          requiresUpgrade: true,
+        );
+    }
+
+    if (currentUsage >= dailyLimit) {
+      return FeatureAccessResult(
+        allowed: false,
+        reason: 'Daily limit reached ($dailyLimit)',
+        remainingCount: 0,
+        requiresUpgrade: true,
+      );
+    }
+
+    return FeatureAccessResult(
+      allowed: true,
+      remainingCount: dailyLimit - currentUsage,
+    );
+  }
+
+  /// Track feature usage
+  Future<void> trackUsage(String actionName) async {
+    final token = await TokenManagementService.getAccessToken();
+    if (token == null) return;
+
+    // Increment local counter
+    _usageCounters![actionName] = (_usageCounters![actionName] ?? 0) + 1;
+    await _saveUsageCounters();
+
+    // Send to backend (fire and forget)
+    try {
+      http.post(
+        Uri.parse('$_baseUrl/usage/track'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'action': actionName,
+          'timestamp': DateTime.now().toIso8601String(),
+        }),
+      );
+    } catch (e) {
+      debugPrint('Error tracking usage: $e');
+    }
+  }
+
+  /// Get remaining count for an action
+  int getRemainingCount(String actionName) {
+    if (canAccessFeature('unlimited_$actionName')) {
+      return -1; // Unlimited
+    }
+
+    final currentUsage = _usageCounters![actionName] ?? 0;
+    int dailyLimit;
+
+    switch (actionName) {
+      case 'likes':
+        dailyLimit = freeLikesPerDay;
+        break;
+      case 'rewinds':
+        dailyLimit = freeRewindsPerDay;
+        break;
+      default:
+        return 0;
+    }
+
+    return (dailyLimit - currentUsage).clamp(0, dailyLimit);
+  }
+
+  /// Get user's subscription tier
+  String getSubscriptionTier() {
+    return _cachedPermissions?['tier'] as String? ?? 'free';
+  }
+
+  /// Check if user is premium
+  bool isPremium() {
+    final tier = getSubscriptionTier();
+    return tier != 'free';
+  }
+
+  /// Get feature benefits for upgrade prompt
+  List<String> getFeatureBenefits(String featureName) {
+    switch (featureName) {
+      case 'unlimited_likes':
+        return [
+          'Unlimited likes per day',
+          'Like as many profiles as you want',
+          'No daily restrictions',
+        ];
+      case 'see_who_liked':
+        return [
+          'See everyone who liked you',
+          'Match instantly',
+          'Never miss a connection',
+        ];
+      case 'advanced_filters':
+        return [
+          'Filter by education, job, height',
+          'Find exactly what you\'re looking for',
+          'Save time with precise matching',
+        ];
+      case 'unlimited_rewinds':
+        return [
+          'Undo unlimited swipes',
+          'Never lose a potential match',
+          'Take your time deciding',
+        ];
+      case 'boost_profile':
+        return [
+          'Get 10x more profile views',
+          'Be the top profile in your area',
+          'Boost lasts 30 minutes',
+        ];
+      case 'read_receipts':
+        return [
+          'Know when messages are read',
+          'Better communication',
+          'Peace of mind',
+        ];
+      case 'priority_likes':
+        return [
+          'Your likes are shown first',
+          'Higher chance of matches',
+          'Stand out from the crowd',
+        ];
+      case 'ad_free':
+        return [
+          'No ads or interruptions',
+          'Seamless experience',
+          'Focus on finding love',
+        ];
+      default:
+        return ['Unlock premium features'];
+    }
+  }
+
+  /// Check if same day
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 }
 
-/// Premium Features Enum
-enum PremiumFeature {
-  unlimitedLikes,
-  seeWhoLikedYou,
-  advancedFilters,
-  unlimitedRewinds,
-  unlimitedSuperlikes,
-  boostProfile,
-  readReceipts,
-  priorityLikes,
-  adFree,
-  profileInsights,
-  incognitoMode,
-}
+/// Feature Access Result
+class FeatureAccessResult {
+  final bool allowed;
+  final String? reason;
+  final int? remainingCount;
+  final bool requiresUpgrade;
 
+  FeatureAccessResult({
+    required this.allowed,
+    this.reason,
+    this.remainingCount,
+    this.requiresUpgrade = false,
+  });
+}

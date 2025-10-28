@@ -1,233 +1,446 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/api_config.dart';
+import '../services/token_management_service.dart';
 
 /// Stripe Payment Service
 /// 
 /// Handles all Stripe payment operations:
-/// - Payment method management
-/// - Payment processing
-/// - 3D Secure authentication
-/// - Subscription payments
+/// - Initialize Stripe SDK
+/// - Create payment intents
+/// - Process payments
+/// - Handle 3D Secure authentication
+/// - Manage payment methods
 class StripePaymentService {
   static final StripePaymentService _instance = StripePaymentService._internal();
   factory StripePaymentService() => _instance;
   StripePaymentService._internal();
 
-  bool _initialized = false;
+  static const String _baseUrl = ApiConfig.baseUrl;
+  bool _isInitialized = false;
 
-  /// Initialize Stripe with publishable key
-  Future<void> initialize({required String publishableKey}) async {
-    if (_initialized) return;
+  /// Initialize Stripe SDK
+  /// 
+  /// Must be called once at app startup
+  /// [publishableKey] - Stripe publishable key from backend
+  Future<void> initialize(String publishableKey) async {
+    if (_isInitialized) return;
 
     try {
       Stripe.publishableKey = publishableKey;
-      Stripe.merchantIdentifier = 'merchant.com.lgbtinder.app';
-      Stripe.urlScheme = 'lgbtinder';
-      
       await Stripe.instance.applySettings();
-      
-      _initialized = true;
+      _isInitialized = true;
       debugPrint('Stripe initialized successfully');
     } catch (e) {
-      debugPrint('Error initializing Stripe: $e');
+      debugPrint('Failed to initialize Stripe: $e');
       rethrow;
     }
   }
 
-  /// Create payment method from card details
+  /// Get Stripe publishable key from backend
+  Future<String> getPublishableKey() async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/payment/config'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      
+      if (response.statusCode == 200 && data['status'] == true) {
+        return data['data']['publishable_key'] as String;
+      }
+
+      throw Exception('Failed to get publishable key');
+    } catch (e) {
+      debugPrint('Error getting publishable key: $e');
+      rethrow;
+    }
+  }
+
+  /// Create payment intent
   /// 
-  /// Returns payment method ID
-  Future<String?> createPaymentMethod({
-    required CardFieldInputDetails cardDetails,
+  /// [amount] - Amount in cents (e.g., 1000 = $10.00)
+  /// [currency] - Currency code (e.g., 'usd')
+  /// [description] - Payment description
+  /// [metadata] - Additional metadata
+  /// Returns payment intent client secret
+  Future<String> createPaymentIntent({
+    required int amount,
+    String currency = 'usd',
+    String? description,
+    Map<String, dynamic>? metadata,
+  }) async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/payment/create-intent'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'amount': amount,
+          'currency': currency,
+          'description': description,
+          'metadata': metadata,
+        }),
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        return data['data']['client_secret'] as String;
+      }
+
+      throw Exception(data['message'] ?? 'Failed to create payment intent');
+    } catch (e) {
+      debugPrint('Error creating payment intent: $e');
+      rethrow;
+    }
+  }
+
+  /// Process payment with card
+  /// 
+  /// [clientSecret] - Payment intent client secret
+  /// [billingDetails] - Card billing details
+  /// Returns payment result
+  Future<PaymentResult> processPayment({
+    required String clientSecret,
     BillingDetails? billingDetails,
   }) async {
     try {
-      final paymentMethod = await Stripe.instance.createPaymentMethod(
-        params: PaymentMethodParams.card(
-          paymentMethodData: PaymentMethodData(
-            billingDetails: billingDetails,
-          ),
+      // Present payment sheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'LGBTinder',
+          billingDetails: billingDetails,
+          style: ThemeMode.dark,
         ),
       );
 
-      return paymentMethod.id;
-    } catch (e) {
-      debugPrint('Error creating payment method: $e');
-      return null;
-    }
-  }
+      // Show payment sheet
+      await Stripe.instance.presentPaymentSheet();
 
-  /// Confirm payment with payment intent
-  /// 
-  /// [clientSecret] - Payment intent client secret from backend
-  /// [paymentMethodId] - Optional payment method ID (if not using default)
-  /// Returns [PaymentIntent] on success
-  Future<PaymentIntent?> confirmPayment({
-    required String clientSecret,
-    String? paymentMethodId,
-  }) async {
-    try {
-      final paymentIntent = await Stripe.instance.confirmPayment(
-        paymentIntentClientSecret: clientSecret,
-        data: paymentMethodId != null
-            ? PaymentMethodParams.card(
-                paymentMethodData: PaymentMethodData(
-                  paymentMethodId: paymentMethodId,
-                ),
-              )
-            : null,
+      // Payment successful
+      return PaymentResult(
+        success: true,
+        message: 'Payment successful',
       );
-
-      return paymentIntent;
     } on StripeException catch (e) {
       debugPrint('Stripe error: ${e.error.localizedMessage}');
-      throw PaymentException(e.error.localizedMessage ?? 'Payment failed');
+      
+      if (e.error.code == FailureCode.Canceled) {
+        return PaymentResult(
+          success: false,
+          message: 'Payment cancelled',
+          error: 'cancelled',
+        );
+      }
+
+      return PaymentResult(
+        success: false,
+        message: e.error.localizedMessage ?? 'Payment failed',
+        error: e.error.code.name,
+      );
     } catch (e) {
-      debugPrint('Error confirming payment: $e');
-      throw PaymentException('Payment failed: $e');
+      debugPrint('Payment error: $e');
+      return PaymentResult(
+        success: false,
+        message: 'Payment failed: ${e.toString()}',
+        error: 'unknown',
+      );
     }
   }
 
-  /// Handle 3D Secure authentication
+  /// Confirm payment on backend
   /// 
-  /// [clientSecret] - Payment intent client secret
-  /// Returns true if authentication successful
-  Future<bool> handle3DSecure({
-    required String clientSecret,
-  }) async {
+  /// [paymentIntentId] - Payment intent ID
+  /// Returns confirmation result
+  Future<bool> confirmPayment(String paymentIntentId) async {
     try {
-      final paymentIntent = await Stripe.instance.handleNextAction(
-        clientSecret,
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/payment/confirm'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'payment_intent_id': paymentIntentId,
+        }),
       );
 
-      return paymentIntent?.status == PaymentIntentsStatus.Succeeded ||
-          paymentIntent?.status == PaymentIntentsStatus.RequiresCapture;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      return response.statusCode == 200 && data['status'] == true;
     } catch (e) {
-      debugPrint('Error handling 3D Secure: $e');
+      debugPrint('Error confirming payment: $e');
       return false;
     }
   }
 
-  /// Confirm Setup Intent (for saving card without charging)
-  /// 
-  /// [clientSecret] - Setup intent client secret from backend
-  /// Returns [SetupIntent] on success
-  Future<SetupIntent?> confirmSetupIntent({
-    required String clientSecret,
-  }) async {
+  /// Get saved payment methods
+  Future<List<PaymentMethodData>> getPaymentMethods() async {
     try {
-      final setupIntent = await Stripe.instance.confirmSetupIntent(
-        paymentIntentClientSecret: clientSecret,
-        params: const PaymentMethodParams.card(
-          paymentMethodData: PaymentMethodData(),
-        ),
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/payment/methods'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
-      return setupIntent;
-    } on StripeException catch (e) {
-      debugPrint('Stripe error: ${e.error.localizedMessage}');
-      throw PaymentException(e.error.localizedMessage ?? 'Setup failed');
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        final methods = (data['data'] as List)
+            .map((item) => PaymentMethodData.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return methods;
+      }
+
+      return [];
     } catch (e) {
-      debugPrint('Error confirming setup intent: $e');
-      throw PaymentException('Setup failed: $e');
+      debugPrint('Error getting payment methods: $e');
+      return [];
     }
   }
 
-  /// Present card form for collecting payment
-  /// 
-  /// Returns payment method ID on success
-  Future<String?> presentPaymentSheet({
-    required String paymentIntentClientSecret,
-    String? merchantDisplayName,
-    String? customerId,
-    String? customerEphemeralKeySecret,
-  }) async {
+  /// Add new payment method
+  Future<PaymentMethodData?> addPaymentMethod() async {
     try {
-      // Initialize payment sheet
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      // Create setup intent
+      final response = await http.post(
+        Uri.parse('$_baseUrl/payment/setup-intent'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode != 200 || data['status'] != true) {
+        throw Exception('Failed to create setup intent');
+      }
+
+      final clientSecret = data['data']['client_secret'] as String;
+
+      // Present payment sheet for setup
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: paymentIntentClientSecret,
-          merchantDisplayName: merchantDisplayName ?? 'LGBTinder',
-          customerId: customerId,
-          customerEphemeralKeySecret: customerEphemeralKeySecret,
-          style: ThemeMode.system,
-          appearance: PaymentSheetAppearance(
-            colors: PaymentSheetAppearanceColors(
-              primary: const Color(0xFFE94057),
-              background: const Color(0xFF1E1E2E),
-              componentBackground: const Color(0xFF2C2C3E),
-              componentBorder: const Color(0xFF3E3E50),
-              componentDivider: const Color(0xFF3E3E50),
-              primaryText: Colors.white,
-              secondaryText: Colors.white70,
-              componentText: Colors.white,
-              placeholderText: Colors.white54,
-            ),
-            shapes: const PaymentSheetShape(
-              borderRadius: 12,
-              borderWidth: 1,
-            ),
-            primaryButton: const PaymentSheetPrimaryButtonAppearance(
-              colors: PaymentSheetPrimaryButtonTheme(
-                light: PaymentSheetPrimaryButtonThemeColors(
-                  background: Color(0xFFE94057),
-                  text: Colors.white,
-                  border: Color(0xFFE94057),
-                ),
-                dark: PaymentSheetPrimaryButtonThemeColors(
-                  background: Color(0xFFE94057),
-                  text: Colors.white,
-                  border: Color(0xFFE94057),
-                ),
-              ),
-            ),
-          ),
+          setupIntentClientSecret: clientSecret,
+          merchantDisplayName: 'LGBTinder',
+          style: ThemeMode.dark,
         ),
       );
 
-      // Present payment sheet
       await Stripe.instance.presentPaymentSheet();
 
-      debugPrint('Payment sheet completed successfully');
-      return paymentIntentClientSecret;
-    } on StripeException catch (e) {
-      if (e.error.code == FailureCode.Canceled) {
-        debugPrint('Payment cancelled by user');
-        return null;
-      }
-      debugPrint('Stripe error: ${e.error.localizedMessage}');
-      throw PaymentException(e.error.localizedMessage ?? 'Payment failed');
-    } catch (e) {
-      debugPrint('Error presenting payment sheet: $e');
-      throw PaymentException('Payment failed: $e');
-    }
-  }
-
-  /// Retrieve payment intent status
-  Future<PaymentIntent?> retrievePaymentIntent(String clientSecret) async {
-    try {
-      final paymentIntent = await Stripe.instance.retrievePaymentIntent(
-        clientSecret,
+      // Save payment method on backend
+      final saveResponse = await http.post(
+        Uri.parse('$_baseUrl/payment/methods'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'setup_intent_id': data['data']['setup_intent_id'],
+        }),
       );
-      return paymentIntent;
+
+      final saveData = jsonDecode(saveResponse.body) as Map<String, dynamic>;
+
+      if (saveResponse.statusCode == 200 && saveData['status'] == true) {
+        return PaymentMethodData.fromJson(saveData['data'] as Map<String, dynamic>);
+      }
+
+      return null;
     } catch (e) {
-      debugPrint('Error retrieving payment intent: $e');
+      debugPrint('Error adding payment method: $e');
       return null;
     }
   }
 
-  /// Check if Stripe is initialized
-  bool get isInitialized => _initialized;
+  /// Delete payment method
+  Future<bool> deletePaymentMethod(String paymentMethodId) async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/payment/methods/$paymentMethodId'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      return response.statusCode == 200 && data['status'] == true;
+    } catch (e) {
+      debugPrint('Error deleting payment method: $e');
+      return false;
+    }
+  }
+
+  /// Set default payment method
+  Future<bool> setDefaultPaymentMethod(String paymentMethodId) async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.put(
+        Uri.parse('$_baseUrl/payment/methods/$paymentMethodId/default'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      return response.statusCode == 200 && data['status'] == true;
+    } catch (e) {
+      debugPrint('Error setting default payment method: $e');
+      return false;
+    }
+  }
+
+  /// Process subscription payment
+  Future<PaymentResult> processSubscriptionPayment({
+    required String planId,
+    String? promoCode,
+    String? paymentMethodId,
+  }) async {
+    try {
+      final token = await TokenManagementService.getAccessToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      // Create subscription payment intent
+      final response = await http.post(
+        Uri.parse('$_baseUrl/subscriptions/purchase'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'plan_id': planId,
+          'promo_code': promoCode,
+          'payment_method_id': paymentMethodId,
+        }),
+      );
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        // If requires payment confirmation
+        if (data['data']['requires_action'] == true) {
+          final clientSecret = data['data']['client_secret'] as String;
+          return await processPayment(clientSecret: clientSecret);
+        }
+
+        // Subscription activated immediately
+        return PaymentResult(
+          success: true,
+          message: 'Subscription activated successfully',
+        );
+      }
+
+      throw Exception(data['message'] ?? 'Failed to process subscription');
+    } catch (e) {
+      debugPrint('Error processing subscription payment: $e');
+      return PaymentResult(
+        success: false,
+        message: e.toString(),
+        error: 'subscription_failed',
+      );
+    }
+  }
 }
 
-/// Payment Exception
-class PaymentException implements Exception {
+/// Payment Result Model
+class PaymentResult {
+  final bool success;
   final String message;
+  final String? error;
 
-  PaymentException(this.message);
+  PaymentResult({
+    required this.success,
+    required this.message,
+    this.error,
+  });
+}
 
-  @override
-  String toString() => message;
+/// Payment Method Data Model
+class PaymentMethodData {
+  final String id;
+  final String type; // card, paypal, etc.
+  final String? last4;
+  final String? brand; // visa, mastercard, etc.
+  final int? expMonth;
+  final int? expYear;
+  final bool isDefault;
+
+  PaymentMethodData({
+    required this.id,
+    required this.type,
+    this.last4,
+    this.brand,
+    this.expMonth,
+    this.expYear,
+    this.isDefault = false,
+  });
+
+  factory PaymentMethodData.fromJson(Map<String, dynamic> json) {
+    return PaymentMethodData(
+      id: json['id'] as String,
+      type: json['type'] as String,
+      last4: json['last4'] as String?,
+      brand: json['brand'] as String?,
+      expMonth: json['exp_month'] as int?,
+      expYear: json['exp_year'] as int?,
+      isDefault: json['is_default'] as bool? ?? false,
+    );
+  }
+
+  String get displayName {
+    if (type == 'card' && brand != null && last4 != null) {
+      return '${brand!.toUpperCase()} •••• $last4';
+    }
+    return type.toUpperCase();
+  }
+
+  String get expiryDisplay {
+    if (expMonth != null && expYear != null) {
+      return '${expMonth.toString().padLeft(2, '0')}/${expYear! % 100}';
+    }
+    return '';
+  }
 }
