@@ -1,405 +1,495 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import '../utils/api_error_handler.dart';
+import '../services/websocket_service.dart';
+import '../services/auth_service.dart';
 
+/// WebRTC Service
+/// 
+/// Manages peer-to-peer video and voice calling using WebRTC
+/// Features:
+/// - Voice calls
+/// - Video calls
+/// - Signaling via WebSocket
+/// - ICE candidate exchange
+/// - Media stream management
 class WebRTCService {
   static final WebRTCService _instance = WebRTCService._internal();
   factory WebRTCService() => _instance;
   WebRTCService._internal();
 
+  final WebSocketService _websocketService = WebSocketService();
+  final AuthService _authService = AuthService();
+
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;
   MediaStream? _remoteStream;
-  dynamic _socket;
-  String? _roomId;
-  String? _userId;
-  String? _otherUserId;
-  
-  final StreamController<MediaStream> _remoteStreamController = StreamController<MediaStream>.broadcast();
-  final StreamController<String> _connectionStateController = StreamController<String>.broadcast();
-  final StreamController<String> _callStateController = StreamController<String>.broadcast();
-  
-  Stream<MediaStream> get remoteStream => _remoteStreamController.stream;
-  Stream<String> get connectionState => _connectionStateController.stream;
-  Stream<String> get callState => _callStateController.stream;
-  MediaStream? get localStream => _localStream;
 
-  bool get isConnected => _peerConnection?.connectionState == RTCPeerConnectionState.RTCPeerConnectionStateConnected;
-  bool get isCallActive => _localStream != null && _remoteStream != null;
+  // Stream controllers
+  final StreamController<MediaStream> _localStreamController =
+      StreamController<MediaStream>.broadcast();
+  final StreamController<MediaStream> _remoteStreamController =
+      StreamController<MediaStream>.broadcast();
+  final StreamController<CallState> _callStateController =
+      StreamController<CallState>.broadcast();
+
+  // Public streams
+  Stream<MediaStream> get localStream => _localStreamController.stream;
+  Stream<MediaStream> get remoteStream => _remoteStreamController.stream;
+  Stream<CallState> get callState => _callStateController.stream;
+
+  // Call state
+  CallState _currentState = CallState.idle;
+  String? _currentCallId;
+  String? _remoteUserId;
+  bool _isVideoCall = false;
+  bool _isMuted = false;
+  bool _isVideoEnabled = true;
+  bool _isSpeakerOn = false;
+
+  // ICE servers configuration
+  final Map<String, dynamic> _iceServers = {
+    'iceServers': [
+      {
+        'urls': [
+          'stun:stun.l.google.com:19302',
+          'stun:stun1.l.google.com:19302',
+        ]
+      },
+    ]
+  };
+
+  // Media constraints
+  final Map<String, dynamic> _mediaConstraints = {
+    'audio': true,
+    'video': {
+      'facingMode': 'user',
+      'width': {'ideal': 1280},
+      'height': {'ideal': 720},
+    }
+  };
 
   /// Initialize WebRTC service
   Future<void> initialize() async {
-    try {
-      // Request camera and microphone permissions
-      await _requestPermissions();
-      
-      // Initialize socket connection
-      await _initializeSocket();
-      
-      // Initialize peer connection
-      await _initializePeerConnection();
-      
-      debugPrint('WebRTC Service initialized successfully');
-    } catch (e) {
-      debugPrint('Failed to initialize WebRTC Service: $e');
-      rethrow;
-    }
+    await _setupSignalingListeners();
+    debugPrint('WebRTC Service initialized');
   }
 
-  /// Request necessary permissions
-  Future<void> _requestPermissions() async {
-    // Note: Permission handling would be implemented here
-    // For now, we'll assume permissions are granted
-    debugPrint('Permissions requested');
+  /// Setup WebSocket listeners for signaling
+  Future<void> _setupSignalingListeners() async {
+    // Listen for incoming call
+    _websocketService.on('call.incoming', (data) async {
+      await _handleIncomingCall(data);
+    });
+
+    // Listen for call accepted
+    _websocketService.on('call.accepted', (data) async {
+      await _handleCallAccepted(data);
+    });
+
+    // Listen for call rejected
+    _websocketService.on('call.rejected', (data) {
+      _handleCallRejected(data);
+    });
+
+    // Listen for call ended
+    _websocketService.on('call.ended', (data) {
+      _handleCallEnded(data);
+    });
+
+    // Listen for ICE candidate
+    _websocketService.on('call.ice-candidate', (data) async {
+      await _handleIceCandidate(data);
+    });
+
+    // Listen for offer
+    _websocketService.on('call.offer', (data) async {
+      await _handleOffer(data);
+    });
+
+    // Listen for answer
+    _websocketService.on('call.answer', (data) async {
+      await _handleAnswer(data);
+    });
   }
 
-  /// Initialize socket connection for signaling
-  Future<void> _initializeSocket() async {
-    try {
-      // Socket.io connection setup (commented out due to API changes)
-      // _socket = IO.io('wss://your-signaling-server.com', <String, dynamic>{
-      //   'transports': ['websocket'],
-      //   'autoConnect': false,
-      // });
-      debugPrint('WebRTC socket initialization skipped - API not available');
-
-      // Socket event handlers commented out due to API changes
-      /*
-      _socket!.onConnect((_) {
-        debugPrint('Socket connected');
-        _connectionStateController.add('connected');
-      });
-
-      _socket!.onDisconnect((_) {
-        debugPrint('Socket disconnected');
-        _connectionStateController.add('disconnected');
-      });
-
-      _socket!.onConnectError((error) {
-        debugPrint('Socket connection error: $error');
-        _connectionStateController.add('error');
-      });
-
-      // Listen for incoming calls
-      _socket!.on('call-offer', (data) {
-        _handleIncomingCall(data);
-      });
-
-      _socket!.on('call-answer', (data) {
-        _handleCallAnswer(data);
-      });
-
-      _socket!.on('ice-candidate', (data) {
-        _handleIceCandidate(data);
-      });
-
-      _socket!.on('call-end', (data) {
-        _handleCallEnd(data);
-      });
-
-      _socket!.connect();
-      */
-    } catch (e) {
-      debugPrint('Failed to initialize socket: $e');
-      rethrow;
-    }
-  }
-
-  /// Initialize peer connection
-  Future<void> _initializePeerConnection() async {
-    try {
-      final configuration = <String, dynamic>{
-        'iceServers': [
-          {'urls': 'stun:stun.l.google.com:19302'},
-          {'urls': 'stun:stun1.l.google.com:19302'},
-        ],
-      };
-
-      _peerConnection = await createPeerConnection(configuration);
-
-      _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
-        _socket?.emit('ice-candidate', {
-          'candidate': candidate.toMap(),
-          'roomId': _roomId,
-          'userId': _userId,
-        });
-      };
-
-      _peerConnection!.onAddStream = (MediaStream stream) {
-        _remoteStream = stream;
-        _remoteStreamController.add(stream);
-        debugPrint('Remote stream added');
-      };
-
-      _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
-        debugPrint('Connection state: $state');
-        _connectionStateController.add(state.toString());
-      };
-
-      debugPrint('Peer connection initialized');
-    } catch (e) {
-      debugPrint('Failed to initialize peer connection: $e');
-      rethrow;
-    }
+  /// Start a voice call
+  Future<void> startVoiceCall(String userId, String userName) async {
+    _isVideoCall = false;
+    await _initiateCall(userId, userName, isVideo: false);
   }
 
   /// Start a video call
-  Future<void> startCall({
-    required String roomId,
-    required String userId,
-    required String otherUserId,
-  }) async {
+  Future<void> startVideoCall(String userId, String userName) async {
+    _isVideoCall = true;
+    await _initiateCall(userId, userName, isVideo: true);
+  }
+
+  /// Initiate call
+  Future<void> _initiateCall(String userId, String userName,
+      {required bool isVideo}) async {
     try {
-      _roomId = roomId;
-      _userId = userId;
-      _otherUserId = otherUserId;
+      _updateCallState(CallState.calling);
+      _remoteUserId = userId;
 
       // Get local media stream
-      _localStream = await navigator.mediaDevices.getUserMedia({
-        'audio': true,
-        'video': {
-          'facingMode': 'user',
-          'width': {'min': 640, 'ideal': 1280},
-          'height': {'min': 480, 'ideal': 720},
-        },
+      await _getUserMedia(isVideo: isVideo);
+
+      // Create peer connection
+      await _createPeerConnection();
+
+      // Send call initiation to server
+      _websocketService.emit('call.initiate', {
+        'to_user_id': userId,
+        'to_user_name': userName,
+        'is_video': isVideo,
+        'timestamp': DateTime.now().toIso8601String(),
       });
 
-      // Add local stream to peer connection
-      await _peerConnection!.addStream(_localStream!);
-
-      // Create offer
-      final offer = await _peerConnection!.createOffer();
-      await _peerConnection!.setLocalDescription(offer);
-
-      // Send offer to other user
-      _socket?.emit('call-offer', {
-        'offer': offer.toMap(),
-        'roomId': _roomId,
-        'fromUserId': _userId,
-        'toUserId': _otherUserId,
-      });
-
-      _callStateController.add('calling');
-      debugPrint('Call started');
+      debugPrint('Call initiated to user: $userId');
     } catch (e) {
-      debugPrint('Failed to start call: $e');
-      _callStateController.add('error');
-      rethrow;
+      debugPrint('Error initiating call: $e');
+      _updateCallState(CallState.error);
     }
   }
 
-  /// Answer an incoming call
-  Future<void> answerCall(Map<String, dynamic> offerData) async {
+  /// Handle incoming call
+  Future<void> _handleIncomingCall(dynamic data) async {
     try {
-      _roomId = offerData['roomId'];
-      _userId = offerData['toUserId'];
-      _otherUserId = offerData['fromUserId'];
+      _currentCallId = data['call_id'] as String;
+      _remoteUserId = data['from_user_id'] as String;
+      _isVideoCall = data['is_video'] as bool? ?? false;
+
+      _updateCallState(CallState.incoming);
+
+      debugPrint('Incoming ${_isVideoCall ? 'video' : 'voice'} call from: $_remoteUserId');
+    } catch (e) {
+      debugPrint('Error handling incoming call: $e');
+    }
+  }
+
+  /// Accept incoming call
+  Future<void> acceptCall() async {
+    try {
+      _updateCallState(CallState.connecting);
 
       // Get local media stream
-      _localStream = await navigator.mediaDevices.getUserMedia({
-        'audio': true,
-        'video': {
-          'facingMode': 'user',
-          'width': {'min': 640, 'ideal': 1280},
-          'height': {'min': 480, 'ideal': 720},
-        },
+      await _getUserMedia(isVideo: _isVideoCall);
+
+      // Create peer connection
+      await _createPeerConnection();
+
+      // Send acceptance to server
+      _websocketService.emit('call.accept', {
+        'call_id': _currentCallId,
+        'user_id': _remoteUserId,
       });
 
-      // Add local stream to peer connection
-      await _peerConnection!.addStream(_localStream!);
+      debugPrint('Call accepted');
+    } catch (e) {
+      debugPrint('Error accepting call: $e');
+      _updateCallState(CallState.error);
+    }
+  }
 
-      // Set remote description
+  /// Reject incoming call
+  void rejectCall() {
+    _websocketService.emit('call.reject', {
+      'call_id': _currentCallId,
+      'user_id': _remoteUserId,
+    });
+
+    _updateCallState(CallState.idle);
+    debugPrint('Call rejected');
+  }
+
+  /// Handle call accepted
+  Future<void> _handleCallAccepted(dynamic data) async {
+    try {
+      _currentCallId = data['call_id'] as String;
+      _updateCallState(CallState.connecting);
+
+      // Create and send offer
+      await _createOffer();
+
+      debugPrint('Call accepted by remote user');
+    } catch (e) {
+      debugPrint('Error handling call accepted: $e');
+    }
+  }
+
+  /// Handle call rejected
+  void _handleCallRejected(dynamic data) {
+    _updateCallState(CallState.rejected);
+    _cleanup();
+    debugPrint('Call rejected by remote user');
+  }
+
+  /// Handle call ended
+  void _handleCallEnded(dynamic data) {
+    _updateCallState(CallState.ended);
+    _cleanup();
+    debugPrint('Call ended by remote user');
+  }
+
+  /// Get user media (camera/microphone)
+  Future<void> _getUserMedia({required bool isVideo}) async {
+    try {
+      final constraints = isVideo
+          ? _mediaConstraints
+          : {'audio': true, 'video': false};
+
+      _localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      _localStreamController.add(_localStream!);
+
+      debugPrint('Local media stream acquired');
+    } catch (e) {
+      debugPrint('Error getting user media: $e');
+      throw Exception('Failed to access camera/microphone');
+    }
+  }
+
+  /// Create peer connection
+  Future<void> _createPeerConnection() async {
+    try {
+      _peerConnection = await createPeerConnection(_iceServers);
+
+      // Add local stream to peer connection
+      if (_localStream != null) {
+        _localStream!.getTracks().forEach((track) {
+          _peerConnection!.addTrack(track, _localStream!);
+        });
+      }
+
+      // Handle remote stream
+      _peerConnection!.onTrack = (RTCTrackEvent event) {
+        if (event.streams.isNotEmpty) {
+          _remoteStream = event.streams[0];
+          _remoteStreamController.add(_remoteStream!);
+          _updateCallState(CallState.connected);
+          debugPrint('Remote stream received');
+        }
+      };
+
+      // Handle ICE candidates
+      _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
+        _websocketService.emit('call.ice-candidate', {
+          'call_id': _currentCallId,
+          'user_id': _remoteUserId,
+          'candidate': candidate.toMap(),
+        });
+      };
+
+      // Handle connection state changes
+      _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
+        debugPrint('Connection state: $state');
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+          _updateCallState(CallState.connected);
+        } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+            state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
+          _updateCallState(CallState.disconnected);
+        }
+      };
+
+      debugPrint('Peer connection created');
+    } catch (e) {
+      debugPrint('Error creating peer connection: $e');
+      throw Exception('Failed to create peer connection');
+    }
+  }
+
+  /// Create offer
+  Future<void> _createOffer() async {
+    try {
+      RTCSessionDescription offer = await _peerConnection!.createOffer();
+      await _peerConnection!.setLocalDescription(offer);
+
+      _websocketService.emit('call.offer', {
+        'call_id': _currentCallId,
+        'user_id': _remoteUserId,
+        'offer': offer.toMap(),
+      });
+
+      debugPrint('Offer created and sent');
+    } catch (e) {
+      debugPrint('Error creating offer: $e');
+    }
+  }
+
+  /// Handle offer
+  Future<void> _handleOffer(dynamic data) async {
+    try {
+      final offerMap = data['offer'] as Map<String, dynamic>;
       final offer = RTCSessionDescription(
-        offerData['offer']['sdp'],
-        offerData['offer']['type'],
+        offerMap['sdp'] as String,
+        offerMap['type'] as String,
       );
+
       await _peerConnection!.setRemoteDescription(offer);
 
       // Create answer
-      final answer = await _peerConnection!.createAnswer();
+      RTCSessionDescription answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
 
-      // Send answer to caller
-      _socket?.emit('call-answer', {
+      _websocketService.emit('call.answer', {
+        'call_id': _currentCallId,
+        'user_id': _remoteUserId,
         'answer': answer.toMap(),
-        'roomId': _roomId,
-        'fromUserId': _userId,
-        'toUserId': _otherUserId,
       });
 
-      _callStateController.add('answered');
-      debugPrint('Call answered');
+      debugPrint('Offer received and answer sent');
     } catch (e) {
-      debugPrint('Failed to answer call: $e');
-      _callStateController.add('error');
-      rethrow;
+      debugPrint('Error handling offer: $e');
     }
   }
 
-  /// End the current call
-  Future<void> endCall() async {
+  /// Handle answer
+  Future<void> _handleAnswer(dynamic data) async {
     try {
-      // Send call end signal
-      _socket?.emit('call-end', {
-        'roomId': _roomId,
-        'userId': _userId,
-        'otherUserId': _otherUserId,
-      });
-
-      // Clean up resources
-      await _cleanup();
-      
-      _callStateController.add('ended');
-      debugPrint('Call ended');
-    } catch (e) {
-      debugPrint('Failed to end call: $e');
-      rethrow;
-    }
-  }
-
-  /// Toggle camera on/off
-  Future<void> toggleCamera() async {
-    if (_localStream != null) {
-      final videoTrack = _localStream!.getVideoTracks().first;
-      videoTrack.enabled = !videoTrack.enabled;
-    }
-  }
-
-  /// Toggle microphone on/off
-  Future<void> toggleMicrophone() async {
-    if (_localStream != null) {
-      final audioTrack = _localStream!.getAudioTracks().first;
-      audioTrack.enabled = !audioTrack.enabled;
-    }
-  }
-
-  /// Switch camera (front/back)
-  Future<void> switchCamera() async {
-    if (_localStream != null) {
-      final videoTrack = _localStream!.getVideoTracks().first;
-      await Helper.switchCamera(videoTrack);
-    }
-  }
-
-  /// Handle incoming call offer
-  void _handleIncomingCall(Map<String, dynamic> data) {
-    _callStateController.add('incoming');
-    // This would typically trigger a UI notification
-  }
-
-  /// Handle call answer
-  Future<void> _handleCallAnswer(Map<String, dynamic> data) async {
-    try {
+      final answerMap = data['answer'] as Map<String, dynamic>;
       final answer = RTCSessionDescription(
-        data['answer']['sdp'],
-        data['answer']['type'],
+        answerMap['sdp'] as String,
+        answerMap['type'] as String,
       );
+
       await _peerConnection!.setRemoteDescription(answer);
-      _callStateController.add('connected');
-      debugPrint('Call connected');
+      debugPrint('Answer received');
     } catch (e) {
-      debugPrint('Failed to handle call answer: $e');
-      _callStateController.add('error');
+      debugPrint('Error handling answer: $e');
     }
   }
 
   /// Handle ICE candidate
-  Future<void> _handleIceCandidate(Map<String, dynamic> data) async {
+  Future<void> _handleIceCandidate(dynamic data) async {
     try {
+      final candidateMap = data['candidate'] as Map<String, dynamic>;
       final candidate = RTCIceCandidate(
-        data['candidate']['candidate'],
-        data['candidate']['sdpMid'],
-        data['candidate']['sdpMLineIndex'],
+        candidateMap['candidate'] as String,
+        candidateMap['sdpMid'] as String,
+        candidateMap['sdpMLineIndex'] as int,
       );
+
       await _peerConnection!.addCandidate(candidate);
+      debugPrint('ICE candidate added');
     } catch (e) {
-      debugPrint('Failed to handle ICE candidate: $e');
+      debugPrint('Error handling ICE candidate: $e');
     }
   }
 
-  /// Handle call end
-  void _handleCallEnd(Map<String, dynamic> data) {
-    _cleanup();
-    _callStateController.add('ended');
-    debugPrint('Call ended by remote user');
+  /// End call
+  Future<void> endCall() async {
+    _websocketService.emit('call.end', {
+      'call_id': _currentCallId,
+      'user_id': _remoteUserId,
+    });
+
+    _updateCallState(CallState.ended);
+    await _cleanup();
+    debugPrint('Call ended');
   }
 
-  /// Clean up resources
+  /// Toggle mute
+  Future<void> toggleMute() async {
+    if (_localStream != null) {
+      _isMuted = !_isMuted;
+      _localStream!.getAudioTracks().forEach((track) {
+        track.enabled = !_isMuted;
+      });
+      debugPrint('Microphone ${_isMuted ? 'muted' : 'unmuted'}');
+    }
+  }
+
+  /// Toggle video
+  Future<void> toggleVideo() async {
+    if (_localStream != null && _isVideoCall) {
+      _isVideoEnabled = !_isVideoEnabled;
+      _localStream!.getVideoTracks().forEach((track) {
+        track.enabled = _isVideoEnabled;
+      });
+      debugPrint('Video ${_isVideoEnabled ? 'enabled' : 'disabled'}');
+    }
+  }
+
+  /// Toggle speaker
+  Future<void> toggleSpeaker() async {
+    _isSpeakerOn = !_isSpeakerOn;
+    await Helper.setSpeakerphoneOn(_isSpeakerOn);
+    debugPrint('Speaker ${_isSpeakerOn ? 'on' : 'off'}');
+  }
+
+  /// Switch camera (front/back)
+  Future<void> switchCamera() async {
+    if (_localStream != null && _isVideoCall) {
+      final videoTrack = _localStream!.getVideoTracks().first;
+      await Helper.switchCamera(videoTrack);
+      debugPrint('Camera switched');
+    }
+  }
+
+  /// Update call state
+  void _updateCallState(CallState state) {
+    _currentState = state;
+    _callStateController.add(state);
+  }
+
+  /// Cleanup resources
   Future<void> _cleanup() async {
-    try {
-      if (_localStream != null) {
-        _localStream!.dispose();
-        _localStream = null;
-      }
-      
-      if (_remoteStream != null) {
-        _remoteStream!.dispose();
-        _remoteStream = null;
-      }
-      
-      if (_peerConnection != null) {
-        await _peerConnection!.close();
-        _peerConnection = null;
-      }
-      
-      _roomId = null;
-      _userId = null;
-      _otherUserId = null;
-      
-      debugPrint('Resources cleaned up');
-    } catch (e) {
-      debugPrint('Error during cleanup: $e');
-    }
+    // Stop local stream
+    _localStream?.getTracks().forEach((track) {
+      track.stop();
+    });
+    _localStream?.dispose();
+    _localStream = null;
+
+    // Stop remote stream
+    _remoteStream?.getTracks().forEach((track) {
+      track.stop();
+    });
+    _remoteStream?.dispose();
+    _remoteStream = null;
+
+    // Close peer connection
+    await _peerConnection?.close();
+    _peerConnection = null;
+
+    // Reset state
+    _currentCallId = null;
+    _remoteUserId = null;
+    _isMuted = false;
+    _isVideoEnabled = true;
+    _isSpeakerOn = false;
+
+    debugPrint('WebRTC resources cleaned up');
   }
 
   /// Dispose service
-  Future<void> dispose() async {
-    await _cleanup();
-    
-    if (_socket != null) {
-      _socket!.disconnect();
-      _socket!.dispose();
-      _socket = null;
-    }
-    
+  void dispose() {
+    _cleanup();
+    _localStreamController.close();
     _remoteStreamController.close();
-    _connectionStateController.close();
     _callStateController.close();
-    
     debugPrint('WebRTC Service disposed');
   }
+
+  // Getters
+  bool get isMuted => _isMuted;
+  bool get isVideoEnabled => _isVideoEnabled;
+  bool get isSpeakerOn => _isSpeakerOn;
+  bool get isVideoCall => _isVideoCall;
+  CallState get currentState => _currentState;
+  String? get currentCallId => _currentCallId;
+  String? get remoteUserId => _remoteUserId;
 }
 
-class CallState {
-  final String state;
-  final String? roomId;
-  final String? otherUserId;
-  final bool isVideoEnabled;
-  final bool isAudioEnabled;
-
-  CallState({
-    required this.state,
-    this.roomId,
-    this.otherUserId,
-    this.isVideoEnabled = true,
-    this.isAudioEnabled = true,
-  });
-
-  CallState copyWith({
-    String? state,
-    String? roomId,
-    String? otherUserId,
-    bool? isVideoEnabled,
-    bool? isAudioEnabled,
-  }) {
-    return CallState(
-      state: state ?? this.state,
-      roomId: roomId ?? this.roomId,
-      otherUserId: otherUserId ?? this.otherUserId,
-      isVideoEnabled: isVideoEnabled ?? this.isVideoEnabled,
-      isAudioEnabled: isAudioEnabled ?? this.isAudioEnabled,
-    );
-  }
+/// Call State Enum
+enum CallState {
+  idle,
+  calling,
+  incoming,
+  connecting,
+  connected,
+  rejected,
+  ended,
+  disconnected,
+  error,
 }
