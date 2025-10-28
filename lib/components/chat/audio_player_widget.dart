@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
+import '../../services/audio_cache_service.dart';
 
 /// Audio Player Widget
 /// 
@@ -12,6 +13,7 @@ import '../../theme/typography.dart';
 /// - Speed control (1x, 1.5x, 2x)
 /// - Seek bar for jumping to specific position
 /// - Loading state while audio is being loaded
+/// - Automatic caching for offline playback
 class AudioPlayerWidget extends StatefulWidget {
   final String audioUrl;
   final Duration? totalDuration;
@@ -32,6 +34,7 @@ class AudioPlayerWidget extends StatefulWidget {
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   late AudioPlayer _player;
+  final AudioCacheService _cacheService = AudioCacheService();
   
   bool _isPlaying = false;
   bool _isLoading = false;
@@ -109,9 +112,18 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         });
         
         if (_currentPosition == Duration.zero || _currentPosition >= _totalDuration) {
-          // Start from beginning
-          await _player.play(UrlSource(widget.audioUrl));
-          await _player.setPlaybackRate(_playbackSpeed);
+          // Get cached audio file or download it
+          final audioPath = await _cacheService.getCachedAudio(widget.audioUrl);
+          
+          if (audioPath != null) {
+            // Check if it's a local file or URL
+            if (audioPath.startsWith('http://') || audioPath.startsWith('https://')) {
+              await _player.play(UrlSource(audioPath));
+            } else {
+              await _player.play(DeviceFileSource(audioPath));
+            }
+            await _player.setPlaybackRate(_playbackSpeed);
+          }
         } else {
           // Resume from current position
           await _player.resume();
