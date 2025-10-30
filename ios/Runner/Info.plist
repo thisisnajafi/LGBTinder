@@ -45,5 +45,68 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Permission Descriptions -->
+	<!-- Camera -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to take profile pictures, send photos in chat, and enable video calls.</string>
+	
+	<!-- Microphone -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need microphone access for voice messages, voice calls, and video calls.</string>
+	
+	<!-- Photo Library -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to upload profile pictures and share photos in chat.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need permission to save photos to your library.</string>
+	
+	<!-- Location -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to find nearby matches and show distance information.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location to find nearby matches even when the app is in the background.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We use your location to find nearby matches and enable safety features.</string>
+	
+	<!-- Notifications -->
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>We send you notifications about new matches, messages, and important updates.</string>
+	
+	<!-- Contacts (for emergency contacts) -->
+	<key>NSContactsUsageDescription</key>
+	<string>We need access to your contacts to help you add emergency contacts for safety features.</string>
+	
+	<!-- Deep Linking -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.lgbtinder.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>lgbtinder</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- Universal Links (App Links) -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:lg.abolfazlnajafi.com</string>
+		<string>applinks:lgbtinder.com</string>
+		<string>applinks:www.lgbtinder.com</string>
+	</array>
+	
+	<!-- Background Modes -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>voip</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

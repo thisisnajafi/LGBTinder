@@ -46,6 +46,13 @@ import 'screens/report_history_screen.dart';
 // import 'screens/audio_recorder_settings_screen.dart'; // Commented out - file removed
 import 'screens/video_call_screen.dart';
 import 'screens/voice_call_screen.dart';
+import 'screens/two_factor_auth_screen.dart';
+import 'screens/active_sessions_screen.dart';
+import 'screens/emergency_contacts_screen.dart';
+import 'screens/safety_center_screen.dart';
+import 'screens/call_history_screen.dart';
+import 'screens/settings/account_management_screen.dart';
+import 'screens/settings/comprehensive_settings_screen.dart';
 import 'models/premium_plan.dart';
 import 'models/user.dart';
 import 'services/firebase_notification_service.dart';
@@ -189,6 +196,14 @@ class _LGBTinderAppState extends State<LGBTinderApp> {
               '/feed': (context) => const FeedPage(),
               '/main': (context) => const MainScreen(),
               '/api-test': (context) => const ApiTestPage(),
+              // Security & Safety routes
+              '/two-factor-auth': (context) => const TwoFactorAuthScreen(),
+              '/active-sessions': (context) => const ActiveSessionsScreen(),
+              '/emergency-contacts': (context) => const EmergencyContactsScreen(),
+              '/safety-center': (context) => const SafetyCenterScreen(),
+              '/call-history': (context) => const CallHistoryScreen(),
+              '/account-management': (context) => const AccountManagementScreen(),
+              '/comprehensive-settings': (context) => const ComprehensiveSettingsScreen(),
             },
           );
         },
