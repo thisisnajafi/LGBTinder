@@ -5,22 +5,22 @@ class AppTypography {
   static const String primaryFont = 'Nunito';
   static const String secondaryFont = 'Inter';
 
-  // Font Sizes
-  static const double displayLarge = 57.0;
-  static const double displayMedium = 45.0;
-  static const double displaySmall = 36.0;
-  static const double headlineLarge = 32.0;
-  static const double headlineMedium = 28.0;
-  static const double headlineSmall = 24.0;
-  static const double titleLarge = 22.0;
-  static const double titleMedium = 16.0;
-  static const double titleSmall = 14.0;
-  static const double bodyLarge = 16.0;
-  static const double bodyMedium = 14.0;
-  static const double bodySmall = 12.0;
-  static const double labelLarge = 14.0;
-  static const double labelMedium = 12.0;
-  static const double labelSmall = 11.0;
+  // Font Sizes (renamed to avoid conflict with TextStyle names)
+  static const double displayLargeSize = 57.0;
+  static const double displayMediumSize = 45.0;
+  static const double displaySmallSize = 36.0;
+  static const double headlineLargeSize = 32.0;
+  static const double headlineMediumSize = 28.0;
+  static const double headlineSmallSize = 24.0;
+  static const double titleLargeSize = 22.0;
+  static const double titleMediumSize = 16.0;
+  static const double titleSmallSize = 14.0;
+  static const double bodyLargeSize = 16.0;
+  static const double bodyMediumSize = 14.0;
+  static const double bodySmallSize = 12.0;
+  static const double labelLargeSize = 14.0;
+  static const double labelMediumSize = 12.0;
+  static const double labelSmallSize = 11.0;
 
   // Font Weight Hierarchy - Comprehensive
   static const FontWeight thin = FontWeight.w100;
@@ -45,70 +45,70 @@ class AppTypography {
   // Text Styles
   static const TextStyle displayLargeStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: displayLarge,
+    fontSize: displayLargeSize,
     fontWeight: headingWeight,
     letterSpacing: -0.25,
   );
 
   static const TextStyle displayMediumStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: displayMedium,
+    fontSize: displayMediumSize,
     fontWeight: headingWeight,
     letterSpacing: -0.25,
   );
 
   static const TextStyle displaySmallStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: displaySmall,
+    fontSize: displaySmallSize,
     fontWeight: headingWeight,
     letterSpacing: -0.25,
   );
 
   static const TextStyle headlineLargeStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: headlineLarge,
+    fontSize: headlineLargeSize,
     fontWeight: headingWeight,
     letterSpacing: -0.25,
   );
 
   static const TextStyle headlineMediumStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: headlineMedium,
+    fontSize: headlineMediumSize,
     fontWeight: headingWeight,
     letterSpacing: -0.25,
   );
 
   static const TextStyle headlineSmallStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: headlineSmall,
+    fontSize: headlineSmallSize,
     fontWeight: headingWeight,
     letterSpacing: -0.25,
   );
 
   static const TextStyle titleLargeStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: titleLarge,
+    fontSize: titleLargeSize,
     fontWeight: subheadingWeight,
     letterSpacing: 0,
   );
 
   static const TextStyle titleMediumStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: titleMedium,
+    fontSize: titleMediumSize,
     fontWeight: subheadingWeight,
     letterSpacing: 0.15,
   );
 
   static const TextStyle titleSmallStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: titleSmall,
+    fontSize: titleSmallSize,
     fontWeight: subheadingWeight,
     letterSpacing: 0.1,
   );
 
   static const TextStyle h3 = TextStyle(
     fontFamily: primaryFont,
-    fontSize: headlineSmall,
+    fontSize: headlineSmallSize,
     fontWeight: headingWeight,
     letterSpacing: 0,
     height: 1.2,
@@ -116,42 +116,42 @@ class AppTypography {
 
   static const TextStyle bodyLargeStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: bodyLarge,
+    fontSize: bodyLargeSize,
     fontWeight: bodyWeight,
     letterSpacing: 0.5,
   );
 
   static const TextStyle bodyMediumStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: bodyMedium,
+    fontSize: bodyMediumSize,
     fontWeight: bodyWeight,
     letterSpacing: 0.25,
   );
 
   static const TextStyle bodySmallStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: bodySmall,
+    fontSize: bodySmallSize,
     fontWeight: bodyWeight,
     letterSpacing: 0.4,
   );
 
   static const TextStyle labelLargeStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: labelLarge,
+    fontSize: labelLargeSize,
     fontWeight: labelWeight,
     letterSpacing: 0.1,
   );
 
   static const TextStyle labelMediumStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: labelMedium,
+    fontSize: labelMediumSize,
     fontWeight: labelWeight,
     letterSpacing: 0.5,
   );
 
   static const TextStyle labelSmallStyle = TextStyle(
     fontFamily: primaryFont,
-    fontSize: labelSmall,
+    fontSize: labelSmallSize,
     fontWeight: labelWeight,
     letterSpacing: 0.5,
   );
@@ -250,4 +250,24 @@ class AppTypography {
   static TextStyle forOverline(TextStyle style) {
     return style.copyWith(fontWeight: overlineWeight);
   }
+
+  // Short-name aliases for easier access (without "Style" suffix)
+  static const TextStyle displayLarge = displayLargeStyle;
+  static const TextStyle displayMedium = displayMediumStyle;
+  static const TextStyle displaySmall = displaySmallStyle;
+  static const TextStyle headlineLarge = headlineLargeStyle;
+  static const TextStyle headlineMedium = headlineMediumStyle;
+  static const TextStyle headlineSmall = headlineSmallStyle;
+  static const TextStyle titleLarge = titleLargeStyle;
+  static const TextStyle titleMedium = titleMediumStyle;
+  static const TextStyle titleSmall = titleSmallStyle;
+  static const TextStyle bodyLarge = bodyLargeStyle;
+  static const TextStyle bodyMedium = bodyMediumStyle;
+  static const TextStyle bodySmall = bodySmallStyle;
+  static const TextStyle labelLarge = labelLargeStyle;
+  static const TextStyle labelMedium = labelMediumStyle;
+  static const TextStyle labelSmall = labelSmallStyle;
+  
+  // Add missing heading4
+  static const TextStyle heading4 = h4;
 } 

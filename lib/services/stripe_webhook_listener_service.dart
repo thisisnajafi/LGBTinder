@@ -24,7 +24,6 @@ class StripeWebhookListenerService {
   StripeWebhookListenerService._internal();
 
   final WebSocketService _websocketService = WebSocketService();
-  final AuthService _authService = AuthService();
 
   // Stream controllers for different webhook events
   final StreamController<PaymentIntentEvent> _paymentIntentController =
@@ -48,7 +47,7 @@ class StripeWebhookListenerService {
   Future<void> initialize() async {
     if (_isListening) return;
 
-    final user = await _authService.getCurrentUser();
+    final user = await AuthService().getCurrentUser();
     if (user == null) {
       debugPrint('Cannot initialize webhook listener: No authenticated user');
       return;

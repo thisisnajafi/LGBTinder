@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
 import '../auth_service.dart';
+import '../token_management_service.dart';
 
 /// Two-Factor Authentication API Service
 /// 
@@ -22,7 +23,7 @@ class TwoFactorApiService {
   /// Get 2FA status
   Future<Map<String, dynamic>> get2FAStatus() async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -50,7 +51,7 @@ class TwoFactorApiService {
   /// Enable 2FA
   Future<Map<String, dynamic>> enable2FA() async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -81,7 +82,7 @@ class TwoFactorApiService {
     required String code,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -114,7 +115,7 @@ class TwoFactorApiService {
     String? code,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -144,7 +145,7 @@ class TwoFactorApiService {
   /// Get QR code for authenticator app
   Future<String> getQRCode() async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -172,7 +173,7 @@ class TwoFactorApiService {
   /// Generate backup codes
   Future<List<String>> generateBackupCodes() async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }

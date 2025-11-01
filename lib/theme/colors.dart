@@ -238,11 +238,6 @@ class AppColors {
   static const Color prideBlue = Color(0xFF004CFF); // Blue
   static const Color pridePurple = Color(0xFF760089); // Purple
   
-  // Trans Pride Colors
-  static const Color transBlue = Color(0xFF5BCEFA); // Light blue
-  static const Color transPink = Color(0xFFF5A9B8); // Light pink
-  static const Color transWhite = Color(0xFFFFFFFF); // White
-  
   // Non-binary Pride Colors
   static const Color nonBinaryYellow = Color(0xFFFFF700); // Yellow
   static const Color nonBinaryWhite = Color(0xFFFFFFFF); // White

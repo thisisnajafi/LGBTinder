@@ -60,7 +60,7 @@ dev_dependencies:
     sdk: flutter
   mockito: ^5.4.4
   build_runner: ^2.4.7
-  test_coverage: ^0.5.3
+  coverage: ^1.7.3
 
   flutter_lints: ^5.0.0
 

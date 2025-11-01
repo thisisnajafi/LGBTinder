@@ -7,37 +7,37 @@ class SkeletonLoaderService {
   SkeletonLoaderService._internal();
 
   // Skeleton settings
-  bool _isEnabled = true;
-  Color _baseColor = Colors.grey[300]!;
-  Color _highlightColor = Colors.grey[100]!;
-  Duration _animationDuration = const Duration(milliseconds: 1500);
-  Duration _animationDelay = const Duration(milliseconds: 200);
-  Curve _animationCurve = Curves.easeInOut;
-  double _shimmerAngle = 0.0;
-  double _shimmerSpeed = 1.0;
+  static bool _isEnabled = true;
+  static Color _baseColor = Colors.grey[300]!;
+  static Color _highlightColor = Colors.grey[100]!;
+  static Duration _animationDuration = const Duration(milliseconds: 1500);
+  static Duration _animationDelay = const Duration(milliseconds: 200);
+  static Curve _animationCurve = Curves.easeInOut;
+  static double _shimmerAngle = 0.0;
+  static double _shimmerSpeed = 1.0;
 
   // Getters
-  bool get isEnabled => _isEnabled;
-  Color get baseColor => _baseColor;
-  Color get highlightColor => _highlightColor;
-  Duration get animationDuration => _animationDuration;
-  Duration get animationDelay => _animationDelay;
-  Curve get animationCurve => _animationCurve;
-  double get shimmerAngle => _shimmerAngle;
-  double get shimmerSpeed => _shimmerSpeed;
+  static bool get isEnabled => _isEnabled;
+  static Color get baseColor => _baseColor;
+  static Color get highlightColor => _highlightColor;
+  static Duration get animationDuration => _animationDuration;
+  static Duration get animationDelay => _animationDelay;
+  static Curve get animationCurve => _animationCurve;
+  static double get shimmerAngle => _shimmerAngle;
+  static double get shimmerSpeed => _shimmerSpeed;
 
   /// Initialize skeleton loader service
-  void initialize() {
+  static void initialize() {
     debugPrint('Skeleton Loader Service initialized');
   }
 
   /// Enable/disable skeleton loaders
-  void setEnabled(bool enabled) {
+  static void setEnabled(bool enabled) {
     _isEnabled = enabled;
   }
 
   /// Set skeleton colors
-  void setColors({
+  static void setColors({
     Color? baseColor,
     Color? highlightColor,
   }) {
@@ -46,7 +46,7 @@ class SkeletonLoaderService {
   }
 
   /// Set animation settings
-  void setAnimationSettings({
+  static void setAnimationSettings({
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -61,7 +61,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a shimmer effect widget
-  Widget createShimmer({
+  static Widget createShimmer({
     required Widget child,
     Color? baseColor,
     Color? highlightColor,
@@ -80,7 +80,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton box
-  Widget createSkeletonBox({
+  static Widget createSkeletonBox({
     double? width,
     double? height,
     BorderRadius? borderRadius,
@@ -102,16 +102,39 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton circle
-  Widget createSkeletonCircle({
+  static Widget createSkeletonCircle({
     double? diameter,
+    double? size, // Alias for diameter
     Color? color,
   }) {
+    final circleSize = size ?? diameter ?? 40;
     if (!_isEnabled) {
-      return SizedBox(width: diameter, height: diameter);
+      return SizedBox(width: circleSize, height: circleSize);
     }
 
     return _SkeletonCircle(
-      diameter: diameter ?? 40,
+      diameter: circleSize,
+      color: color ?? _baseColor,
+      highlightColor: _highlightColor,
+      duration: _animationDuration,
+      curve: _animationCurve,
+    );
+  }
+
+  /// Create a skeleton line
+  static Widget createSkeletonLine({
+    double? width,
+    double? height,
+    Color? color,
+  }) {
+    if (!_isEnabled) {
+      return SizedBox(width: width, height: height);
+    }
+
+    return _SkeletonText(
+      width: width,
+      height: height ?? 16,
+      borderRadius: BorderRadius.circular(4),
       color: color ?? _baseColor,
       highlightColor: _highlightColor,
       duration: _animationDuration,
@@ -120,7 +143,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton text
-  Widget createSkeletonText({
+  static Widget createSkeletonText({
     double? width,
     double? height,
     BorderRadius? borderRadius,
@@ -142,7 +165,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton avatar
-  Widget createSkeletonAvatar({
+  static Widget createSkeletonAvatar({
     double? size,
     Color? color,
   }) {
@@ -160,7 +183,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton card
-  Widget createSkeletonCard({
+  static Widget createSkeletonCard({
     double? width,
     double? height,
     EdgeInsets? padding,
@@ -184,7 +207,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton list item
-  Widget createSkeletonListItem({
+  static Widget createSkeletonListItem({
     double? width,
     double? height,
     EdgeInsets? padding,
@@ -214,7 +237,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton profile card
-  Widget createSkeletonProfileCard({
+  static Widget createSkeletonProfileCard({
     double? width,
     double? height,
     EdgeInsets? padding,
@@ -238,7 +261,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton chat message
-  Widget createSkeletonChatMessage({
+  static Widget createSkeletonChatMessage({
     double? width,
     double? height,
     EdgeInsets? padding,
@@ -264,7 +287,7 @@ class SkeletonLoaderService {
   }
 
   /// Create a skeleton grid item
-  Widget createSkeletonGridItem({
+  static Widget createSkeletonGridItem({
     double? width,
     double? height,
     EdgeInsets? padding,

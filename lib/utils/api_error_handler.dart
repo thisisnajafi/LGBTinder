@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'error_handler.dart';
+import '../theme/typography.dart';
 
 class ApiErrorHandler {
   /// Handle API errors and show appropriate user messages

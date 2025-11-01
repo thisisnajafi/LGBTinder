@@ -5,6 +5,7 @@ import '../models/auth_responses.dart';
 import '../models/auth_user.dart';
 import '../utils/error_handler.dart';
 import '../config/api_config.dart';
+import 'token_management_service.dart';
 
 class AuthService {
   // Authentication endpoints
@@ -20,6 +21,12 @@ class AuthService {
   static const String _checkUserStateEndpoint = '/auth/check-user-state';
   // static const String _refreshTokenEndpoint = ApiConfig.refreshToken; // Not implemented in backend
   static const String _logoutEndpoint = ApiConfig.logout;
+
+  /// Get authentication token
+  /// Wrapper around TokenManagementService.getAccessToken()
+  static Future<String?> getToken() async {
+    return await TokenManagementService.getAccessToken();
+  }
 
   /// Login with email and password
   static Future<LoginResponse> login(LoginRequest request) async {

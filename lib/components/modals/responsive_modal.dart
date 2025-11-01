@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 import '../../services/haptic_feedback_service.dart';
 
 class ResponsiveModal extends StatefulWidget {

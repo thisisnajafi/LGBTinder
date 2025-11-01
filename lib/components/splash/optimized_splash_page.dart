@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state_provider.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/typography.dart';
 import '../../models/user_state_models.dart';
 import '../../models/user.dart';
 import '../../models/api_models/reference_data_models.dart';

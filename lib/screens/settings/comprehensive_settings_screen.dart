@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../services/auth_service.dart';
+import '../../services/token_management_service.dart';
 import '../notification_settings_screen.dart';
 import '../two_factor_auth_screen.dart';
 import '../active_sessions_screen.dart';
@@ -62,7 +63,7 @@ class _ComprehensiveSettingsScreenState
     );
 
     if (confirm == true) {
-      await _authService.logout();
+      await TokenManagementService.logout();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,

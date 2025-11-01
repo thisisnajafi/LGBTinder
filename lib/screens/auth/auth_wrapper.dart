@@ -7,6 +7,7 @@ import '../../components/splash/optimized_splash_page.dart';
 import '../../components/splash/simple_splash_page.dart';
 import '../../pages/home_page.dart';
 import '../../screens/onboarding/enhanced_onboarding_screen.dart';
+import '../../theme/typography.dart';
 import '../../services/onboarding_manager.dart';
 import 'welcome_screen.dart';
 import 'register_screen.dart';

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
 import '../auth_service.dart';
+import '../token_management_service.dart';
 
 /// Account Management API Service
 /// 
@@ -23,7 +24,7 @@ class AccountManagementApiService {
     required String password,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -56,7 +57,7 @@ class AccountManagementApiService {
     required String newPassword,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -89,7 +90,7 @@ class AccountManagementApiService {
     String? reason,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -122,7 +123,7 @@ class AccountManagementApiService {
     String? reason,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }

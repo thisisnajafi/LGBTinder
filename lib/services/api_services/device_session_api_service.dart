@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
 import '../../models/device_session.dart';
 import '../auth_service.dart';
+import '../token_management_service.dart';
 
 /// Device Session API Service
 /// 
@@ -20,7 +21,7 @@ class DeviceSessionApiService {
   /// Get all active sessions
   Future<List<DeviceSession>> getSessions() async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -51,7 +52,7 @@ class DeviceSessionApiService {
   /// Revoke a specific session
   Future<void> revokeSession(String sessionId) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -77,7 +78,7 @@ class DeviceSessionApiService {
   /// Revoke all other sessions (keep current)
   Future<void> revokeAllOtherSessions() async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }

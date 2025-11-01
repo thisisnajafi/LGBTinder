@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../../theme/colors.dart';
+import '../../theme/typography.dart';
 
 class PhotoGallery extends StatelessWidget {
   final List<UserImage> images;

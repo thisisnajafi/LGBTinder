@@ -11,8 +11,6 @@ import '../auth_service.dart';
 /// - Configure notification sound and vibration
 /// - Manage notification schedules (Do Not Disturb)
 class GroupNotificationsApiService {
-  final AuthService _authService = AuthService();
-
   /// Get notification settings for a specific group
   /// 
   /// GET /api/chat/groups/{groupId}/notifications
@@ -20,7 +18,7 @@ class GroupNotificationsApiService {
     String groupId,
   ) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -53,7 +51,7 @@ class GroupNotificationsApiService {
     required GroupNotificationSettings settings,
   }) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -86,7 +84,7 @@ class GroupNotificationsApiService {
     Duration? duration,
   }) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -119,7 +117,7 @@ class GroupNotificationsApiService {
   /// POST /api/chat/groups/{groupId}/unmute
   Future<bool> unmuteGroup(String groupId) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -144,7 +142,7 @@ class GroupNotificationsApiService {
   /// GET /api/chat/groups/muted
   Future<List<String>> getMutedGroups() async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -177,7 +175,7 @@ class GroupNotificationsApiService {
     required String soundId,
   }) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }

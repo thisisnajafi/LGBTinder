@@ -19,7 +19,6 @@ class WebRTCService {
   WebRTCService._internal();
 
   final WebSocketService _websocketService = WebSocketService();
-  final AuthService _authService = AuthService();
 
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;

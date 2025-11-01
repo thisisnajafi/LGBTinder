@@ -12,8 +12,6 @@ import '../auth_service.dart';
 /// - Block calls from users
 /// - Report call issues
 class CallApiService {
-  final AuthService _authService = AuthService();
-
   /// Initiate a call
   /// 
   /// POST /api/calls/initiate
@@ -22,7 +20,7 @@ class CallApiService {
     required bool isVideo,
   }) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -60,7 +58,7 @@ class CallApiService {
     int perPage = 20,
   }) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -91,7 +89,7 @@ class CallApiService {
   /// GET /api/calls/{callId}
   Future<CallDetails?> getCallDetails(String callId) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -121,7 +119,7 @@ class CallApiService {
   /// POST /api/calls/{callId}/end
   Future<bool> endCall(String callId) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -149,7 +147,7 @@ class CallApiService {
   /// POST /api/calls/block
   Future<bool> blockCallsFrom(String userId) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -177,7 +175,7 @@ class CallApiService {
   /// POST /api/calls/unblock
   Future<bool> unblockCallsFrom(String userId) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -209,7 +207,7 @@ class CallApiService {
     String? description,
   }) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -238,7 +236,7 @@ class CallApiService {
   /// DELETE /api/calls/{callId}
   Future<bool> deleteCallFromHistory(String callId) async {
     try {
-      final token = await _authService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }

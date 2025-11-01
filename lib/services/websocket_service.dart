@@ -779,6 +779,24 @@ class WebSocketService {
     }
   }
 
+  /// Listen to custom events (for WebRTC and other services)
+  void on(String eventName, Function(dynamic) callback) {
+    if (_socket == null) {
+      debugPrint('WebSocket not initialized. Cannot listen to event: $eventName');
+      return;
+    }
+    _socket!.on(eventName, callback);
+  }
+
+  /// Emit custom events (for WebRTC and other services)
+  void emit(String eventName, dynamic data) {
+    if (!_isConnected) {
+      debugPrint('WebSocket not connected. Cannot emit event: $eventName');
+      return;
+    }
+    _socket!.emit(eventName, data);
+  }
+
   /// Dispose service
   void dispose() {
     disconnect();

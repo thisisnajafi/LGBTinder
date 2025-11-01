@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../../config/api_config.dart';
 import '../../models/emergency_contact.dart';
 import '../auth_service.dart';
+import '../token_management_service.dart';
 
 /// API Service for Emergency Contacts
 /// 
@@ -24,7 +25,7 @@ class EmergencyContactApiService {
   /// Get all emergency contacts
   Future<List<EmergencyContact>> getEmergencyContacts() async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -60,7 +61,7 @@ class EmergencyContactApiService {
     required String relationship,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -101,7 +102,7 @@ class EmergencyContactApiService {
     String? relationship,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -138,7 +139,7 @@ class EmergencyContactApiService {
   /// Delete emergency contact
   Future<void> deleteEmergencyContact(String contactId) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -165,7 +166,7 @@ class EmergencyContactApiService {
   /// Send verification code to contact
   Future<void> sendVerificationCode(String contactId) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -195,7 +196,7 @@ class EmergencyContactApiService {
     required String code,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }
@@ -231,7 +232,7 @@ class EmergencyContactApiService {
     String? meetingDetails,
   }) async {
     try {
-      final token = await _authService.getToken();
+        final token = await TokenManagementService.getAccessToken();
       if (token == null) {
         throw Exception('No authentication token');
       }

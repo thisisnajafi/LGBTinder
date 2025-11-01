@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_services/account_management_api_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/token_management_service.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 
@@ -112,7 +113,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
           reason: result['reason'],
         );
 
-        await _authService.logout();
+        await TokenManagementService.logout();
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(
             context,
@@ -146,7 +147,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> {
           reason: result['reason'],
         );
 
-        await _authService.logout();
+        await TokenManagementService.logout();
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(
             context,
