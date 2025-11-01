@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:io';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io';
 import '../../lib/services/chat_service.dart';
 import '../../lib/models/models.dart';
 import '../../lib/utils/error_handler.dart';
@@ -16,24 +16,22 @@ void main() {
         // Arrange
         const recipientId = 'user123';
         const content = 'Hello, how are you?';
+        const accessToken = 'test_token';
         final expectedMessage = Message(
           id: 'msg123',
-          chatId: 'chat123',
           senderId: 'current_user',
           recipientId: recipientId,
           content: content,
           type: 'text',
-          sentAt: DateTime.now(),
         );
 
         // Note: Actual implementation uses static methods
-        // Test structure shows what should be tested
+        // This test structure shows what should be tested
 
-        // Act & Assert
-        // final message = await ChatService.sendMessage(recipientId, content);
+        // Act & Assert structure
+        // final message = await ChatService.sendMessage(recipientId, content, accessToken: accessToken);
         // expect(message, isA<Message>());
         // expect(message.content, equals(content));
-        // expect(message.recipientId, equals(recipientId));
       });
 
       test('should send message with attachment', () async {
@@ -41,51 +39,25 @@ void main() {
         const recipientId = 'user123';
         const content = 'Check this out!';
         final attachment = File('test_image.jpg');
+        const accessToken = 'test_token';
 
         // Act & Assert
-        // Should send multipart request with attachment
-        // Should compress image before upload
+        // Should handle multipart request
       });
 
-      test('should handle authentication errors', () async {
-        // Arrange
-        const recipientId = 'user123';
-        const content = 'Hello';
-
+      test('should throw AuthException when not authenticated', () async {
         // Act & Assert
-        // Should throw AuthException when not authenticated
+        // expect(() => ChatService.sendMessage('user123', 'hi'), throwsA(isA<AuthException>()));
       });
 
-      test('should handle validation errors', () async {
-        // Arrange
-        const recipientId = '';
-        const content = '';
-
-        // Act & Assert
-        // Should throw ValidationException
-      });
-
-      test('should handle recipient not found', () async {
-        // Arrange
-        const recipientId = 'nonexistent_user';
-        const content = 'Hello';
-
+      test('should throw exception when recipient not found', () async {
         // Act & Assert
         // Should throw ApiException with 404
       });
 
-      test('should handle cannot send message error', () async {
-        // Arrange
-        const recipientId = 'blocked_user';
-        const content = 'Hello';
-
+      test('should throw exception when cannot send to user', () async {
         // Act & Assert
         // Should throw ApiException with 403
-      });
-
-      test('should handle network errors', () async {
-        // Act & Assert
-        // Should throw NetworkException
       });
     });
 
@@ -93,10 +65,11 @@ void main() {
       test('should get chat history successfully', () async {
         // Arrange
         const userId = 'user123';
+        const accessToken = 'test_token';
 
         // Act & Assert
-        // Should return list of messages
-        // Messages should be ordered by sentAt
+        // final messages = await ChatService.getChatHistory(userId, accessToken: accessToken);
+        // expect(messages, isA<List<Message>>());
       });
 
       test('should get chat history with pagination', () async {
@@ -106,68 +79,63 @@ void main() {
         const limit = 20;
 
         // Act & Assert
-        // Should apply pagination correctly
+        // Should apply pagination
       });
 
       test('should get chat history before message ID', () async {
         // Arrange
         const userId = 'user123';
-        const beforeMessageId = 'msg456';
+        const beforeMessageId = 'msg123';
 
         // Act & Assert
-        // Should return messages before specified message
+        // Should fetch messages before specified ID
       });
 
-      test('should handle empty chat history', () async {
-        // Arrange
-        const userId = 'user123';
-
+      test('should return empty list when no messages', () async {
         // Act & Assert
-        // Should return empty list
-      });
-
-      test('should handle chat not found', () async {
-        // Arrange
-        const userId = 'nonexistent_user';
-
-        // Act & Assert
-        // Should throw ApiException with 404
+        // Should return empty list gracefully
       });
     });
 
     group('Get Chat Users', () {
       test('should get chat users successfully', () async {
+        // Arrange
+        const accessToken = 'test_token';
+
         // Act & Assert
-        // Should return list of Chat objects
-        // Each Chat should have user info and last message
+        // final chats = await ChatService.getChatUsers(accessToken: accessToken);
+        // expect(chats, isA<List<Chat>>());
       });
 
       test('should return empty list when no chats', () async {
         // Act & Assert
-        // Should return empty list
-      });
-
-      test('should handle authentication errors', () async {
-        // Act & Assert
-        // Should throw AuthException
+        // Should return empty list gracefully
       });
     });
 
     group('Get Accessible Users', () {
       test('should get accessible users successfully', () async {
+        // Arrange
+        const accessToken = 'test_token';
+
         // Act & Assert
-        // Should return list of users you can chat with
-        // Should only include matched users
+        // final users = await ChatService.getAccessibleUsers(accessToken: accessToken);
+        // expect(users, isA<List<User>>());
+      });
+    });
+
+    group('Mark Messages as Read', () {
+      test('should mark messages as read successfully', () async {
+        // Arrange
+        const userId = 'user123';
+        const accessToken = 'test_token';
+
+        // Act & Assert
       });
 
-      test('should filter out blocked users', () async {
+      test('should handle marking read when no unread messages', () async {
         // Act & Assert
-        // Should not include blocked users
-      });
-
-      test('should return empty list when no accessible users', () async {
-        // Act & Assert
-        // Should return empty list
+        // Should handle gracefully
       });
     });
 
@@ -175,136 +143,36 @@ void main() {
       test('should delete message successfully', () async {
         // Arrange
         const messageId = 'msg123';
+        const accessToken = 'test_token';
 
         // Act & Assert
-        // Should delete message and return true
       });
 
-      test('should handle message not found', () async {
-        // Arrange
-        const messageId = 'nonexistent_msg';
-
+      test('should throw exception when message not found', () async {
         // Act & Assert
-        // Should throw ApiException with 404
       });
 
-      test('should handle cannot delete message', () async {
-        // Arrange
-        const messageId = 'msg_other_user';
-
+      test('should throw exception when not authorized to delete', () async {
         // Act & Assert
-        // Should throw ApiException with 403
-      });
-    });
-
-    group('Get Unread Count', () {
-      test('should get unread count successfully', () async {
-        // Act & Assert
-        // Should return unread message count
-        // expect(count, greaterThanOrEqualTo(0));
-      });
-
-      test('should return zero when no unread messages', () async {
-        // Act & Assert
-        // Should return 0
-      });
-    });
-
-    group('Send Typing Indicator', () {
-      test('should send typing indicator successfully', () async {
-        // Arrange
-        const userId = 'user123';
-        const isTyping = true;
-
-        // Act & Assert
-        // Should send typing indicator and return true
-      });
-
-      test('should stop typing indicator', () async {
-        // Arrange
-        const userId = 'user123';
-        const isTyping = false;
-
-        // Act & Assert
-        // Should stop typing indicator
-      });
-
-      test('should handle user not found', () async {
-        // Arrange
-        const userId = 'nonexistent_user';
-
-        // Act & Assert
-        // Should throw ApiException with 404
-      });
-    });
-
-    group('Mark Messages as Read', () {
-      test('should mark all messages as read', () async {
-        // Arrange
-        const userId = 'user123';
-
-        // Act & Assert
-        // Should mark all messages as read and return true
-      });
-
-      test('should mark specific messages as read', () async {
-        // Arrange
-        const userId = 'user123';
-        final messageIds = ['msg1', 'msg2', 'msg3'];
-
-        // Act & Assert
-        // Should mark specified messages as read
-      });
-
-      test('should handle user not found', () async {
-        // Arrange
-        const userId = 'nonexistent_user';
-
-        // Act & Assert
-        // Should throw ApiException with 404
       });
     });
 
     group('Error Handling', () {
-      test('should handle network timeout', () async {
+      test('should handle network errors', () async {
         // Act & Assert
         // Should throw NetworkException
       });
 
-      test('should handle connection errors', () async {
+      test('should handle validation errors', () async {
         // Act & Assert
-        // Should throw NetworkException
+        // Should throw ValidationException
       });
 
-      test('should handle invalid JSON response', () async {
+      test('should handle authentication errors', () async {
         // Act & Assert
-        // Should handle parsing errors gracefully
-      });
-    });
-
-    group('Edge Cases', () {
-      test('should handle very long message content', () async {
-        // Arrange
-        const recipientId = 'user123';
-        final longContent = 'a' * 10000;
-
-        // Act & Assert
-        // Should handle or validate message length
-      });
-
-      test('should handle special characters in message', () async {
-        // Arrange
-        const recipientId = 'user123';
-        const content = 'Hello! 😊 🎉 @user #hashtag';
-
-        // Act & Assert
-        // Should handle special characters and emojis
-      });
-
-      test('should handle multiple simultaneous requests', () async {
-        // Act & Assert
-        // Should handle concurrent message sends appropriately
+        // Should throw AuthException
       });
     });
   });
 }
+

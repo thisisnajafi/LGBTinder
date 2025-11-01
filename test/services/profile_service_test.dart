@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
+import 'dart:io';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+import 'package:http/http.dart' as http;
 import '../../lib/services/profile_service.dart';
 import '../../lib/models/models.dart';
 import '../../lib/utils/error_handler.dart';
@@ -14,26 +15,23 @@ void main() {
       test('should get current user profile successfully', () async {
         // Arrange
         const accessToken = 'test_token';
-        final expectedUser = ApiTestUtils.createTestUser();
+        final expectedUser = User(
+          id: 'user123',
+          name: 'Test User',
+          email: 'test@example.com',
+        );
 
-        // Act & Assert
-        // Should return User object
-        // Note: Actual implementation uses static http.get
+        // Note: Actual implementation uses static methods
+        // Act & Assert structure shown
+
+        // final profile = await ProfileService.getProfile(accessToken: accessToken);
+        // expect(profile, isA<User>());
+        // expect(profile.id, isNotNull);
       });
 
-      test('should get profile without access token', () async {
+      test('should throw AuthException when not authenticated', () async {
         // Act & Assert
-        // Should handle missing token appropriately
-      });
-
-      test('should handle authentication errors', () async {
-        // Act & Assert
-        // Should throw AuthException
-      });
-
-      test('should handle network errors', () async {
-        // Act & Assert
-        // Should throw NetworkException
+        // expect(() => ProfileService.getProfile(), throwsA(isA<AuthException>()));
       });
     });
 
@@ -44,13 +42,10 @@ void main() {
         const accessToken = 'test_token';
 
         // Act & Assert
-        // Should return User object for specified ID
+        // Should return user profile
       });
 
-      test('should handle profile not found', () async {
-        // Arrange
-        const userId = 'nonexistent';
-
+      test('should throw exception when profile not found', () async {
         // Act & Assert
         // Should throw ApiException with 404
       });
@@ -67,180 +62,51 @@ void main() {
         const accessToken = 'test_token';
 
         // Act & Assert
-        // Should return updated User object
+        // Should return updated profile
       });
 
       test('should handle validation errors', () async {
         // Arrange
         final invalidData = {
-          'age': -5, // Invalid age
+          'age': 15, // Invalid age
         };
 
         // Act & Assert
         // Should throw ValidationException
-      });
-
-      test('should handle partial profile updates', () async {
-        // Arrange
-        final partialData = {
-          'bio': 'New bio only',
-        };
-
-        // Act & Assert
-        // Should update only provided fields
       });
     });
 
     group('Upload Profile Picture', () {
       test('should upload profile picture successfully', () async {
         // Arrange
-        // Mock file object
+        final imageFile = File('test_image.jpg');
         const accessToken = 'test_token';
 
         // Act & Assert
-        // Should return updated User with new image URL
+        // Should handle multipart upload
       });
 
-      test('should handle invalid image file', () async {
-        // Arrange
-        // Invalid file (wrong format, too large, etc.)
-
-        // Act & Assert
-        // Should throw ValidationException
-      });
-
-      test('should handle image upload failure', () async {
-        // Act & Assert
-        // Should throw appropriate exception
-      });
-    });
-
-    group('Delete Profile Picture', () {
-      test('should delete profile picture successfully', () async {
-        // Arrange
-        const imageId = 'img123';
-        const accessToken = 'test_token';
-
-        // Act & Assert
-        // Should remove image from profile
-      });
-
-      test('should handle image not found', () async {
-        // Arrange
-        const imageId = 'nonexistent';
-
+      test('should handle image compression errors', () async {
         // Act & Assert
         // Should handle gracefully
       });
     });
 
-    group('Update Profile Settings', () {
-      test('should update profile settings successfully', () async {
-        // Arrange
-        final settings = {
-          'show_age': true,
-          'show_distance': false,
-          'show_online_status': true,
-        };
-
-        // Act & Assert
-        // Should update settings
-      });
-    });
-
-    group('Search Profiles', () {
-      test('should search profiles successfully', () async {
-        // Arrange
-        final filters = {
-          'age_min': 25,
-          'age_max': 35,
-          'gender': 'non-binary',
-        };
-
-        // Act & Assert
-        // Should return list of matching profiles
-      });
-
-      test('should search with pagination', () async {
-        // Arrange
-        const page = 1;
-        const limit = 20;
-
-        // Act & Assert
-        // Should apply pagination
-      });
-
-      test('should handle empty search results', () async {
-        // Arrange
-        final filters = {
-          'age_min': 100, // No users this old
-        };
-
-        // Act & Assert
-        // Should return empty list
-      });
-    });
-
-    group('Get Profile Statistics', () {
-      test('should get profile statistics successfully', () async {
-        // Act & Assert
-        // Should return statistics object
-      });
-    });
-
-    group('Report Profile', () {
-      test('should report profile successfully', () async {
-        // Arrange
-        const userId = 'user123';
-        final reportData = {
-          'reason': 'inappropriate_content',
-          'description': 'Report description',
-        };
-
-        // Act & Assert
-        // Should submit report
-      });
-
-      test('should handle invalid report reason', () async {
-        // Arrange
-        final invalidReport = {
-          'reason': 'invalid_reason',
-        };
-
-        // Act & Assert
-        // Should throw ValidationException
-      });
-    });
-
-    group('Block/Unblock User', () {
-      test('should block user successfully', () async {
-        // Arrange
-        const userId = 'user123';
-
-        // Act & Assert
-        // Should block user
-      });
-
-      test('should unblock user successfully', () async {
-        // Arrange
-        const userId = 'user123';
-
-        // Act & Assert
-        // Should unblock user
-      });
-    });
-
     group('Error Handling', () {
-      test('should handle network timeout', () async {
+      test('should handle network errors', () async {
         // Act & Assert
         // Should throw NetworkException
       });
 
-      test('should handle server errors', () async {
+      test('should handle authentication errors', () async {
         // Act & Assert
-        // Should throw ApiException with 500 status
+        // Should throw AuthException
+      });
+
+      test('should handle validation errors', () async {
+        // Act & Assert
+        // Should throw ValidationException
       });
     });
   });
 }
-

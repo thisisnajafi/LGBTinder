@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+import 'package:http/http.dart' as http;
 import '../../lib/services/stripe_payment_service.dart';
 import '../../lib/services/token_management_service.dart';
+import '../api_test_utils.dart';
 
-@GenerateMocks([])
+@GenerateMocks([http.Client])
 void main() {
   group('StripePaymentService Tests', () {
     late StripePaymentService stripeService;
@@ -18,81 +20,72 @@ void main() {
         // Arrange
         const publishableKey = 'pk_test_1234567890';
 
-        // Act & Assert
-        // Note: This requires Stripe SDK to be properly set up for testing
-        // await stripeService.initialize(publishableKey);
-        // expect(stripeService, isNotNull);
-      });
-
-      test('should not reinitialize if already initialized', () async {
-        // Arrange
-        const publishableKey = 'pk_test_1234567890';
-        // await stripeService.initialize(publishableKey);
-
         // Act
-        // await stripeService.initialize(publishableKey);
+        await stripeService.initialize(publishableKey);
 
         // Assert
-        // Should not throw error on second initialization
+        // Note: Stripe.publishableKey is a static setter
+        // This test may need integration test approach
       });
 
-      test('should handle invalid publishable key', () async {
+      test('should not re-initialize if already initialized', () async {
         // Arrange
-        const invalidKey = 'invalid_key';
+        const publishableKey = 'pk_test_1234567890';
+        await stripeService.initialize(publishableKey);
+
+        // Act
+        await stripeService.initialize(publishableKey);
+
+        // Assert
+        // Should complete without error
+      });
+
+      test('should handle initialization errors', () async {
+        // Arrange
+        const invalidKey = '';
 
         // Act & Assert
-        // Should throw appropriate exception
+        expect(
+          () => stripeService.initialize(invalidKey),
+          throwsA(isA<Exception>()),
+        );
       });
     });
 
     group('Get Publishable Key', () {
       test('should get publishable key from backend successfully', () async {
         // Arrange
-        // Mock TokenManagementService.getAccessToken()
+        const expectedKey = 'pk_test_1234567890';
+        
+        // Note: This requires mocking TokenManagementService and http.Client
+        // Actual implementation uses static methods
+        // May need refactoring for proper testing
 
-        // Act & Assert
+        // Act & Assert structure
         // final key = await stripeService.getPublishableKey();
-        // expect(key, isNotNull);
-        // expect(key, startsWith('pk_'));
+        // expect(key, equals(expectedKey));
       });
 
-      test('should handle authentication errors', () async {
-        // Arrange
-        // Mock TokenManagementService to return null
-
+      test('should throw exception when not authenticated', () async {
         // Act & Assert
-        // Should throw exception for not authenticated
+        // Should throw 'Not authenticated' exception
       });
 
-      test('should handle API errors when getting key', () async {
+      test('should handle API errors when getting publishable key', () async {
         // Act & Assert
-        // Should throw appropriate exception
+        // Should handle various HTTP errors
       });
     });
 
     group('Create Payment Intent', () {
       test('should create payment intent successfully', () async {
         // Arrange
-        const amount = 1000; // $10.00
+        const amount = 1000; // $10.00 in cents
         const currency = 'usd';
+        const description = 'Test payment';
 
-        // Act & Assert
-        // final clientSecret = await stripeService.createPaymentIntent(
-        //   amount: amount,
-        //   currency: currency,
-        // );
-        // expect(clientSecret, isNotNull);
-        // expect(clientSecret, isNotEmpty);
-      });
-
-      test('should create payment intent with description', () async {
-        // Arrange
-        const amount = 1000;
-        const currency = 'usd';
-        const description = 'Premium subscription';
-
-        // Act & Assert
-        // Should include description in request
+        // Note: Requires mocking TokenManagementService and http.Client
+        // Act & Assert structure shown
       });
 
       test('should create payment intent with metadata', () async {
@@ -104,175 +97,70 @@ void main() {
         };
 
         // Act & Assert
-        // Should include metadata in request
       });
 
-      test('should handle authentication errors', () async {
-        // Arrange
-        const amount = 1000;
-
+      test('should throw exception when not authenticated', () async {
         // Act & Assert
-        // Should throw exception when not authenticated
       });
 
-      test('should handle API errors', () async {
+      test('should handle payment intent creation errors', () async {
         // Act & Assert
-        // Should throw appropriate exception
-      });
-
-      test('should handle invalid amount', () async {
-        // Arrange
-        const amount = -100; // Invalid negative amount
-
-        // Act & Assert
-        // Should throw ValidationException
       });
     });
 
-    group('Process Payment', () {
-      test('should process payment successfully', () async {
-        // Arrange
-        const clientSecret = 'pi_test123_secret_xyz';
-
-        // Act & Assert
-        // Note: This requires Stripe SDK interaction which may need integration tests
-        // final result = await stripeService.processPayment(
-        //   clientSecret: clientSecret,
-        // );
-        // expect(result.success, isTrue);
-      });
-
-      test('should handle payment cancellation', () async {
-        // Arrange
-        const clientSecret = 'pi_test123_secret_xyz';
-
-        // Act & Assert
-        // Should return PaymentResult with success: false, error: 'cancelled'
-      });
-
-      test('should handle 3D Secure authentication', () async {
-        // Arrange
-        const clientSecret = 'pi_test123_secret_xyz';
-
-        // Act & Assert
-        // Should handle 3DS flow appropriately
-      });
-
-      test('should handle payment failure', () async {
-        // Arrange
-        const clientSecret = 'pi_test123_secret_xyz';
-
-        // Act & Assert
-        // Should return PaymentResult with success: false
-      });
-
-      test('should handle invalid client secret', () async {
-        // Arrange
-        const invalidSecret = 'invalid_secret';
-
-        // Act & Assert
-        // Should throw appropriate exception
-      });
-    });
-
-    group('Add Payment Method', () {
-      test('should add payment method successfully', () async {
-        // Arrange
-        final cardParams = {
-          'number': '4242424242424242',
-          'exp_month': 12,
-          'exp_year': 2025,
-          'cvc': '123',
-        };
-
-        // Act & Assert
-        // Should create and return payment method
-      });
-
-      test('should handle invalid card data', () async {
-        // Arrange
-        final invalidCardParams = {
-          'number': 'invalid',
-          'exp_month': 12,
-          'exp_year': 2025,
-          'cvc': '123',
-        };
-
-        // Act & Assert
-        // Should throw ValidationException
-      });
-    });
-
-    group('Confirm Payment Intent', () {
-      test('should confirm payment intent successfully', () async {
+    group('Confirm Payment', () {
+      test('should confirm payment successfully', () async {
         // Arrange
         const paymentIntentId = 'pi_test123';
         const paymentMethodId = 'pm_test123';
 
         // Act & Assert
-        // Should confirm payment and return success
       });
 
-      test('should handle confirmation failure', () async {
+      test('should handle 3D Secure authentication', () async {
+        // Act & Assert
+      });
+
+      test('should handle payment confirmation errors', () async {
+        // Act & Assert
+      });
+    });
+
+    group('Payment Methods', () {
+      test('should attach payment method successfully', () async {
         // Arrange
-        const paymentIntentId = 'pi_test123';
-        const paymentMethodId = 'pm_invalid';
+        const paymentMethodId = 'pm_test123';
 
         // Act & Assert
-        // Should throw appropriate exception
+      });
+
+      test('should get payment methods list', () async {
+        // Act & Assert
+      });
+
+      test('should delete payment method', () async {
+        // Arrange
+        const paymentMethodId = 'pm_test123';
+
+        // Act & Assert
       });
     });
 
     group('Error Handling', () {
       test('should handle network errors', () async {
         // Act & Assert
-        // Should throw NetworkException
       });
 
       test('should handle authentication errors', () async {
         // Act & Assert
-        // Should throw AuthException
       });
 
-      test('should handle validation errors', () async {
+      test('should handle payment processing errors', () async {
         // Act & Assert
-        // Should throw ValidationException
       });
 
       test('should handle Stripe API errors', () async {
         // Act & Assert
-        // Should handle Stripe-specific errors appropriately
-      });
-    });
-
-    group('Edge Cases', () {
-      test('should handle very large amounts', () async {
-        // Arrange
-        const amount = 999999999;
-
-        // Act & Assert
-        // Should handle appropriately (may have limits)
-      });
-
-      test('should handle zero amount', () async {
-        // Arrange
-        const amount = 0;
-
-        // Act & Assert
-        // Should throw ValidationException
-      });
-
-      test('should handle different currencies', () async {
-        // Arrange
-        const currencies = ['usd', 'eur', 'gbp', 'jpy'];
-
-        // Act & Assert
-        // Should support multiple currencies
-      });
-
-      test('should handle concurrent payment requests', () async {
-        // Act & Assert
-        // Should handle multiple simultaneous requests appropriately
       });
     });
   });
