@@ -237,7 +237,7 @@ class SafetyVerificationSection extends StatelessWidget {
           else if (onVerify != null)
             TextButton(
               onPressed: onVerify,
-              child: const Text(
+              child: Text(
                 'Verify Now',
                 style: AppTypography.bodySmall.copyWith(
                   fontWeight: FontWeight.w500,

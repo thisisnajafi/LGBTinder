@@ -146,7 +146,7 @@ class PhotoGallery extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'Primary',
                   style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,

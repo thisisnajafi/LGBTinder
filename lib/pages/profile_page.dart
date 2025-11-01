@@ -241,14 +241,14 @@ class _ProfilePageState extends State<ProfilePage> {
             ] else ...[
               TextButton(
                 onPressed: () => setState(() => _isEditMode = false),
-                child: const Text(
+                child: Text(
                   'Cancel',
                   style: AppTypography.button.copyWith(color: Colors.white),
                 ),
               ),
               TextButton(
                 onPressed: _saveProfile,
-                child: const Text(
+                child: Text(
                   'Save',
                   style: AppTypography.button.copyWith(
                     color: AppColors.primary,
@@ -358,7 +358,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Profile Completion',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
@@ -659,7 +659,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Add Photos',
               style: AppTypography.button.copyWith(
                 color: Colors.white,
@@ -741,7 +741,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Verify Your Profile',
               style: AppTypography.button.copyWith(
                 color: Colors.white,

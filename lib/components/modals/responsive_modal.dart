@@ -300,7 +300,7 @@ class _MatchModalState extends State<MatchModal>
           size: 28,
         ),
         const SizedBox(width: 12),
-        const Text(
+        Text(
           'It\'s a Match!',
           style: AppTypography.headlineSmall.copyWith(
             fontWeight: FontWeight.bold,

@@ -400,7 +400,7 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
                           ),
                         ),
                         if (_hasTimedOut)
-                          const Text(
+                          Text(
                             '⚠️ Timeout reached',
                             style: AppTypography.bodySmall.copyWith(
                               color: Colors.orange,
@@ -415,7 +415,7 @@ class _OptimizedSplashPageState extends State<OptimizedSplashPage>
               // Footer
               Padding(
                 padding: const EdgeInsets.only(bottom: 40),
-                child: const Text(
+                child: Text(
                   'LGBTinder by PrideTech',
                   style: AppTypography.bodySmall.copyWith(
                     color: Colors.white54,
