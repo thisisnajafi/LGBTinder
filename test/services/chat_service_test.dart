@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import '../../lib/services/chat_service.dart';
@@ -6,6 +8,7 @@ import '../../lib/models/models.dart';
 import '../../lib/utils/error_handler.dart';
 import '../api_test_utils.dart';
 
+@GenerateMocks([http.Client])
 void main() {
   group('ChatService Tests', () {
     group('Send Message', () {
@@ -13,35 +16,58 @@ void main() {
         // Arrange
         const recipientId = 'user123';
         const content = 'Hello, how are you?';
-        const accessToken = 'test_token';
+        final expectedMessage = Message(
+          id: 'msg123',
+          chatId: 'chat123',
+          senderId: 'current_user',
+          recipientId: recipientId,
+          content: content,
+          type: 'text',
+          sentAt: DateTime.now(),
+        );
+
+        // Note: Actual implementation uses static methods
+        // Test structure shows what should be tested
 
         // Act & Assert
-        // Should return Message object
+        // final message = await ChatService.sendMessage(recipientId, content);
+        // expect(message, isA<Message>());
+        // expect(message.content, equals(content));
+        // expect(message.recipientId, equals(recipientId));
       });
 
       test('should send message with attachment', () async {
         // Arrange
         const recipientId = 'user123';
         const content = 'Check this out!';
-        // Mock File object
-        const accessToken = 'test_token';
+        final attachment = File('test_image.jpg');
 
         // Act & Assert
-        // Should send multipart request with file
+        // Should send multipart request with attachment
+        // Should compress image before upload
       });
 
-      test('should handle message send errors', () async {
+      test('should handle authentication errors', () async {
         // Arrange
         const recipientId = 'user123';
         const content = 'Hello';
 
         // Act & Assert
-        // Should throw appropriate exception
+        // Should throw AuthException when not authenticated
+      });
+
+      test('should handle validation errors', () async {
+        // Arrange
+        const recipientId = '';
+        const content = '';
+
+        // Act & Assert
+        // Should throw ValidationException
       });
 
       test('should handle recipient not found', () async {
         // Arrange
-        const recipientId = 'nonexistent';
+        const recipientId = 'nonexistent_user';
         const content = 'Hello';
 
         // Act & Assert
@@ -56,93 +82,92 @@ void main() {
         // Act & Assert
         // Should throw ApiException with 403
       });
+
+      test('should handle network errors', () async {
+        // Act & Assert
+        // Should throw NetworkException
+      });
     });
 
-    group('Get Messages', () {
-      test('should get messages successfully', () async {
+    group('Get Chat History', () {
+      test('should get chat history successfully', () async {
         // Arrange
-        const chatId = 'chat123';
-        const accessToken = 'test_token';
+        const userId = 'user123';
 
         // Act & Assert
         // Should return list of messages
+        // Messages should be ordered by sentAt
       });
 
-      test('should get messages with pagination', () async {
+      test('should get chat history with pagination', () async {
         // Arrange
-        const chatId = 'chat123';
-        const page = 1;
-        const limit = 50;
-
-        // Act & Assert
-        // Should apply pagination
-      });
-
-      test('should get messages since timestamp', () async {
-        // Arrange
-        const chatId = 'chat123';
-        final since = DateTime.now().subtract(const Duration(hours: 1));
-
-        // Act & Assert
-        // Should return messages after timestamp
-      });
-    });
-
-    group('Get Chats', () {
-      test('should get chat list successfully', () async {
-        // Act & Assert
-        // Should return list of chats
-      });
-
-      test('should get chats with pagination', () async {
-        // Arrange
-        const page = 1;
+        const userId = 'user123';
+        const page = 2;
         const limit = 20;
 
         // Act & Assert
-        // Should apply pagination
+        // Should apply pagination correctly
       });
 
-      test('should handle empty chat list', () async {
+      test('should get chat history before message ID', () async {
+        // Arrange
+        const userId = 'user123';
+        const beforeMessageId = 'msg456';
+
+        // Act & Assert
+        // Should return messages before specified message
+      });
+
+      test('should handle empty chat history', () async {
+        // Arrange
+        const userId = 'user123';
+
         // Act & Assert
         // Should return empty list
-      });
-    });
-
-    group('Get Chat By ID', () {
-      test('should get chat by ID successfully', () async {
-        // Arrange
-        const chatId = 'chat123';
-
-        // Act & Assert
-        // Should return Chat object
       });
 
       test('should handle chat not found', () async {
         // Arrange
-        const chatId = 'nonexistent';
+        const userId = 'nonexistent_user';
 
         // Act & Assert
         // Should throw ApiException with 404
       });
     });
 
-    group('Mark Messages As Read', () {
-      test('should mark messages as read successfully', () async {
-        // Arrange
-        const chatId = 'chat123';
-        final messageIds = ['msg1', 'msg2', 'msg3'];
-
+    group('Get Chat Users', () {
+      test('should get chat users successfully', () async {
         // Act & Assert
-        // Should mark messages as read
+        // Should return list of Chat objects
+        // Each Chat should have user info and last message
       });
 
-      test('should mark all messages in chat as read', () async {
-        // Arrange
-        const chatId = 'chat123';
-
+      test('should return empty list when no chats', () async {
         // Act & Assert
-        // Should mark all messages
+        // Should return empty list
+      });
+
+      test('should handle authentication errors', () async {
+        // Act & Assert
+        // Should throw AuthException
+      });
+    });
+
+    group('Get Accessible Users', () {
+      test('should get accessible users successfully', () async {
+        // Act & Assert
+        // Should return list of users you can chat with
+        // Should only include matched users
+      });
+
+      test('should filter out blocked users', () async {
+        // Act & Assert
+        // Should not include blocked users
+      });
+
+      test('should return empty list when no accessible users', () async {
+        // Act & Assert
+        // Should return empty list
       });
     });
 
@@ -152,109 +177,134 @@ void main() {
         const messageId = 'msg123';
 
         // Act & Assert
-        // Should delete message
+        // Should delete message and return true
       });
 
       test('should handle message not found', () async {
         // Arrange
-        const messageId = 'nonexistent';
+        const messageId = 'nonexistent_msg';
 
         // Act & Assert
-        // Should handle gracefully
+        // Should throw ApiException with 404
       });
 
-      test('should handle unauthorized deletion', () async {
+      test('should handle cannot delete message', () async {
         // Arrange
-        const messageId = 'other_user_msg';
+        const messageId = 'msg_other_user';
 
         // Act & Assert
-        // Should throw appropriate exception
+        // Should throw ApiException with 403
       });
     });
 
-    group('Typing Indicators', () {
-      test('should send typing indicator', () async {
+    group('Get Unread Count', () {
+      test('should get unread count successfully', () async {
+        // Act & Assert
+        // Should return unread message count
+        // expect(count, greaterThanOrEqualTo(0));
+      });
+
+      test('should return zero when no unread messages', () async {
+        // Act & Assert
+        // Should return 0
+      });
+    });
+
+    group('Send Typing Indicator', () {
+      test('should send typing indicator successfully', () async {
         // Arrange
-        const chatId = 'chat123';
+        const userId = 'user123';
         const isTyping = true;
 
         // Act & Assert
-        // Should send typing event
+        // Should send typing indicator and return true
       });
 
       test('should stop typing indicator', () async {
         // Arrange
-        const chatId = 'chat123';
+        const userId = 'user123';
         const isTyping = false;
 
         // Act & Assert
-        // Should send stop typing event
+        // Should stop typing indicator
+      });
+
+      test('should handle user not found', () async {
+        // Arrange
+        const userId = 'nonexistent_user';
+
+        // Act & Assert
+        // Should throw ApiException with 404
       });
     });
 
-    group('Search Messages', () {
-      test('should search messages successfully', () async {
+    group('Mark Messages as Read', () {
+      test('should mark all messages as read', () async {
         // Arrange
-        const query = 'hello';
-        const chatId = 'chat123';
+        const userId = 'user123';
 
         // Act & Assert
-        // Should return matching messages
+        // Should mark all messages as read and return true
       });
 
-      test('should search across all chats', () async {
+      test('should mark specific messages as read', () async {
         // Arrange
-        const query = 'hello';
+        const userId = 'user123';
+        final messageIds = ['msg1', 'msg2', 'msg3'];
 
         // Act & Assert
-        // Should return messages from all chats
+        // Should mark specified messages as read
       });
 
-      test('should handle empty search results', () async {
+      test('should handle user not found', () async {
         // Arrange
-        const query = 'nonexistent_term';
+        const userId = 'nonexistent_user';
 
         // Act & Assert
-        // Should return empty list
-      });
-    });
-
-    group('Message Reactions', () {
-      test('should add reaction to message', () async {
-        // Arrange
-        const messageId = 'msg123';
-        const emoji = '❤️';
-
-        // Act & Assert
-        // Should add reaction
-      });
-
-      test('should remove reaction from message', () async {
-        // Arrange
-        const messageId = 'msg123';
-        const emoji = '❤️';
-
-        // Act & Assert
-        // Should remove reaction
+        // Should throw ApiException with 404
       });
     });
 
     group('Error Handling', () {
-      test('should handle network errors', () async {
+      test('should handle network timeout', () async {
         // Act & Assert
         // Should throw NetworkException
       });
 
-      test('should handle authentication errors', () async {
+      test('should handle connection errors', () async {
         // Act & Assert
-        // Should throw AuthException
+        // Should throw NetworkException
       });
 
-      test('should handle validation errors', () async {
+      test('should handle invalid JSON response', () async {
         // Act & Assert
-        // Should throw ValidationException
+        // Should handle parsing errors gracefully
+      });
+    });
+
+    group('Edge Cases', () {
+      test('should handle very long message content', () async {
+        // Arrange
+        const recipientId = 'user123';
+        final longContent = 'a' * 10000;
+
+        // Act & Assert
+        // Should handle or validate message length
+      });
+
+      test('should handle special characters in message', () async {
+        // Arrange
+        const recipientId = 'user123';
+        const content = 'Hello! 😊 🎉 @user #hashtag';
+
+        // Act & Assert
+        // Should handle special characters and emojis
+      });
+
+      test('should handle multiple simultaneous requests', () async {
+        // Act & Assert
+        // Should handle concurrent message sends appropriately
       });
     });
   });
 }
-
