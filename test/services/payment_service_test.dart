@@ -1,41 +1,41 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+import 'package:http/http.dart' as http;
 import '../../lib/services/payment_service.dart';
 import '../../lib/utils/error_handler.dart';
 import '../api_test_utils.dart';
 
-// Generate mocks with: flutter pub run build_runner build
 @GenerateMocks([http.Client])
 void main() {
   group('PaymentService Tests', () {
     group('Create Payment Intent', () {
       test('should create payment intent successfully', () async {
         // Arrange
-        const amount = 1000; // $10.00 in cents
+        const amount = 1000; // in cents
         const currency = 'USD';
-        const accessToken = 'test_token';
-
         final expectedResponse = {
           'success': true,
           'data': {
             'id': 'pi_test123',
-            'client_secret': 'pi_test123_secret',
+            'client_secret': 'pi_test123_secret_xyz',
             'amount': amount,
             'currency': currency,
             'status': 'requires_payment_method',
           },
         };
 
-        // Note: Actual implementation uses static http.post
-        // These tests document expected behavior
-        // May need refactoring for proper mocking
+        // Note: Actual implementation uses static methods with http.post
+        // This test structure shows what should be tested
+        // May need refactoring for proper mocking or use integration tests
 
         // Act & Assert
+        // final result = await PaymentService.createPaymentIntent(
+        //   amount: amount,
+        //   currency: currency,
+        // );
         // expect(result['id'], isNotNull);
         // expect(result['client_secret'], isNotNull);
-        // expect(result['amount'], equals(amount));
       });
 
       test('should create payment intent with metadata', () async {
@@ -43,8 +43,8 @@ void main() {
         const amount = 1000;
         const currency = 'USD';
         final metadata = {
-          'user_id': '123',
-          'plan_id': 'premium',
+          'order_id': 'order123',
+          'user_id': 'user456',
         };
 
         // Act & Assert
@@ -72,8 +72,17 @@ void main() {
 
       test('should handle validation errors', () async {
         // Arrange
-        const amount = -100; // Invalid amount
+        const amount = -100; // Invalid negative amount
         const currency = 'USD';
+
+        // Act & Assert
+        // Should throw ValidationException
+      });
+
+      test('should handle invalid currency', () async {
+        // Arrange
+        const amount = 1000;
+        const currency = 'INVALID';
 
         // Act & Assert
         // Should throw ValidationException
@@ -85,7 +94,7 @@ void main() {
         const currency = 'USD';
 
         // Act & Assert
-        // Should throw NetworkException
+        // Should throw NetworkException on network failure
       });
     });
 
@@ -93,79 +102,58 @@ void main() {
       test('should create checkout session successfully', () async {
         // Arrange
         final lineItems = [
-          {'price': 'price_123', 'quantity': 1},
+          {
+            'price_id': 'price_123',
+            'quantity': 1,
+          },
         ];
         const successUrl = 'https://app.example.com/success';
         const cancelUrl = 'https://app.example.com/cancel';
 
         // Act & Assert
-        // Should create checkout session
+        // Should create session and return session URL
       });
 
-      test('should create checkout session with mode', () async {
+      test('should create checkout session for subscription', () async {
         // Arrange
         final lineItems = [
-          {'price': 'price_123', 'quantity': 1},
+          {
+            'price_id': 'price_subscription123',
+            'quantity': 1,
+          },
         ];
         const successUrl = 'https://app.example.com/success';
         const cancelUrl = 'https://app.example.com/cancel';
         const mode = 'subscription';
 
         // Act & Assert
-        // Should include mode in request
+        // Should create subscription checkout session
       });
 
-      test('should create checkout session with customer ID', () async {
+      test('should create checkout session with promotion codes', () async {
         // Arrange
         final lineItems = [
-          {'price': 'price_123', 'quantity': 1},
-        ];
-        const successUrl = 'https://app.example.com/success';
-        const cancelUrl = 'https://app.example.com/cancel';
-        const customerId = 'cus_123';
-
-        // Act & Assert
-        // Should include customer_id in request
-      });
-
-      test('should create checkout session with promotion codes enabled', () async {
-        // Arrange
-        final lineItems = [
-          {'price': 'price_123', 'quantity': 1},
+          {
+            'price_id': 'price_123',
+            'quantity': 1,
+          },
         ];
         const successUrl = 'https://app.example.com/success';
         const cancelUrl = 'https://app.example.com/cancel';
         const allowPromotionCodes = true;
 
         // Act & Assert
-        // Should include allow_promotion_codes in request
-      });
-    });
-
-    group('Confirm Payment Intent', () {
-      test('should confirm payment intent successfully', () async {
-        // Arrange
-        const paymentIntentId = 'pi_test123';
-        const accessToken = 'test_token';
-
-        // Act & Assert
-        // Should confirm payment intent
+        // Should allow promotion codes
       });
 
-      test('should handle payment intent not found', () async {
+      test('should handle missing line items', () async {
         // Arrange
-        const paymentIntentId = 'pi_nonexistent';
+        final lineItems = <Map<String, dynamic>>[];
+        const successUrl = 'https://app.example.com/success';
+        const cancelUrl = 'https://app.example.com/cancel';
 
         // Act & Assert
-        // Should throw appropriate exception
-      });
-
-      test('should handle already confirmed payment intent', () async {
-        // Arrange
-        const paymentIntentId = 'pi_already_confirmed';
-
-        // Act & Assert
-        // Should handle gracefully
+        // Should throw ValidationException
       });
     });
 
@@ -183,7 +171,37 @@ void main() {
         const paymentIntentId = 'pi_nonexistent';
 
         // Act & Assert
-        // Should throw appropriate exception
+        // Should throw ApiException
+      });
+    });
+
+    group('Confirm Payment Intent', () {
+      test('should confirm payment intent successfully', () async {
+        // Arrange
+        const paymentIntentId = 'pi_test123';
+        const paymentMethodId = 'pm_test123';
+
+        // Act & Assert
+        // Should confirm payment and return success
+      });
+
+      test('should confirm payment intent with return URL', () async {
+        // Arrange
+        const paymentIntentId = 'pi_test123';
+        const paymentMethodId = 'pm_test123';
+        const returnUrl = 'https://app.example.com/return';
+
+        // Act & Assert
+        // Should include return URL
+      });
+
+      test('should handle confirmation failure', () async {
+        // Arrange
+        const paymentIntentId = 'pi_test123';
+        const paymentMethodId = 'pm_invalid';
+
+        // Act & Assert
+        // Should throw ApiException
       });
     });
 
@@ -196,12 +214,12 @@ void main() {
         // Should cancel payment intent
       });
 
-      test('should handle cancellation of already canceled intent', () async {
+      test('should handle cancel when already processed', () async {
         // Arrange
-        const paymentIntentId = 'pi_already_canceled';
+        const paymentIntentId = 'pi_already_processed';
 
         // Act & Assert
-        // Should handle gracefully
+        // Should throw ApiException
       });
     });
 
@@ -211,25 +229,17 @@ void main() {
         // Should return list of payment methods
       });
 
-      test('should get payment methods by currency', () async {
+      test('should get payment methods for customer', () async {
         // Arrange
-        const currency = 'USD';
+        const customerId = 'cus_test123';
 
         // Act & Assert
-        // Should filter by currency
-      });
-
-      test('should get payment methods by type', () async {
-        // Arrange
-        const type = 'card';
-
-        // Act & Assert
-        // Should filter by type
+        // Should return customer's payment methods
       });
     });
 
-    group('Add Payment Method', () {
-      test('should add payment method successfully', () async {
+    group('Create Payment Method', () {
+      test('should create payment method successfully', () async {
         // Arrange
         final paymentMethodData = {
           'type': 'card',
@@ -242,15 +252,18 @@ void main() {
         };
 
         // Act & Assert
-        // Should add payment method
+        // Should create and return payment method
       });
 
-      test('should handle invalid payment method data', () async {
+      test('should handle invalid card data', () async {
         // Arrange
-        final invalidData = {
+        final paymentMethodData = {
           'type': 'card',
           'card': {
             'number': 'invalid',
+            'exp_month': 12,
+            'exp_year': 2025,
+            'cvc': '123',
           },
         };
 
@@ -268,70 +281,66 @@ void main() {
         // Should delete payment method
       });
 
-      test('should handle payment method not found', () async {
+      test('should handle delete when payment method not found', () async {
         // Arrange
         const paymentMethodId = 'pm_nonexistent';
 
         // Act & Assert
-        // Should throw appropriate exception
-      });
-    });
-
-    group('Set Default Payment Method', () {
-      test('should set default payment method successfully', () async {
-        // Arrange
-        const paymentMethodId = 'pm_test123';
-
-        // Act & Assert
-        // Should set as default
-      });
-    });
-
-    group('Validate Amount', () {
-      test('should validate amount successfully', () async {
-        // Arrange
-        const amount = 1000;
-        const currency = 'USD';
-
-        // Act & Assert
-        // Should return validation result
-      });
-
-      test('should reject invalid amount', () async {
-        // Arrange
-        const amount = -100;
-        const currency = 'USD';
-
-        // Act & Assert
-        // Should return validation error
-      });
-
-      test('should reject amount below minimum', () async {
-        // Arrange
-        const amount = 50; // Below minimum
-        const currency = 'USD';
-
-        // Act & Assert
-        // Should return validation error
+        // Should throw ApiException
       });
     });
 
     group('Error Handling', () {
+      test('should handle 401 unauthorized errors', () async {
+        // Act & Assert
+        // Should throw AuthException
+      });
+
+      test('should handle 422 validation errors', () async {
+        // Act & Assert
+        // Should throw ValidationException with error details
+      });
+
+      test('should handle 500 server errors', () async {
+        // Act & Assert
+        // Should throw ApiException
+      });
+
       test('should handle network timeout', () async {
         // Act & Assert
         // Should throw NetworkException
       });
 
-      test('should handle server errors', () async {
+      test('should handle connection errors', () async {
         // Act & Assert
-        // Should throw ApiException with 500 status
+        // Should throw NetworkException
+      });
+    });
+
+    group('Edge Cases', () {
+      test('should handle very large amounts', () async {
+        // Arrange
+        const amount = 999999999; // Very large amount
+
+        // Act & Assert
+        // Should handle appropriately (may have limits)
       });
 
-      test('should handle rate limiting', () async {
+      test('should handle zero amount', () async {
+        // Arrange
+        const amount = 0;
+
         // Act & Assert
-        // Should throw RateLimitException
+        // Should throw ValidationException
+      });
+
+      test('should handle different currencies', () async {
+        // Arrange
+        const currencies = ['USD', 'EUR', 'GBP', 'JPY'];
+
+        // Act & Assert
+        // Should support multiple currencies
       });
     });
   });
 }
-
