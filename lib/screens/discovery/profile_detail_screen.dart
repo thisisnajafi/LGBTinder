@@ -244,7 +244,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       return Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
-          child: LoadingWidgets.buildCircularProgress(),
+          child: const CircularProgressIndicator(),
         ),
       );
     }
@@ -508,13 +508,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 
                 // Interests
                 if (_user!.interests.isNotEmpty) ...[
-                  _buildChipSection('Interests', _user!.interests),
+                  _buildChipSection('Interests', _user!.interests.map((i) => i.name ?? i.toString()).toList()),
                   const SizedBox(height: 24),
                 ],
                 
                 // Languages
                 if (_user!.languages.isNotEmpty) ...[
-                  _buildChipSection('Languages', _user!.languages),
+                  _buildChipSection('Languages', _user!.languages.map((l) => l.name ?? l.toString()).toList()),
                   const SizedBox(height: 24),
                 ],
                 
@@ -588,7 +588,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       info.add(MapEntry('Job', _user!.job!));
     }
     if (_user!.education != null && _user!.education!.isNotEmpty) {
-      info.add(MapEntry('Education', _user!.education!));
+      info.add(MapEntry('Education', _user!.education!.join(', ')));
     }
     if (_user!.height != null) {
       info.add(MapEntry('Height', '${_user!.height} cm'));

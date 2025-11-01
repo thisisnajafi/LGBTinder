@@ -292,11 +292,12 @@ class MatchSharingService {
           sharePositionOrigin: sharePositionOrigin,
         );
       } else {
-        return await Share.shareWithResult(
+        final result = await Share.share(
           text,
           subject: subject,
           sharePositionOrigin: sharePositionOrigin,
         );
+        return result;
       }
     } catch (e) {
       debugPrint('⚠️ Failed to share with options: $e');

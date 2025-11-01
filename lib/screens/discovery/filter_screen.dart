@@ -36,8 +36,8 @@ class _FilterScreenState extends State<FilterScreen> {
   Future<void> _saveAndApply() async {
     // Save filters locally
     await CacheService.setData(
-      key: 'discovery_filters',
-      value: _filters.toJson(),
+      'discovery_filters',
+      _filters.toJson(),
     );
     
     widget.onApply(_filters);

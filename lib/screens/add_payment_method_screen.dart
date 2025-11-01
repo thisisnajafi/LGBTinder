@@ -516,21 +516,12 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
         },
       };
 
-      final paymentMethod = await StripePaymentService.createPaymentMethod(
-        paymentMethodData: paymentMethodData,
-        accessToken: accessToken,
-      );
+      // Use addPaymentMethod which creates and attaches the payment method
+      final paymentMethod = await StripePaymentService().addPaymentMethod();
 
-      // Attach payment method to customer
-      await StripePaymentService.attachPaymentMethod(
-        paymentMethodId: paymentMethod['id'],
-        customerId: authProvider.user?.id.toString() ?? '',
-        accessToken: accessToken,
-      );
-
-      if (_saveAsDefault) {
+      if (paymentMethod != null && _saveAsDefault) {
         await PremiumService.setDefaultPaymentMethod(
-          paymentMethodId: paymentMethod['id'],
+          paymentMethodId: paymentMethod.id,
           accessToken: accessToken,
         );
       }

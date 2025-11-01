@@ -21,7 +21,7 @@ class ChatListLoading extends StatelessWidget {
       child: Row(
         children: [
           // Avatar skeleton
-          SkeletonLoaderService().createSkeletonAvatar(size: 48),
+          SkeletonLoaderService.createSkeletonAvatar(size: 48),
           
           const SizedBox(width: 12),
           
@@ -31,7 +31,7 @@ class ChatListLoading extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Name skeleton
-                SkeletonLoaderService().createSkeletonText(
+                SkeletonLoaderService.createSkeletonText(
                   width: double.infinity,
                   height: 16,
                 ),
@@ -51,7 +51,7 @@ class ChatListLoading extends StatelessWidget {
                     const SizedBox(width: 8),
                     
                     // Time skeleton
-                    SkeletonLoaderService().createSkeletonText(
+                    SkeletonLoaderService.createSkeletonText(
                       width: 40,
                       height: 14,
                     ),

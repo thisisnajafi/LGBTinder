@@ -67,8 +67,8 @@ class _SearchScreenState extends State<SearchScreen> {
     });
     
     await CacheService.setData(
-      key: 'search_history',
-      value: history,
+      'search_history',
+      history,
     );
   }
   

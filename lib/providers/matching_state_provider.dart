@@ -209,9 +209,9 @@ class MatchingStateProvider extends ChangeNotifier {
         
         // Cache the profiles for offline access
         await CacheService.setData(
-          key: 'discovery_profiles',
-          value: _potentialMatches.map((u) => u.toJson()).toList(),
-          expiryMinutes: 30,
+          'discovery_profiles',
+          _potentialMatches.map((u) => u.toJson()).toList(),
+          expiry: const Duration(minutes: 30),
         );
       } else {
         // Try to load from cache if API fails

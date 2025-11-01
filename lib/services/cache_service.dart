@@ -89,6 +89,19 @@ class CacheService {
     }
   }
 
+  // Alias methods for compatibility
+  static Future<T?> getData<T>(String key) async {
+    return await get<T>(key);
+  }
+
+  static Future<void> setData(String key, dynamic data, {Duration? expiry}) async {
+    return await set(key, data, expiry: expiry);
+  }
+
+  static Future<void> removeData(String key) async {
+    return await _clearCacheForKey(key);
+  }
+
   // Generic clear method for compatibility
   static Future<void> clear() async {
     try {
