@@ -1071,7 +1071,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Minimum Age',
                       style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
@@ -1094,7 +1094,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Maximum Age',
                       style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
@@ -1125,7 +1125,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Height',
                       style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
@@ -1143,7 +1143,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Weight',
                       style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                     ),
@@ -1590,7 +1590,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'MAIN',
                   style: AppTypography.bodySmall.copyWith(
                     color: Colors.white,
@@ -1951,7 +1951,7 @@ class _ProfileWizardPageState extends State<ProfileWizardPage> with TickerProvid
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
+              child: Text(
                 'Cancel',
                 style: AppTypography.button.copyWith(color: Colors.white70),
               ),

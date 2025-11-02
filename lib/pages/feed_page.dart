@@ -233,8 +233,8 @@ class _FeedPageState extends State<FeedPage> {
                     ),
                   );
                 } else {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Center(
                       child: Text(
                         'No more posts to load',

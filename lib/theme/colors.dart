@@ -90,6 +90,7 @@ class AppColors {
   
   // Transgender Pride Flag Colors
   static const Color transLightBlue = Color(0xFF5BCEFA);
+  static const Color transBlue = Color(0xFF5BCEFA); // Alias for transLightBlue
   static const Color transPink = Color(0xFFF5A9B8);
   static const Color transWhite = Color(0xFFFFFFFF);
   

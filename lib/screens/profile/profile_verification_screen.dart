@@ -126,7 +126,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Profile Verification',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -550,7 +550,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Verification Details',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -581,7 +581,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -596,7 +596,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Progress Details',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -630,7 +630,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -681,7 +681,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -934,18 +934,18 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Delete Document',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to delete this verification document?',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -962,7 +962,7 @@ class _ProfileVerificationScreenState extends State<ProfileVerificationScreen>
               );
               _loadVerificationData();
             },
-            child: const Text(
+            child: Text(
               'Delete',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),

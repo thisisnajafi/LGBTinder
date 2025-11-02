@@ -86,7 +86,10 @@ class _SimpleSplashPageState extends State<SimpleSplashPage> {
               
               Text(
                 'Welcome to LGBTinder',
-                style: AppTypography.titleMedium.copyWith(
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: AppTypography.titleMediumSize,
+                  fontWeight: AppTypography.subheadingWeight,
                   color: Colors.white,
                 ),
               ),
@@ -95,7 +98,10 @@ class _SimpleSplashPageState extends State<SimpleSplashPage> {
               
               Text(
                 'Connecting hearts across the rainbow',
-                style: AppTypography.bodyMedium.copyWith(
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: AppTypography.bodyMediumSize,
+                  fontWeight: AppTypography.bodyWeight,
                   color: Colors.white70,
                 ),
               ),
@@ -106,9 +112,11 @@ class _SimpleSplashPageState extends State<SimpleSplashPage> {
                 padding: EdgeInsets.only(bottom: 40),
                 child: Text(
                   'LGBTinder by PrideTech',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.white54,
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: AppTypography.bodySmallSize,
                     fontWeight: FontWeight.w300,
+                    color: Colors.white54,
                   ),
                 ),
               ),

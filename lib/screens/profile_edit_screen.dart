@@ -143,7 +143,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           widget.onCancel?.call();
         },
       ),
-      title: const Text(
+      title: Text(
         'Edit Profile',
         style: AppTypography.titleLarge.copyWith(
           color: AppColors.textPrimaryDark,
@@ -163,7 +163,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                       valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryLight),
                     ),
                   )
-                : const Text(
+                : Text(
                     'Save',
                     style: AppTypography.button.copyWith(
                       color: AppColors.primaryLight,
@@ -376,14 +376,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Select your interests',
             style: AppTypography.titleMedium.copyWith(
               color: AppColors.textPrimaryDark,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Choose up to 10 interests that describe you',
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
@@ -451,14 +451,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Profile Photos',
             style: AppTypography.titleMedium.copyWith(
               color: AppColors.textPrimaryDark,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Add photos to make your profile more attractive',
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,
@@ -493,7 +493,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             size: 120,
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Tap to change profile photo',
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondaryDark,

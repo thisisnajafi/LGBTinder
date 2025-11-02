@@ -139,7 +139,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Complete Your Profile',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -659,7 +659,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Profile Completion Details',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -735,7 +735,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -809,7 +809,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -870,7 +870,7 @@ class _ProfileCompletionIncentivesScreenState extends State<ProfileCompletionInc
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),

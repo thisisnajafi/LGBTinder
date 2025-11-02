@@ -244,7 +244,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Filters',
             style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.bold,
@@ -327,7 +327,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Choose Image Source',
               style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.bold,
@@ -489,7 +489,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Error',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -500,7 +500,7 @@ class _ProfileImageEditorState extends State<ProfileImageEditor>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'OK',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),

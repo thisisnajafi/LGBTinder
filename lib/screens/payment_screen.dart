@@ -24,8 +24,8 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   bool _isLoading = false;
   bool _isProcessing = false;
-  List<PaymentMethod> _paymentMethods = [];
-  PaymentMethod? _selectedPaymentMethod;
+  List<PaymentMethodData> _paymentMethods = [];
+  PaymentMethodData? _selectedPaymentMethod;
   String? _errorMessage;
 
   @override
@@ -53,13 +53,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
         throw Exception('Customer ID not found');
       }
 
-      final methods = await StripePaymentService.getPaymentMethods(
-        customerId: customerId,
-        accessToken: accessToken,
-      );
+      final stripeService = StripePaymentService();
+      final methods = await stripeService.getPaymentMethods();
 
       setState(() {
-        _paymentMethods = methods.map((method) => PaymentMethod.fromJson(method)).toList();
+        _paymentMethods = methods;
         if (_paymentMethods.isNotEmpty) {
           _selectedPaymentMethod = _paymentMethods.firstWhere(
             (method) => method.isDefault,
@@ -227,7 +225,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildPaymentMethodCard(PaymentMethod method) {
+  Widget _buildPaymentMethodCard(PaymentMethodData method) {
     final isSelected = _selectedPaymentMethod?.id == method.id;
 
     return Container(
@@ -259,7 +257,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  _getCardIcon(method.cardBrand),
+                  _getCardIcon(method.brand ?? ''),
                   color: AppColors.primary,
                   size: 24,
                 ),
@@ -270,18 +268,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      method.formattedCard,
+                      method.displayName,
                       style: AppTypography.body1.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Text(
-                      'Expires ${method.formattedExpiry}',
-                      style: AppTypography.body2.copyWith(
-                        color: Colors.white70,
+                    if (method.expiryDisplay.isNotEmpty)
+                      Text(
+                        'Expires ${method.expiryDisplay}',
+                        style: AppTypography.body2.copyWith(
+                          color: Colors.white70,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -303,7 +302,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                   ),
                 ),
-              Radio<PaymentMethod>(
+              Radio<PaymentMethodData>(
                 value: method,
                 groupValue: _selectedPaymentMethod,
                 onChanged: (value) {
@@ -446,20 +445,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
         throw Exception('No access token available');
       }
 
-      // Create payment intent
-      final paymentIntent = await StripePaymentService.createPaymentIntent(
-        planId: widget.plan.id,
-        accessToken: accessToken,
-        customerId: authProvider.user?.id.toString(),
+      // Process subscription payment
+      final stripeService = StripePaymentService();
+      final result = await stripeService.processSubscriptionPayment(
+        planId: widget.plan.id.toString(),
+        paymentMethodId: _selectedPaymentMethod?.id,
       );
 
-      // Confirm payment
-      final confirmation = await StripePaymentService.confirmPayment(
-        paymentIntentId: paymentIntent['id'],
-        accessToken: accessToken,
-      );
-
-      if (confirmation['status'] == 'succeeded') {
+      if (result.success) {
         // Payment successful
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -472,7 +465,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         Navigator.pop(context);
         Navigator.pop(context);
       } else {
-        throw Exception('Payment failed: ${confirmation['status']}');
+        throw Exception(result.message);
       }
     } catch (e) {
       setState(() {

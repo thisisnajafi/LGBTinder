@@ -135,7 +135,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Share Profile',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -688,18 +688,18 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Clear Share History',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to clear all share history? This action cannot be undone.',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -717,7 +717,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
                 _refreshData();
               });
             },
-            child: const Text(
+            child: Text(
               'Clear',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
@@ -732,7 +732,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Share Content Details',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -765,7 +765,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -820,7 +820,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -835,7 +835,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Detailed Statistics',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -871,7 +871,7 @@ class _ProfileSharingScreenState extends State<ProfileSharingScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),

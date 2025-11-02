@@ -4,7 +4,7 @@ import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../services/api_services/discovery_api_service.dart';
 import '../../services/token_management_service.dart';
-import '../../components/loading/skeleton_loader.dart';
+import '../../services/skeleton_loader_service.dart';
 
 class LikesReceivedScreen extends StatefulWidget {
   const LikesReceivedScreen({Key? key}) : super(key: key);

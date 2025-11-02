@@ -42,7 +42,7 @@ class ChatListLoading extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: SkeletonLoaderService().createSkeletonText(
+                      child: SkeletonLoaderService.createSkeletonText(
                         width: double.infinity,
                         height: 14,
                       ),

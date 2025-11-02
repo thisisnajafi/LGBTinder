@@ -152,7 +152,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Profile Templates',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -662,7 +662,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Apply Template',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -673,7 +673,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -702,7 +702,7 @@ class _ProfileTemplatesScreenState extends State<ProfileTemplatesScreen>
                 }
               });
             },
-            child: const Text(
+            child: Text(
               'Apply',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),

@@ -129,7 +129,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Profile Analytics',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -814,18 +814,18 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Clear Analytics Data',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to clear all analytics data? This action cannot be undone.',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -842,7 +842,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
               );
               _refreshData();
             },
-            child: const Text(
+            child: Text(
               'Clear',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
@@ -868,7 +868,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Detailed Summary',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -904,7 +904,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -919,7 +919,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Detailed Trends',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -955,7 +955,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -1008,7 +1008,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Close',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),

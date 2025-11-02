@@ -133,7 +133,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Profile Export',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -765,7 +765,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Delete Export',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -776,7 +776,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -805,7 +805,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
                 });
               }
             },
-            child: const Text(
+            child: Text(
               'Delete',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
@@ -830,18 +830,18 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Clear Export History',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to clear all export history? This action cannot be undone.',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -859,7 +859,7 @@ class _ProfileExportScreenState extends State<ProfileExportScreen>
                 _refreshData();
               });
             },
-            child: const Text(
+            child: Text(
               'Clear',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),

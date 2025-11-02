@@ -169,8 +169,8 @@ class _LGBTinderAppState extends State<LGBTinderApp> {
               '/premium-features': (context) => const PremiumFeaturesScreen(),
               '/subscription-management': (context) => const SubscriptionManagementScreen(),
               '/payment': (context) => PaymentScreen(plan: PremiumPlan.fromJson({})),
-              '/video-call': (context) => VideoCallScreen(otherUser: User.fromJson({})),
-              '/voice-call': (context) => VoiceCallScreen(otherUser: User.fromJson({})),
+              '/video-call': (context) => const VideoCallScreen(userId: '', userName: ''),
+              '/voice-call': (context) => const VoiceCallScreen(userId: '', userName: ''),
               // '/terms-of-service': (context) => const TermsOfServiceScreen(), // File doesn't exist
               // '/privacy-policy': (context) => const PrivacyPolicyScreen(), // File doesn't exist
               '/accessibility-settings': (context) => const AccessibilitySettingsScreen(),

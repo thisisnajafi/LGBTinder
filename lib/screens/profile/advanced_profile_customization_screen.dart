@@ -175,7 +175,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Profile Customization',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -591,7 +591,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Cancel'),
+                        child: Text('Cancel'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -609,7 +609,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Apply'),
+                        child: Text('Apply'),
                       ),
                     ),
                   ],
@@ -1062,18 +1062,18 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Reset to Defaults',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to reset all customizations to default settings?',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.button.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -1083,7 +1083,7 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
               Navigator.pop(context);
               HapticFeedbackService.success();
             },
-            child: const Text(
+            child: Text(
               'Reset',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
@@ -1119,18 +1119,18 @@ class _AdvancedProfileCustomizationScreenState extends State<AdvancedProfileCust
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Profile Customization Help',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Use the customization options to personalize your profile. Premium features are marked with a star icon.',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Got it',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),

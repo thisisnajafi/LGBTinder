@@ -126,7 +126,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Profile Backup',
           style: AppTypography.titleLarge.copyWith(
             color: AppColors.textPrimaryDark,
@@ -521,11 +521,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
           ),
           const SizedBox(height: 16),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'WiFi Only',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Only backup when connected to WiFi',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -534,11 +534,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             activeColor: AppColors.primaryLight,
           ),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'Battery Optimized',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Optimize backup for battery life',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -574,11 +574,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
           ),
           const SizedBox(height: 16),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'Enable Auto Backup',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Automatically backup your profile',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -590,10 +590,10 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _backupSettings?['autoBackupFrequency'] ?? 'weekly',
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Backup Frequency',
                 labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               items: const [
                 DropdownMenuItem(value: 'daily', child: Text('Daily')),
@@ -631,11 +631,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
           ),
           const SizedBox(height: 16),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'Include Photos',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Backup profile photos',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -644,11 +644,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             activeColor: AppColors.primaryLight,
           ),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'Include Messages',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Backup chat messages',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -657,11 +657,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             activeColor: AppColors.primaryLight,
           ),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'Include Settings',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Backup app settings',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -670,11 +670,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
             activeColor: AppColors.primaryLight,
           ),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'Include Analytics',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Backup analytics data',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -710,11 +710,11 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
           ),
           const SizedBox(height: 16),
           SwitchListTile(
-            title: const Text(
+            title: Text(
               'Encrypt Data',
               style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Encrypt backup data for security',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -873,7 +873,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Restore Backup',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -884,7 +884,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -922,7 +922,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
                 }
               });
             },
-            child: const Text(
+            child: Text(
               'Restore',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -939,7 +939,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Delete Backup',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -950,7 +950,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -977,7 +977,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
                 }
               });
             },
-            child: const Text(
+            child: Text(
               'Delete',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
@@ -1002,18 +1002,18 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Clear Backup History',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to clear all backup history? This action cannot be undone.',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -1030,7 +1030,7 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
               );
               _refreshData();
             },
-            child: const Text(
+            child: Text(
               'Clear',
               style: AppTypography.button.copyWith(color: AppColors.feedbackError),
             ),
@@ -1073,18 +1073,18 @@ class _ProfileBackupScreenState extends State<ProfileBackupScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Selective Backup',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
-        content: const Text(
+        content: Text(
           'Selective backup options coming soon!',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'OK',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),

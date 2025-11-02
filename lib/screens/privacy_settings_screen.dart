@@ -245,7 +245,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           Navigator.of(context).pop();
         },
       ),
-      title: const Text(
+      title: Text(
         'Privacy Settings',
         style: AppTypography.titleLarge.copyWith(
           color: AppColors.textPrimaryDark,
@@ -256,7 +256,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         if (_hasChanges)
           TextButton(
             onPressed: _saveSettings,
-            child: const Text(
+              child: Text(
               'Save',
               style: AppTypography.button.copyWith(
                 color: AppColors.primaryLight,
@@ -482,7 +482,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             Icons.block,
             color: AppColors.feedbackError,
           ),
-          title: const Text(
+          title: Text(
             'Blocked Users',
             style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
           ),
@@ -505,7 +505,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             Icons.report,
             color: AppColors.feedbackWarning,
           ),
-          title: const Text(
+          title: Text(
             'Reported Users',
             style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
           ),
@@ -559,11 +559,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             Icons.delete_forever,
             color: AppColors.feedbackError,
           ),
-          title: const Text(
+          title: Text(
             'Delete Account',
             style: AppTypography.titleMedium.copyWith(color: AppColors.feedbackError),
           ),
-          subtitle: const Text(
+          subtitle: Text(
             'Permanently delete your account and all data',
             style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
           ),
@@ -685,7 +685,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Reset'),
+              child: Text('Reset'),
           ),
         ),
         const SizedBox(width: 12),
@@ -700,7 +700,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Save Changes'),
+              child: Text('Save Changes'),
           ),
         ),
       ],
@@ -720,7 +720,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Blocked Users',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -731,7 +731,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+              child: Text(
               'OK',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -746,7 +746,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Reported Users',
           style: AppTypography.titleMedium.copyWith(color: AppColors.textPrimaryDark),
         ),
@@ -757,7 +757,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+              child: Text(
               'OK',
               style: AppTypography.button.copyWith(color: AppColors.primaryLight),
             ),
@@ -772,18 +772,18 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.navbarBackground,
-        title: const Text(
+        title: Text(
           'Delete Account',
           style: AppTypography.titleMedium.copyWith(color: AppColors.feedbackError),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to delete your account? This action cannot be undone.',
           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+              child: Text(
               'Cancel',
               style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondaryDark),
             ),
@@ -793,7 +793,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
               Navigator.pop(context);
               // Handle account deletion
             },
-            child: const Text(
+              child: Text(
               'Delete',
               style: AppTypography.titleMedium.copyWith(color: AppColors.feedbackError),
             ),

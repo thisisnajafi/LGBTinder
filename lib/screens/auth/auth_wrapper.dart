@@ -128,7 +128,7 @@ class BannedScreen extends StatelessWidget {
                 color: Colors.red,
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Account Banned',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
@@ -182,7 +182,7 @@ class ErrorScreen extends StatelessWidget {
                 color: Colors.red,
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Something went wrong',
                 style: AppTypography.titleMedium.copyWith(
                   fontWeight: FontWeight.bold,
