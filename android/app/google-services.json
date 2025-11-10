@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "677771590404",
+    "project_id": "lgbtinder-13549",
+    "storage_bucket": "lgbtinder-13549.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677771590404:android:17c846fda79cb42a1dae51",
+        "android_client_info": {
+          "package_name": "com.example.lgbtinderfinal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "677771590404-s502c69rakrnq0mnel9knivtgb0dbq24.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFXfcsF4blk32oqH6R7pFoIuP2mYf62f8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "677771590404-s502c69rakrnq0mnel9knivtgb0dbq24.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

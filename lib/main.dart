@@ -13,7 +13,7 @@ import 'screens/auth/welcome_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/auth/email_verification_screen.dart';
-import 'screens/auth/forgot_password_screen.dart';
+import 'screens/auth/password_reset_flow_screen.dart';
 // import 'screens/profile_completion_screen.dart'; // File doesn't exist
 import 'pages/profile_wizard_page.dart';
 import 'pages/home_page.dart';
@@ -158,7 +158,7 @@ class _LGBTinderAppState extends State<LGBTinderApp> {
               '/login': (context) => const LoginScreen(),
               '/register': (context) => const RegisterScreen(),
               '/email-verification': (context) => const EmailVerificationScreen(email: '', redirectRoute: '/home'),
-              '/forgot-password': (context) => const ForgotPasswordScreen(),
+              '/forgot-password': (context) => const PasswordResetFlowScreen(),
               // '/profile-completion': (context) => const ProfileCompletionScreen(), // File doesn't exist
               '/profile-wizard': (context) => ProfileWizardPage(),
               '/home': (context) => const HomePage(),

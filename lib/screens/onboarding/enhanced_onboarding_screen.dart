@@ -43,12 +43,10 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late AnimationController _scaleController;
-  late AnimationController _progressController;
 
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _progressAnimation;
 
   int _currentPage = 0;
   bool _isLastPage = false;
@@ -57,24 +55,28 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
     OnboardingStep(
       title: 'Welcome to LGBTinder',
       description: 'A safe and inclusive space for the LGBTQ+ community to connect, discover, and build meaningful relationships.',
+      imagePath: 'assets/onboarding/welcome.png',
       icon: Icons.favorite,
       iconColor: AppColors.primaryLight,
     ),
     OnboardingStep(
       title: 'Find Your Perfect Match',
       description: 'Discover amazing people who share your interests, values, and goals. Swipe right to connect!',
+      imagePath: 'assets/onboarding/match.png',
       icon: Icons.people,
       iconColor: AppColors.feedbackSuccess,
     ),
     OnboardingStep(
       title: 'Build Meaningful Connections',
       description: 'Chat with your matches, share experiences, and build lasting relationships in a supportive environment.',
+      imagePath: 'assets/onboarding/connections.png',
       icon: Icons.chat_bubble,
       iconColor: AppColors.feedbackInfo,
     ),
     OnboardingStep(
       title: 'Join Our Community',
       description: 'Be part of a vibrant, supportive community that celebrates diversity and promotes authentic connections.',
+      imagePath: 'assets/onboarding/community.png',
       icon: Icons.group,
       iconColor: AppColors.feedbackWarning,
     ),
@@ -104,11 +106,6 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
       vsync: this,
     );
 
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -133,14 +130,6 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
       curve: Curves.elasticOut,
     ));
 
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeInOut,
-    ));
-
     _startAnimations();
   }
 
@@ -148,7 +137,6 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
     _fadeController.forward();
     _slideController.forward();
     _scaleController.forward();
-    _progressController.forward();
   }
 
   @override
@@ -157,7 +145,6 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
     _fadeController.dispose();
     _slideController.dispose();
     _scaleController.dispose();
-    _progressController.dispose();
     super.dispose();
   }
 
@@ -174,7 +161,6 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
             child: Column(
               children: [
                 _buildHeader(context, themeProvider),
-                _buildProgressIndicator(context, themeProvider),
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -207,17 +193,11 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
               builder: (context, child) {
                 return Transform.scale(
                   scale: _scaleAnimation.value,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: LGBTGradientSystem.rainbowGradient,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.favorite,
-                      color: Colors.white,
-                      size: 24,
-                    ),
+                  child: Image.asset(
+                    'assets/logo/logo.png',
+                    height: 48,
+                    width: 120,
+                    fit: BoxFit.contain,
                   ),
                 );
               },
@@ -242,49 +222,6 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
     );
   }
 
-  Widget _buildProgressIndicator(BuildContext context, ThemeProvider themeProvider) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Step ${_currentPage + 1} of ${_steps.length}',
-                style: AppTypography.caption.copyWith(
-                  color: themeProvider.isDarkMode 
-                      ? AppColors.textSecondaryDark 
-                      : AppColors.textSecondary,
-                ),
-              ),
-              Text(
-                '${((_currentPage + 1) / _steps.length * 100).round()}%',
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.primaryLight,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          AnimatedBuilder(
-            animation: _progressAnimation,
-            builder: (context, child) {
-              return LinearProgressIndicator(
-                value: (_currentPage + 1) / _steps.length * _progressAnimation.value,
-                backgroundColor: themeProvider.isDarkMode 
-                    ? AppColors.surfaceSecondary 
-                    : AppColors.surfaceSecondary,
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryLight),
-                minHeight: 4,
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildOnboardingPage(OnboardingStep step, BuildContext context, ThemeProvider themeProvider) {
     return AnimatedBuilder(
@@ -347,32 +284,73 @@ class _EnhancedOnboardingScreenState extends State<EnhancedOnboardingScreen>
       builder: (context, child) {
         return Transform.scale(
           scale: _scaleAnimation.value,
-          child: Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              gradient: step.iconColor != null
-                  ? LinearGradient(
-                      colors: [
-                        step.iconColor!.withOpacity(0.1),
-                        step.iconColor!.withOpacity(0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : LGBTGradientSystem.rainbowGradient,
-              borderRadius: BorderRadius.circular(64),
-              border: Border.all(
-                color: step.iconColor?.withOpacity(0.3) ?? AppColors.primaryLight.withOpacity(0.3),
-                width: 2,
-              ),
-            ),
-            child: Icon(
-              step.icon ?? Icons.favorite,
-              size: 48,
-              color: step.iconColor ?? AppColors.primaryLight,
-            ),
-          ),
+          child: step.imagePath != null
+              ? Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Image.asset(
+                    step.imagePath!,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to icon if image not found
+                      return Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          gradient: step.iconColor != null
+                              ? LinearGradient(
+                                  colors: [
+                                    step.iconColor!.withOpacity(0.1),
+                                    step.iconColor!.withOpacity(0.05),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                              : LGBTGradientSystem.rainbowGradient,
+                          borderRadius: BorderRadius.circular(64),
+                          border: Border.all(
+                            color: step.iconColor?.withOpacity(0.3) ?? AppColors.primaryLight.withOpacity(0.3),
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          step.icon ?? Icons.favorite,
+                          size: 48,
+                          color: step.iconColor ?? AppColors.primaryLight,
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: step.iconColor != null
+                        ? LinearGradient(
+                            colors: [
+                              step.iconColor!.withOpacity(0.1),
+                              step.iconColor!.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : LGBTGradientSystem.rainbowGradient,
+                    borderRadius: BorderRadius.circular(64),
+                    border: Border.all(
+                      color: step.iconColor?.withOpacity(0.3) ?? AppColors.primaryLight.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    step.icon ?? Icons.favorite,
+                    size: 48,
+                    color: step.iconColor ?? AppColors.primaryLight,
+                  ),
+                ),
         );
       },
     );

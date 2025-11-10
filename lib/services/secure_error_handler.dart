@@ -270,6 +270,27 @@ class SecureErrorHandler {
 
   // Create user-friendly error message
   static String createUserFriendlyMessage(AuthError error) {
+    // If the error has a specific message, use it (especially for validation errors and auth errors)
+    if (error.message.isNotEmpty && error.message != 'Validation error') {
+      // For validation errors and authentication errors, use the actual message
+      if (error.type == AuthErrorType.validationError) {
+        return error.message;
+      }
+      // For authentication-related errors (like "Invalid email or password"), use the message
+      if (error.message.toLowerCase().contains('invalid') || 
+          error.message.toLowerCase().contains('email') ||
+          error.message.toLowerCase().contains('password') ||
+          error.message.toLowerCase().contains('authentication')) {
+        return error.message;
+      }
+      // For other errors, use the message if it's user-friendly
+      if (error.type != AuthErrorType.serverError && 
+          error.type != AuthErrorType.unknownError) {
+        return error.message;
+      }
+    }
+    
+    // Fallback to generic messages
     switch (error.type) {
       case AuthErrorType.networkError:
         return 'Please check your internet connection and try again.';

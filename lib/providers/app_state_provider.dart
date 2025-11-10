@@ -120,12 +120,27 @@ class AppStateProvider extends ChangeNotifier {
         });
         return AuthResult.success(message: response.message);
       } else {
+        // Extract specific validation error messages
+        String errorMessage = response.message;
+        if (response.errors != null && response.errors!.isNotEmpty) {
+          // Build user-friendly error message from validation errors
+          final errorMessages = <String>[];
+          response.errors!.forEach((field, messages) {
+            if (messages.isNotEmpty) {
+              errorMessages.addAll(messages);
+            }
+          });
+          if (errorMessages.isNotEmpty) {
+            errorMessage = errorMessages.join('\n');
+          }
+        }
+        
         _error = AuthError(
           type: AuthErrorType.validationError,
-          message: response.message,
+          message: errorMessage,
           details: response.errors,
         );
-        return AuthResult.error(response.message);
+        return AuthResult.error(errorMessage);
       }
     } catch (e) {
       _error = AuthError(

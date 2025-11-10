@@ -242,14 +242,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
           errorType: 'validation_error',
         );
 
-               // Show error message
-               ErrorSnackBar.show(
-                 context,
-                 error: Exception(result.message),
-                 errorContext: 'register',
-                 onAction: _handleRegister,
-                 actionText: 'Try Again',
-               );
+        // Get the actual error from AppStateProvider (reuse existing appState variable)
+        final authError = appState.error;
+        
+        // Show error message - use AuthError if available, otherwise use result message
+        if (authError != null) {
+          ErrorSnackBar.show(
+            context,
+            error: authError,
+            errorContext: 'register',
+            onAction: _handleRegister,
+            actionText: 'Try Again',
+          );
+        } else {
+          ErrorSnackBar.show(
+            context,
+            error: Exception(result.message),
+            errorContext: 'register',
+            onAction: _handleRegister,
+            actionText: 'Try Again',
+          );
+        }
       }
     } catch (e) {
       print('💥 Registration exception: ${e.toString()}');

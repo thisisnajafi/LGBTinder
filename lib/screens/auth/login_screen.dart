@@ -439,9 +439,19 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (mounted) {
+          // Create proper AuthError for authentication failures
+          final errorMessage = error['message'] ?? 'Login failed';
+          final authError = AuthError(
+            type: errorCode == 401 
+                ? AuthErrorType.validationError 
+                : AuthErrorType.unknownError,
+            message: errorMessage,
+            details: errorDetails,
+          );
+          
           ErrorSnackBar.show(
             context,
-            error: Exception(error['message'] ?? 'Login failed'),
+            error: authError,
             errorContext: 'login',
             onAction: _handleLogin,
             actionText: 'Try Again',
